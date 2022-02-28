@@ -59,14 +59,14 @@
         <!-- TECHNICAL DEPENDENCIES -->
         <commons.collections4.version>4.1</commons.collections4.version>
         <commons.lang.version>3.11</commons.lang.version>
-        <commons.io.version>2.5</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <jsonapi.converter.version>0.10</jsonapi.converter.version>
         <junit.launcher.version>1.6.3</junit.launcher.version>
-        <h2.version>1.4.200</h2.version>
+        <h2.version>2.1.210</h2.version>
         <logback.version>1.2.3</logback.version>
         <maven.jvnet.jaxb2.version>0.14.0</maven.jvnet.jaxb2.version>
         <mockito.version>3.3.3</mockito.version>
-        <postgresql.version>42.2.16</postgresql.version>
+        <postgresql.version>42.3.3</postgresql.version>
         <springcloud.streambinder.version>3.2.2</springcloud.streambinder.version>
         <squareup.okhttp3.version>3.12.0</squareup.okhttp3.version>
         <threeten.version>1.5.0</threeten.version>
