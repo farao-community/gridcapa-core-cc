@@ -1,4 +1,4 @@
-name: CI - gridcapa-core-cc
+name: CI
 
 on: [push]
 
