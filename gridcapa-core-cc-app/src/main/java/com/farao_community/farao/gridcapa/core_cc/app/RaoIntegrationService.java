@@ -13,7 +13,6 @@ import com.farao_community.farao.gridcapa.core_cc.app.entities.TaskStatus;
 import com.farao_community.farao.gridcapa.core_cc.app.exceptions.RaoIntegrationException;
 import com.farao_community.farao.gridcapa.core_cc.app.messaging.MinioAdapter;
 import com.farao_community.farao.gridcapa.core_cc.app.preprocessing.RaoIPreProcessService;
-import com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil;
 import com.farao_community.farao.gridcapa.core_cc.app.util.ZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+
+import static com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil.createTempDirectory;
 
 /**
  * @author Pengbo Wang {@literal <pengbo.wang at rte-international.com>}
@@ -101,8 +102,8 @@ public class RaoIntegrationService {
             if (raoIntegrationTask.getTaskStatus().equals(TaskStatus.RUNNING)) {
                 throw new RaoIntegrationException("Task still running, cant retrieve outputs");
             }
+            Path archiveTempPath = createTempDirectory("rao-integration-temp-results-dir");
 
-            Path archiveTempPath = FileUtil.setFilePermissions(Files.createTempDirectory("rao-integration-temp-results-dir"));
             if (raoIntegrationTask.getTaskStatus() == TaskStatus.ERROR) {
                 //check raoIntegrationTask status, when finish with error, return only rao response file, this is case when input inconsistency.
                 String raoIntegrationResponseFileUrl = minioAdapter.generatePreSignedUrl(raoIntegrationTask.getDailyOutputs().getRaoIntegrationResponsePath());

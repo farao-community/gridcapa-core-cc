@@ -59,4 +59,12 @@ public final class FileUtil {
             throw new RaoIntegrationException(fileName + " not found in input archive");
         }
     }
+
+    public static Path createTempDirectory(String directoryName) throws IOException {
+        File directory = Files.createTempDirectory(directoryName).toFile();
+        directory.setReadable(true, true);
+        directory.setWritable(true, true);
+        directory.setExecutable(true, true);
+        return directory.toPath();
+    }
 }
