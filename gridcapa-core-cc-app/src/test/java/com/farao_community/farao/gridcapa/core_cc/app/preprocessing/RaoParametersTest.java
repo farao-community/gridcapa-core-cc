@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +37,8 @@ class RaoParametersTest {
 
     @Test
     void checkRaoParametersFilledCorrectly() {
-        RequestMessage raoRequestMessage = JaxbUtil.unmarshalFile(RequestMessage.class, Paths.get(getClass().getResource("/RaoIntegrationRequest.xml").getPath()));
+        String absolutePath = new File(getClass().getResource("/RaoIntegrationRequest.xml").getFile()).getAbsolutePath();
+        RequestMessage raoRequestMessage = JaxbUtil.unmarshalFile(RequestMessage.class, Paths.get(absolutePath));
         assertEquals("2020-03-29T23:00:00Z/2020-03-30T00:00:00Z", raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         RaoParameters raoParameters = raoParametersService.createRaoParametersFromRequest(raoRequestMessage);
 

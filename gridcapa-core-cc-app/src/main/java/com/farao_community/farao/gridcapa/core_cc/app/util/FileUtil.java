@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +25,19 @@ import java.util.stream.Stream;
 public final class FileUtil {
 
     private FileUtil() {
+    }
+
+    public static Path setFilePermissions(Path path) {
+        File file = path.toFile();
+        // Set RWX to false by default
+        file.setReadable(false);
+        file.setWritable(false);
+        file.setExecutable(false);
+        // Set RWX to true for owner only
+        file.setReadable(true, true);
+        file.setWritable(true, true);
+        file.setExecutable(true, true);
+        return path;
     }
 
     public static ResponseEntity<byte[]> toFileAttachmentResponse(byte[] fileContent, String fileName) {

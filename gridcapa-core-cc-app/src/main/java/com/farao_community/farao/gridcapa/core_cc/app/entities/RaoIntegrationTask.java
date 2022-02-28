@@ -8,6 +8,7 @@
 package com.farao_community.farao.gridcapa.core_cc.app.entities;
 
 import com.farao_community.farao.gridcapa.core_cc.app.exceptions.RaoIntegrationException;
+import com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil;
 
 import javax.persistence.*;
 import java.io.File;
@@ -15,9 +16,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,9 +63,8 @@ public class RaoIntegrationTask implements Serializable {
 
     public RaoIntegrationTask() {
         try {
-            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            this.tmpInputsPath = Files.createTempDirectory("rao-integration-temp-dir", attr).toString();
-            this.tmpCgmInputsPath = Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"), attr).toString();
+            this.tmpInputsPath = FileUtil.setFilePermissions(Files.createTempDirectory("rao-integration-temp-dir")).toString();
+            this.tmpCgmInputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"))).toString();
             this.taskStatus = TaskStatus.CREATED;
             inputsReceptionInstant = Instant.now();
         } catch (IOException e) {

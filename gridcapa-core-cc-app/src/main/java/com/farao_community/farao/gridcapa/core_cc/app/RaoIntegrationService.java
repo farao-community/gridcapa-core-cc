@@ -13,20 +13,19 @@ import com.farao_community.farao.gridcapa.core_cc.app.entities.TaskStatus;
 import com.farao_community.farao.gridcapa.core_cc.app.exceptions.RaoIntegrationException;
 import com.farao_community.farao.gridcapa.core_cc.app.messaging.MinioAdapter;
 import com.farao_community.farao.gridcapa.core_cc.app.preprocessing.RaoIPreProcessService;
+import com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil;
 import com.farao_community.farao.gridcapa.core_cc.app.util.ZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
 
 /**
  * @author Pengbo Wang {@literal <pengbo.wang at rte-international.com>}
@@ -103,8 +102,7 @@ public class RaoIntegrationService {
                 throw new RaoIntegrationException("Task still running, cant retrieve outputs");
             }
 
-            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            Path archiveTempPath = Files.createTempDirectory("rao-integration-temp-results-dir", attr);
+            Path archiveTempPath = FileUtil.setFilePermissions(Files.createTempDirectory("rao-integration-temp-results-dir"));
             if (raoIntegrationTask.getTaskStatus() == TaskStatus.ERROR) {
                 //check raoIntegrationTask status, when finish with error, return only rao response file, this is case when input inconsistency.
                 String raoIntegrationResponseFileUrl = minioAdapter.generatePreSignedUrl(raoIntegrationTask.getDailyOutputs().getRaoIntegrationResponsePath());
