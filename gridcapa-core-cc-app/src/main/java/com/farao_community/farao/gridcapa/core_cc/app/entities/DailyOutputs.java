@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
+import java.security.SecureRandom;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -57,13 +54,9 @@ public class DailyOutputs implements Serializable {
 
     public DailyOutputs() {
         try {
-            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            this.cneTmpOutputsPath  = FileUtil.setFilePermissions(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", generateRandomSuffix()), attr).toString();
-            this.networkTmpOutputsPath = FileUtil.setFilePermissions(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", generateRandomSuffix()), attr).toString();
-            this.logsTmpOutputPath = FileUtil.setFilePermissions(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", generateRandomSuffix()), attr).toString();
-            this.cneTmpOutputsPath  = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", RandomStringUtils.randomAlphanumeric(8)))).toString();
-            this.networkTmpOutputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", RandomStringUtils.randomAlphanumeric(8)))).toString();
-            this.logsTmpOutputPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", RandomStringUtils.randomAlphanumeric(8)))).toString();
+            this.cneTmpOutputsPath  = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", generateRandomSuffix()))).toString();
+            this.networkTmpOutputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", generateRandomSuffix()))).toString();
+            this.logsTmpOutputPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", generateRandomSuffix()))).toString();
         } catch (IOException e) {
             throw new RaoIntegrationException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
         }
