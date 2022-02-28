@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.SecureRandom;
 import java.util.Set;
 
 /**
@@ -57,9 +58,9 @@ public class DailyOutputs implements Serializable {
     public DailyOutputs() {
         try {
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.networkTmpOutputsPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.logsTmpOutputPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", generateRandomSuffix()), attr).toString();
+            this.networkTmpOutputsPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", generateRandomSuffix()), attr).toString();
+            this.logsTmpOutputPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", generateRandomSuffix()), attr).toString();
         } catch (IOException e) {
             throw new RaoIntegrationException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
         }
@@ -147,5 +148,9 @@ public class DailyOutputs implements Serializable {
 
     public void setMetadataOutputsPath(String metadataOutputsPath) {
         this.metadataOutputsPath = metadataOutputsPath;
+    }
+
+    private String generateRandomSuffix() {
+        return RandomStringUtils.random(8, 0, 0, true, true, null, new SecureRandom());
     }
 }
