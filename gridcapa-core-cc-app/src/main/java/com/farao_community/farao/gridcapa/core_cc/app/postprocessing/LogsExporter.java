@@ -36,7 +36,7 @@ public class LogsExporter {
         Map<String, SortedSet<String>> logsMap = logsEventsListener.getLogsByInstant();
         logsMap.forEach((k, v) -> {
             String instant = k.substring(k.indexOf("_") + 1);
-            String fileName = OutputFileNameUtil.generateCracCreationReportFileName(instant, raoIntegrationTask);
+            String fileName = OutputFileNameUtil.generateLogsFileName(instant, raoIntegrationTask);
             File targetFile = new File(raoIntegrationTask.getDailyOutputs().getLogsTmpOutputPath(), fileName); //NOSONAR
             try {
                 PrintWriter pw = new PrintWriter(new FileOutputStream(targetFile));

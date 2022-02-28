@@ -31,6 +31,7 @@ public final class OutputsNamingRules {
     public static final DateTimeFormatter OPTIMIZED_CB_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-RAO_22VCOR0CORE0TST4_RTE-F303_'yyyyMMdd'-F303-0V.xml'").withZone(ZONE_ID);
     public static final String CGM_XML_HEADER_FILENAME = "CGM_XML_Header.xml";
     public static final DateTimeFormatter METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-RAO_22VCOR0CORE0TST4_RTE-F341_'yyyyMMdd'-F341-0V.csv'").withZone(ZONE_ID);
+    public static final DateTimeFormatter CRAC_CREATION_REPORT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_CRAC-CREATION-REPORT-0V.txt'").withZone(ZONE_ID);
     public static final DateTimeFormatter RAO_LOGS_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-LOGS-0V.txt'").withZone(ZONE_ID);
     public static final DateTimeFormatter LOGS_OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-RAO_22VCOR0CORE0TST4_RTE-F342_'yyyyMMdd'-F342-0V.zip'").withZone(ZONE_ID);
 }

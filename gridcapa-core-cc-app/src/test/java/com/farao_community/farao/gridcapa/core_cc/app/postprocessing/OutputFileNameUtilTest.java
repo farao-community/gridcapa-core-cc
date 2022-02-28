@@ -59,12 +59,19 @@ class OutputFileNameUtilTest {
         assertEquals("20211031_0330_2D7_UX4.uct", OutputFileNameUtil.generateUctFileName("2021-10-31T02:00:00Z", 4));
         assertEquals("20211031_2330_2D7_UX4.uct", OutputFileNameUtil.generateUctFileName("2021-10-31T22:00:00Z", 4));
 
-        assertEquals("20211031_0030_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-30T22:00:00Z", task));
-        assertEquals("20211031_0130_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-30T23:00:00Z", task));
-        assertEquals("20211031_0230_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T00:00:00Z", task));
-        assertEquals("20211031_B230_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T01:00:00Z", task));
-        assertEquals("20211031_0330_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T02:00:00Z", task));
-        assertEquals("20211031_2330_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T22:00:00Z", task));
+        assertEquals("20211031_0030_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-30T22:00:00Z", task));
+        assertEquals("20211031_0130_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-30T23:00:00Z", task));
+        assertEquals("20211031_0230_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-31T00:00:00Z", task));
+        assertEquals("20211031_B230_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-31T01:00:00Z", task));
+        assertEquals("20211031_0330_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-31T02:00:00Z", task));
+        assertEquals("20211031_2330_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2021-10-31T22:00:00Z", task));
+
+        assertEquals("20211031_0030_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-30T22:00:00Z", task));
+        assertEquals("20211031_0130_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-30T23:00:00Z", task));
+        assertEquals("20211031_0230_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T00:00:00Z", task));
+        assertEquals("20211031_B230_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T01:00:00Z", task));
+        assertEquals("20211031_0330_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T02:00:00Z", task));
+        assertEquals("20211031_2330_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2021-10-31T22:00:00Z", task));
     }
 
     @Test
@@ -86,11 +93,17 @@ class OutputFileNameUtilTest {
         assertEquals("20220327_0430_2D7_UX4.uct", OutputFileNameUtil.generateUctFileName("2022-03-27T02:00:00Z", 4));
         assertEquals("20220327_2330_2D7_UX4.uct", OutputFileNameUtil.generateUctFileName("2022-03-27T21:00:00Z", 4));
 
-        assertEquals("20220327_0030_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-26T23:00:00Z", task));
-        assertEquals("20220327_0130_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T00:00:00Z", task));
-        assertEquals("20220327_0330_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T01:00:00Z", task));
-        assertEquals("20220327_0430_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T02:00:00Z", task));
-        assertEquals("20220327_2330_RAO-LOGS-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T21:00:00Z", task));
+        assertEquals("20220327_0030_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2022-03-26T23:00:00Z", task));
+        assertEquals("20220327_0130_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2022-03-27T00:00:00Z", task));
+        assertEquals("20220327_0330_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2022-03-27T01:00:00Z", task));
+        assertEquals("20220327_0430_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2022-03-27T02:00:00Z", task));
+        assertEquals("20220327_2330_RAO-LOGS-04.txt", OutputFileNameUtil.generateLogsFileName("2022-03-27T21:00:00Z", task));
+
+        assertEquals("20220327_0030_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-26T23:00:00Z", task));
+        assertEquals("20220327_0130_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T00:00:00Z", task));
+        assertEquals("20220327_0330_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T01:00:00Z", task));
+        assertEquals("20220327_0430_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T02:00:00Z", task));
+        assertEquals("20220327_2330_CRAC-CREATION-REPORT-04.txt", OutputFileNameUtil.generateCracCreationReportFileName("2022-03-27T21:00:00Z", task));
     }
 
 }

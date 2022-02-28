@@ -8,6 +8,7 @@
 package com.farao_community.farao.gridcapa.core_cc.app.preprocessing;
 
 import com.farao_community.farao.data.crac_creation.creator.api.CracCreationContext;
+import com.farao_community.farao.data.crac_creation.creator.api.CracCreationReport;
 import com.farao_community.farao.data.crac_creation.creator.api.CracCreators;
 import com.farao_community.farao.data.crac_io_api.CracExporters;
 import com.farao_community.farao.data.native_crac_api.NativeCrac;
@@ -293,6 +294,7 @@ public class RaoIPreProcessService {
             NativeCrac nativeCrac = NativeCracImporters.findImporter(FLOW_BASED_CRAC_PROVIDER).importNativeCrac(cracIs);
             CracCreationContext cracCreationContext = CracCreators.createCrac(nativeCrac, network, OffsetDateTime.parse(utcInstant.toString()));
             CracExporters.exportCrac(cracCreationContext.getCrac(), JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
+            exportCracCreationReportInTmpOutput(raoIntegrationTask, utcInstant.toString(), cracCreationContext.getCreationReport());
             String jsonCracFilePath = String.format(InputsNamingRules.S_INPUTS_CRACS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(InputsNamingRules.JSON_EXTENSION));
 
             try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
@@ -401,4 +403,13 @@ public class RaoIPreProcessService {
         }
     }
 
+    private void exportCracCreationReportInTmpOutput(RaoIntegrationTask raoIntegrationTask, String instant, CracCreationReport cracCreationReport) throws IOException {
+        LOGGER.info("RAO integration task: '{}', writing CRAC creation report for timestamp: '{}'", raoIntegrationTask.getTaskId(), instant);
+        String fileName = OutputFileNameUtil.generateCracCreationReportFileName(instant, raoIntegrationTask);
+        File targetFile = new File(raoIntegrationTask.getDailyOutputs().getLogsTmpOutputPath(), fileName); //NOSONAR
+        try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
+            byte[] strToBytes = cracCreationReport.toString().getBytes();
+            outputStream.write(strToBytes);
+        }
+    }
 }

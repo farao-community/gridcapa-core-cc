@@ -72,6 +72,12 @@ public final class OutputFileNameUtil {
     }
 
     public static String generateCracCreationReportFileName(String instant, RaoIntegrationTask raoIntegrationTask) {
+        String output = OutputsNamingRules.CRAC_CREATION_REPORT_FILENAME_FORMATTER.format(Instant.parse(instant))
+            .replace("0V", String.format("%02d", raoIntegrationTask.getVersion()));
+        return handle25TimestampCase(output, instant);
+    }
+
+    public static String generateLogsFileName(String instant, RaoIntegrationTask raoIntegrationTask) {
         String output = OutputsNamingRules.RAO_LOGS_FILENAME_FORMATTER.format(Instant.parse(instant))
             .replace("0V", String.format("%02d", raoIntegrationTask.getVersion()));
         return handle25TimestampCase(output, instant);
