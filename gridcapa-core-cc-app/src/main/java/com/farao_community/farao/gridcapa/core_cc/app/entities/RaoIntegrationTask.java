@@ -20,6 +20,8 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil.createTempDirectory;
+
 @Entity
 public class RaoIntegrationTask implements Serializable {
 
@@ -63,7 +65,7 @@ public class RaoIntegrationTask implements Serializable {
 
     public RaoIntegrationTask() {
         try {
-            this.tmpInputsPath = FileUtil.setFilePermissions(Files.createTempDirectory("rao-integration-temp-dir")).toString();
+            this.tmpInputsPath = createTempDirectory("rao-integration-temp-dir").toString();
             this.tmpCgmInputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"))).toString();
             this.taskStatus = TaskStatus.CREATED;
             inputsReceptionInstant = Instant.now();

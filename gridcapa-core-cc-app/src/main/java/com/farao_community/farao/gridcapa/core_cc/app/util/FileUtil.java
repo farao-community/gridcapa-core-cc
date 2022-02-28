@@ -8,6 +8,8 @@
 package com.farao_community.farao.gridcapa.core_cc.app.util;
 
 import com.farao_community.farao.gridcapa.core_cc.app.exceptions.RaoIntegrationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,19 +26,23 @@ import java.util.stream.Stream;
  */
 public final class FileUtil {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
+
     private FileUtil() {
     }
 
     public static Path setFilePermissions(Path path) {
         File file = path.toFile();
+        boolean permissionOK;
         // Set RWX to false by default
-        file.setReadable(false);
-        file.setWritable(false);
-        file.setExecutable(false);
+        permissionOK = file.setReadable(false) && file.setWritable(false) && file.setExecutable(false);
         // Set RWX to true for owner only
-        file.setReadable(true, true);
-        file.setWritable(true, true);
-        file.setExecutable(true, true);
+        permissionOK = permissionOK && file.setReadable(true, true) && file.setWritable(true, true) && file.setExecutable(true, true);
+
+        if (!permissionOK) {
+            LOGGER.warn("Permissions of file {} has not been set properly", file.toString());
+        }
+
         return path;
     }
 
@@ -58,5 +64,11 @@ public final class FileUtil {
         } catch (IOException e) {
             throw new RaoIntegrationException(fileName + " not found in input archive");
         }
+    }
+
+    public static Path createTempDirectory(String directoryName) throws IOException {
+        Path directory = Files.createTempDirectory(directoryName);
+        setFilePermissions(directory);
+        return directory;
     }
 }

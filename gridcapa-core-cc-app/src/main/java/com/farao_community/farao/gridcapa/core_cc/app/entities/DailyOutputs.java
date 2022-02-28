@@ -12,14 +12,12 @@ import com.farao_community.farao.gridcapa.core_cc.app.exceptions.RaoIntegrationE
 import com.farao_community.farao.gridcapa.core_cc.app.util.FileUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -56,9 +54,9 @@ public class DailyOutputs implements Serializable {
 
     public DailyOutputs() {
         try {
-            this.cneTmpOutputsPath  = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", RandomStringUtils.randomAlphanumeric(8)))).toString();
-            this.networkTmpOutputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", RandomStringUtils.randomAlphanumeric(8)))).toString();
-            this.logsTmpOutputPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", RandomStringUtils.randomAlphanumeric(8)))).toString();
+            this.cneTmpOutputsPath  = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", generateRandomSuffix()))).toString();
+            this.networkTmpOutputsPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", generateRandomSuffix()))).toString();
+            this.logsTmpOutputPath = FileUtil.setFilePermissions(Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", generateRandomSuffix()))).toString();
         } catch (IOException e) {
             throw new RaoIntegrationException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
         }
@@ -146,5 +144,9 @@ public class DailyOutputs implements Serializable {
 
     public void setMetadataOutputsPath(String metadataOutputsPath) {
         this.metadataOutputsPath = metadataOutputsPath;
+    }
+
+    private String generateRandomSuffix() {
+        return RandomStringUtils.random(8, 0, 0, true, true, null, new SecureRandom());
     }
 }
