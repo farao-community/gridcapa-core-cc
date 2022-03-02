@@ -10,7 +10,9 @@ jobs:
     steps:
       - name: Get the release version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+        run: |
+          VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
+          echo "::set-output name=version::$VERSION"
 
       - name: Checkout
         uses: actions/checkout@v2
