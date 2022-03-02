@@ -30,6 +30,5 @@ jobs:
         with:
           name: farao/gridcapa-core-cc
           tags: ${{ steps.get_version.outputs.VERSION }}
-          dockerfile: DockerFile
           username: farao
           password: ${{ secrets.DOCKERHUB_TOKEN }}
