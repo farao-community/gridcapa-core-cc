@@ -1,10 +1,6 @@
 name: DOCKER
 
-on:
-  release:
-    types:
-      - created
-      - edited
+on: [push]
 
 jobs:
   build:
