@@ -9,11 +9,11 @@
   "loop-flow-approximation" : "UPDATE_PTDF_WITH_TOPO",
   "loop-flow-constraint-adjustment-coefficient" : 7.0,
   "loop-flow-acceptable-augmentation" : 5.0,
-  "loop-flow-violation-cost" : 100000.0,
+  "loop-flow-violation-cost" : 100.0,
   "loop-flow-countries" : [ ],
   "rao-with-mnec-limitation" : true,
   "mnec-acceptable-margin-diminution" : 50.0,
-  "mnec-violation-cost" : 100000.0,
+  "mnec-violation-cost" : 100.0,
   "mnec-constraint-adjustment-coefficient" : 5.0,
   "negative-margin-objective-coefficient" : 1000.0,
   "relative-margin-ptdf-boundaries" : [ "{FR}-{BE}", "{FR}-{DE}", "{BE}-{NL}", "{NL}-{DE}", "{DE}-{PL}", "{DE}-{CZ}", "{DE}-{AT}", "{PL}-{CZ}", "{PL}-{SK}", "{CZ}-{SK}", "{CZ}-{AT}", "{AT}-{HU}", "{AT}-{SI}", "{SI}-{HR}", "{SK}-{HU}", "{HU}-{RO}", "{HU}-{HR}", "{BE}-{22Y201903144---9}-{DE}+{22Y201903145---4}" ],
@@ -100,7 +100,9 @@
       "max-curative-pst-per-tso" : { },
       "max-curative-ra-per-tso" : { },
       "curative-rao-optimize-operators-not-sharing-cras" : false,
-      "second-preventive-optimization-condition" : "COST_INCREASE"
+      "second-preventive-optimization-condition" : "COST_INCREASE",
+      "global-opt-in-second-preventive" : false,
+      "second-preventive-hint-from-first-preventive" : true
     }
   }
 }
