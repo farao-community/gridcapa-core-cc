@@ -85,8 +85,8 @@ class RaoIPostProcessServiceTest {
 
         raoIPostProcessService.renameRaoHourlyResultsAndSendToDailyOutputs(task, "targetMinioFolder", true);
 
-        assertEquals("targetMinioFolder/outputs/CASTOR-RAO_22VCOR0CORE0TST4_RTE-F299_20190108-F299-12.zip", task.getDailyOutputs().getCnesZipPath());
-        assertEquals("targetMinioFolder/outputs/CASTOR-RAO_22VCOR0CORE0TST4_RTE-F304_20190108-F304-12.zip", task.getDailyOutputs().getCgmsZipPath());
+        assertEquals("targetMinioFolder/outputs/CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F299_20190108-F299-12.zip", task.getDailyOutputs().getCnesZipPath());
+        assertEquals("targetMinioFolder/outputs/CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F304_20190108-F304-12.zip", task.getDailyOutputs().getCgmsZipPath());
     }
 }
 

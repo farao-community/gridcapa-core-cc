@@ -102,7 +102,7 @@ class RaoIPreProcessServiceTest {
                 "test3TS.zip", "application/octet-stream", IOUtils.toByteArray(inputsArchiveInputStream));
         new RaoIPreProcessService(minioAdapter, Mockito.mock(RaoParametersService.class)).initializeTaskFromZipArchive(task, multipartFileArchive);
 
-        Assertions.assertEquals("0/outputs/CASTOR-RAO_22VCOR0CORE0TST4_RTE-F302-ACK_20200330-F302-01.xml", task.getDailyOutputs().getRaoRequestAckPath());
+        Assertions.assertEquals("0/outputs/CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_20200330-F302-01.xml", task.getDailyOutputs().getRaoRequestAckPath());
         String expectedFileContents = new String(getClass().getResourceAsStream("/preprocessing/RaoRequestACK.xml").readAllBytes()).replace("\r", "");
         Assertions.assertEquals(expectedFileContents, minioAdapter.getFileContents(task.getDailyOutputs().getRaoRequestAckPath()));
     }

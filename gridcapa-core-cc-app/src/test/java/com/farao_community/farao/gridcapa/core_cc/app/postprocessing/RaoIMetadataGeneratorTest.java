@@ -79,7 +79,7 @@ class RaoIMetadataGeneratorTest {
         Mockito.when(minioConfiguration.getDefaultBucket()).thenReturn(null);
         MinioMock minioMock = new MinioMock(minioConfiguration, null, null, null);
         new RaoIMetadataGenerator(minioMock).exportMetadataFile(task, "targetFolder", true);
-        assertEquals("targetFolder/outputs/CASTOR-RAO_22VCOR0CORE0TST4_RTE-F341_20211024-F341-02.csv", minioMock.pathDestination);
+        assertEquals("targetFolder/outputs/CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F341_20211024-F341-02.csv", minioMock.pathDestination);
         // Windows : replace CRLF with LF (\r\n with \n)
         String expectedCsv = new String(getClass().getResourceAsStream("/postprocessing/metadata.csv").readAllBytes()).replace("\r", "");
         assertEquals(expectedCsv, minioMock.readFile);
@@ -101,7 +101,7 @@ class RaoIMetadataGeneratorTest {
 
         MinioMemoryMock minioAdapterMock = new MinioMemoryMock();
         new RaoIMetadataGenerator(minioAdapterMock).exportMetadataFile(task, "targetFolder", true);
-        assertEquals("targetFolder/outputs/CASTOR-RAO_22VCOR0CORE0TST4_RTE-F341_20211024-F341-02.csv", task.getDailyOutputs().getMetadataOutputsPath());
+        assertEquals("targetFolder/outputs/CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F341_20211024-F341-02.csv", task.getDailyOutputs().getMetadataOutputsPath());
         String expectedFileContents = new String(getClass().getResourceAsStream("/postprocessing/metadata_error.csv").readAllBytes()).replace("\r", "");
         Assertions.assertEquals(expectedFileContents, minioAdapterMock.getFileContents(task.getDailyOutputs().getMetadataOutputsPath()));
     }

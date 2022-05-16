@@ -30,12 +30,12 @@ class OutputFileNameUtilTest {
         TaskUtils.setTaskId(task, 1L);
         task.setVersion(3);
         task.setTimeInterval("2020-03-29T23:00:00Z/2020-03-30T00:00:00Z");
-        assertEquals("CASTOR-RAO_22VCOR0CORE0TST4_RTE-F305_20200330-F305-03.xml", OutputFileNameUtil.generateRaoIResponseFileName(task));
-        assertEquals("CASTOR-RAO_22VCOR0CORE0TST4_RTE-F304_20200330-F304-03.zip", OutputFileNameUtil.generateCgmZipName(task));
-        assertEquals("CASTOR-RAO_22VCOR0CORE0TST4_RTE-F299_20200330-F299-03.zip", OutputFileNameUtil.generateCneZipName(task));
-        assertEquals("CASTOR-RAO_22VCOR0CORE0TST4_RTE-F305_20200330-F305-03.xml", OutputFileNameUtil.generateRaoIResponseFileName(task));
+        assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F305_20200330-F305-03.xml", OutputFileNameUtil.generateRaoIResponseFileName(task));
+        assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F304_20200330-F304-03.zip", OutputFileNameUtil.generateCgmZipName(task));
+        assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F299_20200330-F299-03.zip", OutputFileNameUtil.generateCneZipName(task));
+        assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F305_20200330-F305-03.xml", OutputFileNameUtil.generateRaoIResponseFileName(task));
         assertEquals("20200330_0130_20200330-F299-v3-22XCORESO------S_to_17XTSO-CS------W.xml", OutputFileNameUtil.generateCneFileName("2020-03-29T23:00:00Z", task));
-        assertEquals("CASTOR-RAO_22VCOR0CORE0TST4_RTE-F302-ACK_20200330-F302-03.xml", OutputFileNameUtil.generateRaoRequestAckFileName(task));
+        assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_20200330-F302-03.xml", OutputFileNameUtil.generateRaoRequestAckFileName(task));
     }
 
     @Test
