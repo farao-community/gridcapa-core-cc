@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.farao-community.farao</groupId>
+        <artifactId>farao-parent-ws</artifactId>
+        <version>1.4.0</version>
+    </parent>
+
+    <artifactId>gridcapa-core-cc</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>GridCapa CORE CC</name>
+    <description>A full suite to perform capacity calculation on CORE zone</description>
+    <url>http://www.farao-community.com</url>
+
+    <licenses>
+        <license>
+            <name>Mozilla Public License, Version 2.0</name>
+            <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/farao-community/gridcapa-core-cc.git</connection>
+        <developerConnection>scm:git:https://github.com/farao-community/gridcapa-core-cc.git</developerConnection>
+        <url>https://github.com/farao-community/gridcapa-core-cc.git</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Godelaine DE MONTMORILLON</name>
+            <email>godelaine.demontmorillon@rte-france.com</email>
+            <organization>RTE</organization>
+            <organizationUrl>http://www.rte-france.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Philippe EDWARDS</name>
+            <email>philippe.edwards@rte-france.com</email>
+            <organization>RTE</organization>
+            <organizationUrl>http://www.rte-france.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>gridcapa-core-cc-app</module>
+        <module>gridcapa-core-cc-api</module>
+        <module>gridcapa-core-cc-spring-boot-starter</module>
+    </modules>
+
+    <properties>
+        <!-- Dependencies versions -->
+        <apache.commons.version>1.9.0</apache.commons.version>
+        <commons.lang.version>3.12.0</commons.lang.version>
+        <commons.io.version>2.11.0</commons.io.version>
+        <farao.dependencies.version>1.12.0</farao.dependencies.version>
+        <gridcapa.rao.runner.starter.version>1.11.0</gridcapa.rao.runner.starter.version>
+        <jackson-datatype.version>2.13.2</jackson-datatype.version>
+        <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
+        <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
+        <jsonapi.converter.version>0.11</jsonapi.converter.version>
+        <logstash.version>7.2</logstash.version>
+        <maven.jaxb2.version>0.14.0</maven.jaxb2.version>
+        <maven.jvnet.jaxb2-basics.version>1.11.1</maven.jvnet.jaxb2-basics.version>
+        <minio.adapter.version>1.0.0</minio.adapter.version>
+        <opencsv.version>5.6</opencsv.version>
+        <task-manager.version>1.13.0</task-manager.version>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb2-plugin</artifactId>
+                    <version>${maven.jaxb2.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Compile dependencies -->
+            <dependency>
+                <groupId>com.github.jasminb</groupId>
+                <artifactId>jsonapi-converter</artifactId>
+                <version>${jsonapi.converter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>${apache.commons.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.farao-community.farao</groupId>
+                <artifactId>gridcapa-task-manager-api</artifactId>
+                <version>${task-manager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.farao-community.farao</groupId>
+                <artifactId>gridcapa-rao-runner-spring-boot-starter</artifactId>
+                <version>${gridcapa.rao.runner.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.farao-community.farao</groupId>
+                <artifactId>gridcapa-starter-minio-adapter</artifactId>
+                <version>${minio.adapter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${jackson-datatype.version}</version>
+            </dependency>
+
+            <!-- RUNTIME -->
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb-runtime.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- IMPORTED DEPENDENCIES -->
+            <dependency>
+                <groupId>com.farao-community.farao</groupId>
+                <artifactId>farao-dependencies</artifactId>
+                <version>${farao.dependencies.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
