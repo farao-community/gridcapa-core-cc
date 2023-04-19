@@ -1,0 +1,34 @@
+{
+  "data": {
+    "type": "core-cc-request",
+    "id": "id",
+    "timestamp": "2021-10-03T00:30",
+    "attributes": {
+      "cgm": {
+        "filename": "cgm.txt",
+        "url": "https://cgm/file/url"
+      },
+      "cbcora": {
+        "filename": "cbcora.txt",
+        "url": "https://cbcora/file/url"
+      },
+      "glsk": {
+        "filename": "glsk.txt",
+        "url": "https://glsk/file/url"
+      },
+      "refProg": {
+        "filename": "refProg.txt",
+        "url": "https://refProg/file/url"
+      },
+      "raorequest": {
+        "filename": "raorequest.txt",
+        "url": "https://raorequest/file/url"
+      },
+      "virtualhub": {
+        "filename": "virtualhub.txt",
+        "url": "https://virtualhub/file/url"
+      }
+    }
+    }
+  }
+}
