@@ -1,0 +1,45 @@
+logback:
+  amqp:
+    exchange: core-cc-logs-exchange
+    routing-key: "#"
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: gridcapa
+    password: gridcapa
+    template:
+      reply-timeout: 6000000
+  cloud:
+    stream:
+      bindings:
+        task-status-update:
+          binder: rabbit
+          destination: task-status-updated
+
+rao-runner-server:
+  amqp:
+    queue-name: rao-request-queue
+
+core-cc-runner:
+  async-time-out: 600000 # 10min (10*60*1000)
+  bindings:
+    request:
+      destination: core-cc-requests
+      routing-key: "#"
+    response:
+      destination: core-cc-response
+      expiration: 600000
+  whitelist:
+    - file:/
+    - http://minio:9000/
+
+minio-adapter:
+  bucket: gridcapa
+  base-path: CORE/CC/
+  access-key: gridcapa
+  secret-key: gridcapa
+  url: http://localhost:9000/
+
+server:
+  port: ${CORE_CC_SERVER_PORT:8080}
