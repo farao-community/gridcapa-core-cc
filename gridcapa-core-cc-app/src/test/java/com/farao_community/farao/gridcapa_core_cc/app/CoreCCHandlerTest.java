@@ -14,6 +14,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +42,19 @@ class CoreCCHandlerTest {
     @MockBean
     private MinioAdapter minioAdapter;
 
+    @MockBean
+    private AsynchronousRaoRunnerClient asynchronousRaoRunnerClient;
+
     @Test
     void handleCoreCCRequestTest() {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        RaoRequest raorequest = Mockito.mock(RaoRequest.class);
         CompletableFuture<RaoResponse> future = new CompletableFuture<>();
         RaoResponse raoResponse = new RaoResponse("id", "instant", "praUrl", "cracUrl", "raoUrl", Instant.now(), Instant.now());
         future.complete(raoResponse);
+        Mockito.when(asynchronousRaoRunnerClient.runRaoAsynchronously(Mockito.any())).thenReturn(future);
 
         String requestId = "Test request";
-        String networkFileName = "20210723_0030_2D5_CGM_limits.uct";
+        String networkFileName = "20210723-F119-v1-17XTSO-CS------W-to-22XCORESO------S.zip";
         String testDirectory = "/20210723";
         CoreCCFileResource networkFile = createFileResource(networkFileName, getClass().getResource(testDirectory + "/" + networkFileName));
 
@@ -64,7 +68,7 @@ class CoreCCHandlerTest {
         CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raorequestFile, virtualhubFile, true);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(request, true);
         assertEquals(requestId, response.getId());
-        Mockito.verify(minioAdapter, Mockito.times(1)).deleteFiles(Mockito.any());
+        Mockito.verify(minioAdapter, Mockito.times(1)).uploadArtifact(Mockito.any(), Mockito.any());
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {
