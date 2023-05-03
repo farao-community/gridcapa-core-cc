@@ -30,7 +30,6 @@ import com.powsybl.iidm.network.Network;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -60,7 +59,6 @@ public class FileImporter {
 
     public FileImporter(UrlValidationService urlValidationService) {
         this.urlValidationService = urlValidationService;
-        System.out.println("fileimp");
     }
 
     public Network importNetwork(CoreCCFileResource cgmFile) {
@@ -119,6 +117,7 @@ public class FileImporter {
             Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(InputsNamingRules.CGM_XML_HEADER_NAME))
                 .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
             ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
+            //TODO: filter with InputsNamingRules.CGM_FILE_NAME?
             List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(InputsNamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {

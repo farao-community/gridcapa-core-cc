@@ -7,12 +7,10 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
-import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
-import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
 import org.junit.jupiter.api.Test;
@@ -68,7 +66,8 @@ class CoreCCHandlerTest {
         CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raorequestFile, virtualhubFile, true);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(request, true);
         assertEquals(requestId, response.getId());
-        Mockito.verify(minioAdapter, Mockito.times(1)).uploadArtifact(Mockito.any(), Mockito.any());
+        //should upload 7 artifacts: parameters + 3 networks + 3 cracs
+        Mockito.verify(minioAdapter, Mockito.times(7)).uploadArtifact(Mockito.any(), Mockito.any());
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {

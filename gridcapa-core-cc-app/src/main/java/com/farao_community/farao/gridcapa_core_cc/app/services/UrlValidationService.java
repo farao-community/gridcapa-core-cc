@@ -24,14 +24,11 @@ public class UrlValidationService {
     private final UrlWhitelistConfiguration urlWhitelistConfiguration;
 
     public UrlValidationService(UrlWhitelistConfiguration urlWhitelistConfiguration) {
-        System.out.println("urlvalserv");
         this.urlWhitelistConfiguration = urlWhitelistConfiguration;
     }
 
     public InputStream openUrlStream(String urlString) {
-        System.out.println("zazea");
         if (urlWhitelistConfiguration.getWhitelist().stream().noneMatch(urlString::startsWith)) {
-            System.out.println("eeee");
             StringJoiner sj = new StringJoiner(", ", "Whitelist: ", ".");
             urlWhitelistConfiguration.getWhitelist().forEach(sj::add);
             throw new CoreCCInvalidDataException(String.format("URL '%s' is not part of application's whitelisted url's %s", urlString, sj));
