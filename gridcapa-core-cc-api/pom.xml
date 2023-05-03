@@ -54,6 +54,12 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>gridcapa-rao-runner-api</artifactId>
+            <version>1.11.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

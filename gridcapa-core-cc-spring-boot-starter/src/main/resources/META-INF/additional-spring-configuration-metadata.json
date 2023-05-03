@@ -8,7 +8,7 @@
     {
       "name": "core-cc-runner.amqp.queue-name",
       "type": "java.lang.String",
-      "description": "AMQP queue to be used to send Core cc requests."
+      "description": "AMQP queue to be used to send core cc requests."
     },
     {
       "name": "core-cc-runner.amqp.exchange",

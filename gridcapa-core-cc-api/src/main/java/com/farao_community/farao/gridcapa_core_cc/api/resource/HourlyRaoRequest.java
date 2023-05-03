@@ -1,40 +1,24 @@
 /*
  * Copyright (c) 2021, RTE (http://www.rte-france.com)
  */
-package com.farao_community.farao.gridcapa_core_cc.app.entities;
+package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
-import com.rte_france.farao.rao_runner.api.resource.RaoRequest;
+import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import java.time.Instant;
 import java.util.Objects;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
-@Embeddable
 public class HourlyRaoRequest {
-
     private String instant;
-
-    @Column(columnDefinition = "TEXT")
     private String networkFileUrl;
-
-    @Column(columnDefinition = "TEXT")
     private String cracFileUrl;
-
-    @Column(columnDefinition = "TEXT")
     private String refprogFileUrl;
-
-    @Column(columnDefinition = "TEXT")
     private String realGlskFileUrl;
-
-    @Column(columnDefinition = "TEXT")
     private String raoParametersFileUrl;
-
     private String resultsDestination;
-
     private Instant targetEndInstant;
 
     public HourlyRaoRequest() {

@@ -7,17 +7,17 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
+import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
+import com.farao_community.farao.gridcapa.task_manager.api.TaskStatusUpdate;
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCException;
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskStatusUpdate;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.*;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
@@ -55,9 +55,16 @@ public class CoreCCListener implements MessageListener {
     public void onMessage(Message message) {
         String replyTo = message.getMessageProperties().getReplyTo();
         String correlationId = message.getMessageProperties().getCorrelationId();
+        // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
+        // This should be done only once, as soon as the information to add in mdc is available.
         try {
             CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(message.getBody(), CoreCCRequest.class);
-            runCoreCCRequest(coreCCRequest, replyTo, correlationId);
+            MDC.put("gridcapa-task-id", coreCCRequest.getId());
+            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
+            LOGGER.info("Core cc request received : {}", coreCCRequest);
+            CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(coreCCRequest, true);
+            LOGGER.info("Core cc response sent: {}", coreCCResponse);
+            sendCoreCCResponse(coreCCResponse, replyTo, correlationId);
         } catch (AbstractCoreCCException e) {
             LOGGER.error("Core cc exception occured", e);
             sendRequestErrorResponse(e, replyTo, correlationId);
@@ -72,22 +79,6 @@ public class CoreCCListener implements MessageListener {
             amqpTemplate.send(replyTo, createErrorResponse(e, correlationId));
         } else {
             amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
-        }
-    }
-
-    private void runCoreCCRequest(CoreCCRequest coreCCRequest, String replyTo, String correlationId) {
-        try {
-            LOGGER.info("Core cc request received: {}", coreCCRequest);
-            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
-            CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(coreCCRequest);
-            sendCoreCCResponse(coreCCResponse, replyTo, correlationId);
-        } catch (AbstractCoreCCException e) {
-            LOGGER.error("Core cc exception occured", e);
-            sendErrorResponse(coreCCRequest.getId(), e, replyTo, correlationId);
-        } catch (RuntimeException e) {
-            LOGGER.error("Unknown exception occured", e);
-            AbstractCoreCCException wrappingException = new CoreCCInternalException("Unknown exception", e);
-            sendErrorResponse(coreCCRequest.getId(), wrappingException, replyTo, correlationId);
         }
     }
 

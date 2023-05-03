@@ -4,8 +4,6 @@
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
@@ -13,6 +11,8 @@ import org.springframework.util.FileSystemUtils;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -31,7 +31,8 @@ public final class ZipUtil {
         throw new AssertionError("Utility class should not be instantiated");
     }
 
-    public static void unzipInputStream(InputStream inputStream, Path destDirectory) throws IOException {
+    public static List<Path> unzipInputStream(InputStream inputStream, Path destDirectory) {
+        List<Path> unzippedPaths = new ArrayList<>();
         try (ZipInputStream zipIn = new ZipInputStream(inputStream)) {
             ZipEntry entry = zipIn.getNextEntry(); //NOSONAR
             int totalEntries = 0;
@@ -45,6 +46,7 @@ public final class ZipUtil {
                 if (!entry.isDirectory()) {
                     // if the entry is a file, extracts it
                     extractFile(zipIn, filePath.toString(), entry.getCompressedSize());
+                    unzippedPaths.add(filePath);
                 } else {
                     // if the entry is a directory, make the directory
                     File dir = new File(filePath.toString()); //NOSONAR
@@ -58,17 +60,18 @@ public final class ZipUtil {
             }
         } catch (IOException e) {
             LOGGER.error("Error while extracting input stream");
-            throw e;
+            throw new CoreCCInternalException("Error while extracting input stream", e);
         }
+        return unzippedPaths;
     }
 
-    public static void unzipFile(Path zipFilePath, Path destDirectory) {
+    public static List<Path> unzipFile(Path zipFilePath, Path destDirectory) {
         if (!destDirectory.toFile().exists() && !destDirectory.toFile().mkdir()) {
             LOGGER.error("Cannot create destination directory '{}'", destDirectory);
             throw new CoreCCInternalException(String.format("Cannot create destination directory '%s'", destDirectory));
         }
-        try {
-            unzipInputStream(new FileInputStream(zipFilePath.toFile()), destDirectory);
+        try (InputStream inputStream = new FileInputStream(zipFilePath.toFile())) {
+            return unzipInputStream(inputStream, destDirectory);
         } catch (IOException e) {
             LOGGER.error("Error while extracting file '{}'", zipFilePath.getFileName());
             throw new CoreCCInternalException(String.format("Error while extracting file '%s'", zipFilePath.getFileName()), e);
@@ -106,7 +109,7 @@ public final class ZipUtil {
             zos.close();
             return os.toByteArray();
         } catch (IOException e) {
-            throw new CoreCCRaoException(String.format("Exception occurred while compressing directory '%s'", inputDirectory), e);
+            throw new CoreCCInternalException(String.format("Exception occurred while compressing directory '%s'", inputDirectory), e);
         }
     }
 

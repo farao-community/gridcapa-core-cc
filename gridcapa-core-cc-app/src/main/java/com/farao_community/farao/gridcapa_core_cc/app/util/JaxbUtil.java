@@ -3,7 +3,7 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public final class JaxbUtil {
 
             String errorMessage = String.format("Error occurred when converting xml file %s to object of type %s", path, clazz.getName());
             LOGGER.error(errorMessage);
-            throw new CoreCCInvalidDataException(errorMessage, e);
+            throw new CoreCCInternalException(errorMessage, e);
         }
     }
 
@@ -49,7 +49,7 @@ public final class JaxbUtil {
         } catch (JAXBException e) {
             String errorMessage = String.format("Error occurred when converting InputStream to object of type %s", clazz.getName());
             LOGGER.error(errorMessage);
-            throw new CoreCCInvalidDataException(errorMessage, e);
+            throw new CoreCCInternalException(errorMessage, e);
         }
     }
 
@@ -64,7 +64,7 @@ public final class JaxbUtil {
         } catch (JAXBException e) {
             String errorMessage = String.format("Error occurred when writing content of object of type %s to bytes", clazz.getName());
             LOGGER.error(errorMessage);
-            throw new CoreCCInvalidDataException(errorMessage, e);
+            throw new CoreCCInternalException(errorMessage, e);
         }
     }
 }

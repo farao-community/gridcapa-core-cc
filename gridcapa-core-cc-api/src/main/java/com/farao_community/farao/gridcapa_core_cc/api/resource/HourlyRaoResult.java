@@ -1,39 +1,26 @@
 /*
  * Copyright (c) 2021, RTE (http://www.rte-france.com)
  */
-package com.farao_community.farao.gridcapa_core_cc.app.entities;
+package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
-@Embeddable
 public class HourlyRaoResult {
-
     private String instant;
 
-    @Column(columnDefinition = "TEXT")
     private String networkWithPraUrl;
-
-    @Column(columnDefinition = "TEXT")
     private String raoResultFileUrl;
-
-    private TaskStatus status;
-
+    private Status status = Status.PENDING;
     private ErrorCode errorCode = ErrorCode.UNKNOWN_FAILURE;
-
-    @Column(columnDefinition = "TEXT")
     private String errorMessage;
-
     private String cneResultDocumentId;
-
     private Instant computationStartInstant =  Instant.ofEpochSecond(0);
-
     private Instant computationEndInstant =  Instant.ofEpochSecond(0);
 
     public HourlyRaoResult() {
@@ -81,6 +68,13 @@ public class HourlyRaoResult {
         }
     }
 
+    public enum Status {
+        PENDING,
+        RUNNING,
+        SUCCESS,
+        FAILURE
+    }
+
     @Override
     public boolean equals(Object o) {
 
@@ -125,6 +119,14 @@ public class HourlyRaoResult {
 
     public void setErrorCode(ErrorCode errorCode) {
         this.errorCode = errorCode;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public Instant getComputationStartInstant() {

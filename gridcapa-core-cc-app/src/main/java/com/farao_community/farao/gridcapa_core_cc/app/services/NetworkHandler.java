@@ -7,9 +7,13 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Bus;
+import com.powsybl.iidm.network.DanglingLine;
+import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.Network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.InputStream;
 import java.util.Optional;
 

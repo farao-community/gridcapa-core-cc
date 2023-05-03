@@ -1,13 +1,11 @@
 /*
  * Copyright (c) 2021, RTE (http://www.rte-france.com)
  */
-package com.farao_community.farao.gridcapa_core_cc.app.entities;
+package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
-import com.rte_france.farao.rao_integration.server.ApplicationStartupConfig;
-import com.rte_france.farao.rao_integration.server.exceptions.RaoIntegrationException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.persistence.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -21,31 +19,18 @@ import java.util.Set;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 
-@Entity
 public class DailyOutputs implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private long ref;
-
     private String raoRequestAckPath;
-
     private String cgmsZipPath;
-
     private String cnesZipPath;
-
     private String logsZipPath;
-
     private String flowBasedConstraintDocumentPath;
-
-    private String raoIntegrationResponsePath;
-
+    private String coreCCResponsePath;
     private String metadataOutputsPath;
-
     private String outputCgmXmlHeaderMessageId;
-
     private String outputFlowBasedConstraintDocumentMessageId;
-
     private String cneTmpOutputsPath;
     private String networkTmpOutputsPath;
     private String logsTmpOutputPath;
@@ -53,11 +38,11 @@ public class DailyOutputs implements Serializable {
     public DailyOutputs() {
         try {
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cnes", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.networkTmpOutputsPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "cgms", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.logsTmpOutputPath = Files.createDirectories(Paths.get(ApplicationStartupConfig.getTaskTempOutputsDir(), "logs", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "cnes", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.networkTmpOutputsPath = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "cgms", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.logsTmpOutputPath = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "logs", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
         } catch (IOException e) {
-            throw new RaoIntegrationException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
+            throw new CoreCCInternalException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
         }
     }
 
@@ -113,12 +98,12 @@ public class DailyOutputs implements Serializable {
         this.flowBasedConstraintDocumentPath = flowBasedConstraintDocumentPath;
     }
 
-    public String getRaoIntegrationResponsePath() {
-        return raoIntegrationResponsePath;
+    public String getCoreCCResponsePath() {
+        return coreCCResponsePath;
     }
 
-    public void setRaoIntegrationResponsePath(String raoIntegrationResponseUrl) {
-        this.raoIntegrationResponsePath = raoIntegrationResponseUrl;
+    public void setCoreCCResponsePath(String coreCCResponseUrl) {
+        this.coreCCResponsePath = coreCCResponseUrl;
     }
 
     public String getOutputCgmXmlHeaderMessageId() {

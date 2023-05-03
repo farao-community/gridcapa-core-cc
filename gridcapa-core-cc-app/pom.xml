@@ -38,6 +38,49 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>${maven.jaxb2.version}</version>
+                <executions>
+                    <execution>
+                        <id>rao-request-xsd</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <forceRegenerate>true</forceRegenerate>
+                            <schemaDirectory>src/main/xsd/F302-RaoRequest</schemaDirectory>
+                            <bindingDirectory>src/main/xjb/F302-RaoRequest</bindingDirectory>
+                            <strict>false</strict>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>cgm-header-input-xsd</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <forceRegenerate>true</forceRegenerate>
+                            <schemaDirectory>src/main/xsd/CgmHeaderInput</schemaDirectory>
+                            <bindingDirectory>src/main/xjb/CgmHeaderInput</bindingDirectory>
+                            <strict>false</strict>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>rao-response-xsd</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <forceRegenerate>true</forceRegenerate>
+                            <schemaDirectory>src/main/xsd/F305-RaoResponse</schemaDirectory>
+                            <bindingDirectory>src/main/xjb/F305-RaoResponse</bindingDirectory>
+                            <strict>false</strict>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -79,6 +122,10 @@
         </dependency>
         <dependency>
             <groupId>com.farao-community.farao</groupId>
+            <artifactId>farao-core-cne-exporter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
             <artifactId>farao-crac-creator-api</artifactId>
         </dependency>
         <dependency>
@@ -112,6 +159,16 @@
         <dependency>
             <groupId>com.farao-community.farao</groupId>
             <artifactId>farao-virtual-hubs-api</artifactId>
+            <version>0.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>farao-virtual-hubs-xml</artifactId>
+            <version>0.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>farao-virtual-hubs-network-assigner</artifactId>
             <version>0.0.9</version>
         </dependency>
         <dependency>

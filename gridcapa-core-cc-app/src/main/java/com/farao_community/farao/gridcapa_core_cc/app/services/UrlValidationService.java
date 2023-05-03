@@ -7,8 +7,8 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
-import com.farao_community.farao.gridcapa_core_cc.app.configuration.UrlWhitelistConfiguration;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
+import com.farao_community.farao.gridcapa_core_cc.app.configuration.UrlWhitelistConfiguration;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -24,11 +24,14 @@ public class UrlValidationService {
     private final UrlWhitelistConfiguration urlWhitelistConfiguration;
 
     public UrlValidationService(UrlWhitelistConfiguration urlWhitelistConfiguration) {
+        System.out.println("urlvalserv");
         this.urlWhitelistConfiguration = urlWhitelistConfiguration;
     }
 
     public InputStream openUrlStream(String urlString) {
+        System.out.println("zazea");
         if (urlWhitelistConfiguration.getWhitelist().stream().noneMatch(urlString::startsWith)) {
+            System.out.println("eeee");
             StringJoiner sj = new StringJoiner(", ", "Whitelist: ", ".");
             urlWhitelistConfiguration.getWhitelist().forEach(sj::add);
             throw new CoreCCInvalidDataException(String.format("URL '%s' is not part of application's whitelisted url's %s", urlString, sj));

@@ -70,11 +70,11 @@ class CoreCCListenerTest {
         String resultFileUrl = "fileUrl";
         Instant computationStartInstant = Instant.now();
         Instant computationEndInstant = Instant.now();
-        CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf", resultFileUrl, resultFileUrl, resultFileUrl, computationStartInstant, computationEndInstant);
-        Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(CoreCCRequest.class))).thenReturn(coreCCResponse);
+        CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf", resultFileUrl, computationStartInstant, computationEndInstant);
+        Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean())).thenReturn(coreCCResponse);
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(2)).send(Mockito.anyString(), Mockito.any());
-        Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class));
+        Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean());
     }
 
     @Test
@@ -83,7 +83,7 @@ class CoreCCListenerTest {
         Message message = MessageBuilder.withBody(invalidMessage).build();
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(0)).send(Mockito.anyString(), Mockito.any());
-        Mockito.verify(coreCCHandler, Mockito.times(0)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class));
+        Mockito.verify(coreCCHandler, Mockito.times(0)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean());
     }
 
 }

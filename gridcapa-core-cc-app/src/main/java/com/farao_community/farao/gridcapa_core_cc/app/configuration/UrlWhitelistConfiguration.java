@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Configuration
 @EnableConfigurationProperties
-@ConfigurationProperties("core-valid-runner")
+@ConfigurationProperties("core-cc-runner")
 public class UrlWhitelistConfiguration {
     private final List<String> whitelist = new ArrayList<>();
 
