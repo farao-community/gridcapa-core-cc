@@ -38,9 +38,9 @@ public class DailyOutputs implements Serializable {
     public DailyOutputs() {
         try {
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "cnes", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.networkTmpOutputsPath = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "cgms", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
-            this.logsTmpOutputPath = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir", "logs", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.cneTmpOutputsPath  = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir", "cnes", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.networkTmpOutputsPath = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir", "cgms", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
+            this.logsTmpOutputPath = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir", "logs", RandomStringUtils.randomAlphanumeric(8)), attr).toString();
         } catch (IOException e) {
             throw new CoreCCInternalException("IO exception, cannot create temporary directories for post processing, cause: " + e.getMessage(), e);
         }

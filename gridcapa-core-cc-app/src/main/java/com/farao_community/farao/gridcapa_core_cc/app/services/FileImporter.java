@@ -112,7 +112,7 @@ public class FileImporter {
             LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.getFilename());
 
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            Path tmpCgmInputsPath = Files.createDirectories(Paths.get("gridcapa-core-cc-temp-dir" + File.separator + "cgm"), attr);
+            Path tmpCgmInputsPath = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir" + File.separator + "cgm"), attr);
             List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
             Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(InputsNamingRules.CGM_XML_HEADER_NAME))
                 .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));

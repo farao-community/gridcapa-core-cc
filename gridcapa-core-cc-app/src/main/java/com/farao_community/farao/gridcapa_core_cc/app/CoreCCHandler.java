@@ -93,7 +93,9 @@ public class CoreCCHandler {
         StringBuilder outputPathBuilder = new StringBuilder();
         coreCCRequest.getHourlyRaoRequests().forEach(hourlyRaoRequest -> {
             RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
+            LOGGER.info("raoRequest received in runRaoForEachTimeStamp");
             CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
+            LOGGER.info("raoResponseFuture received ini runRaoForEachTimeStamp");
             raoResponseFuture.thenApply(raoResponse -> {
 
                 synchronized (this) {
@@ -108,6 +110,7 @@ public class CoreCCHandler {
             }).exceptionally(exception -> {
 
                 synchronized (this) {
+                    LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
                     HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
                     hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
                     handleRaoRunnerException(hourlyRaoResult, exception);
