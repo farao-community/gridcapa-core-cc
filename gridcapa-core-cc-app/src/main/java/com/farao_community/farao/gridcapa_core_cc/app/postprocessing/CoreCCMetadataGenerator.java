@@ -4,8 +4,8 @@
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.util.RaoMetadata;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import org.apache.commons.collections4.map.MultiKeyMap;
@@ -32,7 +32,7 @@ public class CoreCCMetadataGenerator {
         this.minioAdapter = minioAdapter;
     }
 
-    public void exportMetadataFile(CoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
+    public void exportMetadataFile(InternalCoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
         byte[] csv = generateMetadataCsv(coreCCRequest).getBytes();
         String metadataFileName = OutputFileNameUtil.generateMetadataFileName(coreCCRequest);
         String metadataDestinationPath = OutputFileNameUtil.generateOutputsDestinationPath(targetMinioFolder, metadataFileName);
@@ -45,12 +45,12 @@ public class CoreCCMetadataGenerator {
         coreCCRequest.getDailyOutputs().setMetadataOutputsPath(metadataDestinationPath);
     }
 
-    private static String generateMetadataCsv(CoreCCRequest coreCCRequest) {
+    private static String generateMetadataCsv(InternalCoreCCRequest coreCCRequest) {
         MultiKeyMap data = structureDataFromTask(coreCCRequest);
         return writeCsvFromMap(coreCCRequest, data);
     }
 
-    private static MultiKeyMap structureDataFromTask(CoreCCRequest coreCCRequest) {
+    private static MultiKeyMap structureDataFromTask(InternalCoreCCRequest coreCCRequest) {
         // Store data in a MultiKeyMap
         // First key is column (indicator)
         // Second key is timestamp (or whole business day)
@@ -59,7 +59,7 @@ public class CoreCCMetadataGenerator {
 
         data.put(RAO_REQUESTS_RECEIVED, coreCCRequest.getTimestamp(), coreCCRequest.getRaoRequest().getFilename());
         data.put(RAO_REQUEST_RECEPTION_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getInputsReceivedInstant().toString());
-        data.put(RAO_OUTPUTS_SENT, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().equals(CoreCCRequest.Status.SUCCESS) ? "YES" : "NO");
+        data.put(RAO_OUTPUTS_SENT, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().equals(InternalCoreCCRequest.Status.SUCCESS) ? "YES" : "NO");
         data.put(RAO_OUTPUTS_SENDING_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getOutputsSentInstant().toString());
         data.put(RAO_COMPUTATION_STATUS, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().toString());
         data.put(RAO_START_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getComputationStartInstant().toString());
@@ -75,7 +75,7 @@ public class CoreCCMetadataGenerator {
         return data;
     }
 
-    private static String writeCsvFromMap(CoreCCRequest coreCCRequest, MultiKeyMap data) {
+    private static String writeCsvFromMap(InternalCoreCCRequest coreCCRequest, MultiKeyMap data) {
         // Get headers for columns & lines
         List<RaoMetadata.Indicator> indicators = Arrays.stream(values())
                 .sorted(Comparator.comparing(RaoMetadata.Indicator::getOrder))

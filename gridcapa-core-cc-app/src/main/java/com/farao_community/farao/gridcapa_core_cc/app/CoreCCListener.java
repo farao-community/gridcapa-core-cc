@@ -58,7 +58,9 @@ public class CoreCCListener implements MessageListener {
         // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
         // This should be done only once, as soon as the information to add in mdc is available.
         try {
+            LOGGER.info("Beginning of onMessage");
             CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(message.getBody(), CoreCCRequest.class);
+            LOGGER.info("After fromJsonMessage method");
             MDC.put("gridcapa-task-id", coreCCRequest.getId());
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
             LOGGER.info("Core cc request received : {}", coreCCRequest);

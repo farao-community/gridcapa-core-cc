@@ -6,7 +6,7 @@ package com.farao_community.farao.gridcapa_core_cc.app.preprocessing;
 import com.farao_community.farao.data.crac_creation.creator.api.CracCreationContext;
 import com.farao_community.farao.data.crac_io_api.CracExporters;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCXmlResponseGenerator;
 import com.farao_community.farao.gridcapa_core_cc.app.constants.InputsNamingRules;
@@ -80,11 +80,11 @@ public class CoreCCPreProcessService {
         this.fileImporter = fileImporter;
     }
 
-    public void initializeTaskFromAutomatedLaunch(CoreCCRequest coreCCRequest) {
+    public void initializeTaskFromAutomatedLaunch(InternalCoreCCRequest coreCCRequest) {
         splitRaoRequest(coreCCRequest, coreCCRequest.getLaunchedAutomatically());
     }
 
-    private void splitRaoRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
+    private void splitRaoRequest(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         String destinationKey = coreCCRequest.getDestinationKey();
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
@@ -159,7 +159,7 @@ public class CoreCCPreProcessService {
         LOGGER.info("Virtual hubs configuration found. Virtual loads are added to network '{}'", network.getNameOrId());
     }
 
-    private String uploadJsonCrac(CoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
+    private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
         CracCreationContext cracCreationContext = fileImporter
             .importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
 
@@ -177,12 +177,12 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private void sendRaoRequestAcknowledgment(CoreCCRequest coreCCRequest, String destinationKey, RequestMessage receivedRequestMessage, boolean isManualRun) {
+    private void sendRaoRequestAcknowledgment(InternalCoreCCRequest coreCCRequest, String destinationKey, RequestMessage receivedRequestMessage, boolean isManualRun) {
         ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
         exportRaoRequestAcknowledgment(responseMessage, coreCCRequest, destinationKey);
     }
 
-    private ResponseMessage buildRaoRequestAckResponseMessage(CoreCCRequest coreCCRequest, RequestMessage receivedRequestMessage) {
+    private ResponseMessage buildRaoRequestAckResponseMessage(InternalCoreCCRequest coreCCRequest, RequestMessage receivedRequestMessage) {
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setHeader(new Header());
         responseMessage.getHeader().setVerb("reply");
@@ -199,7 +199,7 @@ public class CoreCCPreProcessService {
         return responseMessage;
     }
 
-    private void exportRaoRequestAcknowledgment(ResponseMessage responseMessage, CoreCCRequest coreCCRequest, String destinationKey) {
+    private void exportRaoRequestAcknowledgment(ResponseMessage responseMessage, InternalCoreCCRequest coreCCRequest, String destinationKey) {
         String outputsDestinationKey = destinationKey.replace("RAO_WORKING_DIR/", "RAO_OUTPUTS_DIR/");
 
         byte[] xml = marshallMessageAndSetJaxbProperties(responseMessage);

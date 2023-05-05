@@ -8,9 +8,7 @@
 package com.farao_community.farao.gridcapa_core_cc.starter;
 
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
@@ -34,18 +32,14 @@ public class CoreCCClient {
         this.jsonConverter = new JsonApiConverter();
     }
 
-    public CoreCCResponse run(CoreCCRequest coreCCRequest, int priority) {
+    public void run(CoreCCRequest coreCCRequest, int priority) {
         LOGGER.info("Core cc request sent: {}", coreCCRequest);
-        Message responseMessage = amqpTemplate.sendAndReceive(coreCCClientProperties.getAmqp().getQueueName(), buildMessage(coreCCRequest, priority));
-        if (responseMessage != null) {
-            return CoreCCResponseConversionHelper.convertCoreCCResponse(responseMessage, jsonConverter);
-        } else {
-            throw new CoreCCInternalException("Core cc Runner server did not respond");
-        }
+        amqpTemplate.send(coreCCClientProperties.getAmqp().getQueueName(), buildMessage(coreCCRequest, priority));
+        LOGGER.info("After sending core cc request");
     }
 
-    public CoreCCResponse run(CoreCCRequest coreCCRequest) {
-        return run(coreCCRequest, DEFAULT_PRIORITY);
+    public void run(CoreCCRequest coreCCRequest) {
+        run(coreCCRequest, DEFAULT_PRIORITY);
     }
 
     public Message buildMessage(CoreCCRequest coreCCRequest, int priority) {

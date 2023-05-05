@@ -8,7 +8,7 @@ import com.farao_community.farao.data.crac_io_api.CracImporters;
 import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
@@ -48,7 +48,7 @@ public class FileExporterHelper {
         this.minioAdapter = minioAdapter;
     }
 
-    public void exportNetworkInTmpOutput(CoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
+    public void exportNetworkInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
         LOGGER.info("Core CC task: '{}', exporting uct network with pra for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
 
         Network network;
@@ -97,7 +97,7 @@ public class FileExporterHelper {
         loadsToRemove.forEach(id -> network.getLoad(id).remove());
     }
 
-    Crac importCracFromHourlyRaoRequest(CoreCCRequest coreCCRequest, HourlyRaoResult raoResult) {
+    Crac importCracFromHourlyRaoRequest(InternalCoreCCRequest coreCCRequest, HourlyRaoResult raoResult) {
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRequestFromResponse(raoResult);
         String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         try (InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
@@ -107,7 +107,7 @@ public class FileExporterHelper {
         }
     }
 
-    public void exportCneInTmpOutput(CoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
+    public void exportCneInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
         LOGGER.info("Core CC task: '{}', creating CNE Result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
         //create CNE with input from inputNetwork, outputCracJson and inputCraxXml
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequests().stream().filter(request -> request.getInstant().equals(hourlyRaoResult.getInstant()))
@@ -156,7 +156,7 @@ public class FileExporterHelper {
         }
     }
 
-    private CneExporterParameters getCneExporterParameters(CoreCCRequest coreCCRequest) {
+    private CneExporterParameters getCneExporterParameters(InternalCoreCCRequest coreCCRequest) {
         return new CneExporterParameters(
                 generateCneMRID(coreCCRequest),
                 coreCCRequest.getVersion(),
@@ -170,11 +170,11 @@ public class FileExporterHelper {
         );
     }
 
-    private String generateCneMRID(CoreCCRequest coreCCRequest) {
+    private String generateCneMRID(InternalCoreCCRequest coreCCRequest) {
         return String.format("%s-%s-F299v%s", CoreCCXmlResponseGenerator.SENDER_ID, IntervalUtil.getFormattedBusinessDay(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
-    public void exportMetadataFile(CoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
+    public void exportMetadataFile(InternalCoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
         try {
             new CoreCCMetadataGenerator(minioAdapter).exportMetadataFile(coreCCRequest, targetMinioFolder, isManualRun);
         } catch (Exception e) {

@@ -4,7 +4,7 @@
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.constants.OutputsNamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.outputs.rao_response.*;
@@ -52,7 +52,7 @@ public class CoreCCXmlResponseGenerator {
         this.minioAdapter = minioAdapter;
     }
 
-    public String generateRaoResponse(CoreCCRequest coreCCRequest, String targetMinioFolder) {
+    public String generateRaoResponse(InternalCoreCCRequest coreCCRequest, String targetMinioFolder) {
         try {
             ResponseMessageType responseMessage = new ResponseMessageType();
             generateRaoResponseHeader(coreCCRequest, responseMessage);
@@ -63,7 +63,7 @@ public class CoreCCXmlResponseGenerator {
         }
     }
 
-    public void generateCgmXmlHeaderFile(CoreCCRequest coreCCRequest, String cgmsTempDirPath) {
+    public void generateCgmXmlHeaderFile(InternalCoreCCRequest coreCCRequest, String cgmsTempDirPath) {
         try {
             ResponseMessageType responseMessage = new ResponseMessageType();
             generateCgmXmlHeaderFileHeader(coreCCRequest, responseMessage);
@@ -74,7 +74,7 @@ public class CoreCCXmlResponseGenerator {
         }
     }
 
-    void generateRaoResponseHeader(CoreCCRequest coreCCRequest, ResponseMessageType responseMessage) throws DatatypeConfigurationException {
+    void generateRaoResponseHeader(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) throws DatatypeConfigurationException {
         HeaderType header = new HeaderType();
         header.setVerb("created");
         header.setNoun("OptimizedRemedialActions");
@@ -90,7 +90,7 @@ public class CoreCCXmlResponseGenerator {
         responseMessage.setHeader(header);
     }
 
-    void generateCgmXmlHeaderFileHeader(CoreCCRequest coreCCRequest, ResponseMessageType responseMessage) throws DatatypeConfigurationException {
+    void generateCgmXmlHeaderFileHeader(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) throws DatatypeConfigurationException {
         HeaderType header = new HeaderType();
         header.setVerb("created");
         header.setNoun("OptimizedCommonGridModel");
@@ -114,7 +114,7 @@ public class CoreCCXmlResponseGenerator {
         return String.format("%s/%s", formatter.format(interval.getStart()), formatter.format(interval.getEnd()));
     }
 
-    void generateRaoResponsePayLoad(CoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
+    void generateRaoResponsePayLoad(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
         ResponseItems responseItems = new ResponseItems();
         responseItems.setTimeInterval(coreCCRequest.getTimeInterval());
         coreCCRequest.getHourlyRaoResults().stream().sorted(Comparator.comparing(HourlyRaoResult::getInstant))
@@ -157,7 +157,7 @@ public class CoreCCXmlResponseGenerator {
         responseMessage.setPayload(payload);
     }
 
-    void generateCgmXmlHeaderFilePayLoad(CoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
+    void generateCgmXmlHeaderFilePayLoad(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
         ResponseItems responseItems = new ResponseItems();
         responseItems.setTimeInterval(coreCCRequest.getTimeInterval());
 
@@ -219,7 +219,7 @@ public class CoreCCXmlResponseGenerator {
         responseItem.setError(error);
     }
 
-    private String exportCoreCCResponse(CoreCCRequest coreCCRequest, ResponseMessageType responseMessage, String targetMinioFolder) {
+    private String exportCoreCCResponse(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage, String targetMinioFolder) {
         byte[] responseMessageBytes = marshallMessageAndSetJaxbProperties(responseMessage);
         String coreCCResponseFileName = OutputFileNameUtil.generateCoreCCResponseFileName(coreCCRequest);
         String coreCCResponseDestinationPath = OutputFileNameUtil.generateOutputsDestinationPath(targetMinioFolder, coreCCResponseFileName);

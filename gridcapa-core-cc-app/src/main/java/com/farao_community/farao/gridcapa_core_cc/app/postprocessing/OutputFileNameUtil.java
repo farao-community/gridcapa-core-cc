@@ -3,7 +3,7 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.constants.OutputsNamingRules;
 
 import java.time.Instant;
@@ -19,12 +19,12 @@ public final class OutputFileNameUtil {
     private OutputFileNameUtil() {
     }
 
-    public static String generateRaoRequestAckFileName(CoreCCRequest coreCCRequest) {
+    public static String generateRaoRequestAckFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateCoreCCResponseFileName(CoreCCRequest coreCCRequest) {
+    public static String generateCoreCCResponseFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.CORE_CC_RESPONSE_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
@@ -36,13 +36,13 @@ public final class OutputFileNameUtil {
         return handle25TimestampCase(output, instant);
     }
 
-    public static String generateCneFileName(String instant, CoreCCRequest coreCCRequest) {
+    public static String generateCneFileName(String instant, InternalCoreCCRequest coreCCRequest) {
         String output = OutputsNamingRules.CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
                 .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
         return handle25TimestampCase(output, instant);
     }
 
-    public static String generateOptimizedCbFileName(CoreCCRequest coreCCRequest) {
+    public static String generateOptimizedCbFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.OPTIMIZED_CB_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
@@ -51,28 +51,28 @@ public final class OutputFileNameUtil {
         return String.format(OutputsNamingRules.OUTPUTS, destinationPrefix, fileName);
     }
 
-    public static String generateCgmZipName(CoreCCRequest coreCCRequest) {
+    public static String generateCgmZipName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.UCT_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateCneZipName(CoreCCRequest coreCCRequest) {
+    public static String generateCneZipName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.CNE_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateMetadataFileName(CoreCCRequest coreCCRequest) {
+    public static String generateMetadataFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.METADATA_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateCracCreationReportFileName(String instant, CoreCCRequest coreCCRequest) {
+    public static String generateCracCreationReportFileName(String instant, InternalCoreCCRequest coreCCRequest) {
         String output = OutputsNamingRules.RAO_LOGS_FILENAME_FORMATTER.format(Instant.parse(instant))
             .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
         return handle25TimestampCase(output, instant);
     }
 
-    public static String generateLogsZipName(CoreCCRequest coreCCRequest) {
+    public static String generateLogsZipName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.LOGS_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
             .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }

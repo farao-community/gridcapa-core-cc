@@ -23,7 +23,7 @@ import com.farao_community.farao.data.crac_creation.creator.fb_constraint.xsd.et
 import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
@@ -52,10 +52,10 @@ class HourlyF303InfoGenerator {
 
     private final FbConstraint nativeCrac;
     private final Interval interval;
-    private final CoreCCRequest coreCCRequest;
+    private final InternalCoreCCRequest coreCCRequest;
     private final MinioAdapter minioAdapter;
 
-    HourlyF303InfoGenerator(FbConstraint nativeCrac, Interval interval, CoreCCRequest coreCCRequest, MinioAdapter minioAdapter) {
+    HourlyF303InfoGenerator(FbConstraint nativeCrac, Interval interval, InternalCoreCCRequest coreCCRequest, MinioAdapter minioAdapter) {
         this.nativeCrac = nativeCrac;
         this.interval = interval;
         this.coreCCRequest = coreCCRequest;
@@ -199,13 +199,13 @@ class HourlyF303InfoGenerator {
         }
     }
 
-    private static HourlyRaoRequest getRaoRequestForInterval(Interval interval, CoreCCRequest coreCCRequest) {
+    private static HourlyRaoRequest getRaoRequestForInterval(Interval interval, InternalCoreCCRequest coreCCRequest) {
         return coreCCRequest.getHourlyRaoRequests().stream()
                 .filter(hrr -> interval.contains(java.time.Instant.parse(hrr.getInstant())))
                 .findAny().orElse(null);
     }
 
-    private static HourlyRaoResult getRaoResultForInterval(Interval interval, CoreCCRequest coreCCRequest) {
+    private static HourlyRaoResult getRaoResultForInterval(Interval interval, InternalCoreCCRequest coreCCRequest) {
         return coreCCRequest.getHourlyRaoResults().stream()
                 .filter(hrr -> interval.contains(java.time.Instant.parse(hrr.getInstant())))
                 .findAny().orElse(null);

@@ -5,7 +5,7 @@ package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.xsd.FlowBasedConstraintDocument;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
 import com.farao_community.farao.gridcapa_core_cc.app.util.ZipUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
@@ -36,7 +36,7 @@ public class CoreCCPostProcessService {
         this.fileExporterHelper = fileExporterHelper;
     }
 
-    public String postProcessHourlyResults(CoreCCRequest coreCCRequest, boolean isManualRun) {
+    public String postProcessHourlyResults(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         String targetMinioFolder = coreCCRequest.getDestinationKey();
         String outputsTargetMinioFolder = targetMinioFolder.replace("RAO_WORKING_DIR/", "RAO_OUTPUTS_DIR/");
         renameRaoHourlyResultsAndSendToDailyOutputs(coreCCRequest, outputsTargetMinioFolder);
@@ -44,12 +44,12 @@ public class CoreCCPostProcessService {
         uploadDailyOutputFlowBasedConstraintDocument(coreCCRequest, dailyFlowBasedConstraintDocument, outputsTargetMinioFolder, isManualRun);
         String responsePath = coreCCXmlResponseGenerator.generateRaoResponse(coreCCRequest, outputsTargetMinioFolder); //f305 rao response
         coreCCRequest.setOutputsSentInstant(Instant.now());
-        coreCCRequest.setStatus(CoreCCRequest.Status.SUCCESS); // status success should be set before exportMetadataFile because it's displayed within it
+        coreCCRequest.setStatus(InternalCoreCCRequest.Status.SUCCESS); // status success should be set before exportMetadataFile because it's displayed within it
         fileExporterHelper.exportMetadataFile(coreCCRequest, outputsTargetMinioFolder, isManualRun);
         return responsePath;
     }
 
-    public void renameRaoHourlyResultsAndSendToDailyOutputs(CoreCCRequest coreCCRequest, String targetMinioFolder) {
+    public void renameRaoHourlyResultsAndSendToDailyOutputs(InternalCoreCCRequest coreCCRequest, String targetMinioFolder) {
         String networksArchiveTempPath = coreCCRequest.getDailyOutputs().getNetworkTmpOutputsPath();
         String cneArchiveTempPath = coreCCRequest.getDailyOutputs().getCneTmpOutputsPath();
         String logsArchiveTempPath = coreCCRequest.getDailyOutputs().getLogsTmpOutputPath();
@@ -97,7 +97,7 @@ public class CoreCCPostProcessService {
         }
     }
 
-    void uploadDailyOutputFlowBasedConstraintDocument(CoreCCRequest coreCCRequest, FlowBasedConstraintDocument dailyFbDocument, String targetMinioFolder, boolean isManualRun) {
+    void uploadDailyOutputFlowBasedConstraintDocument(InternalCoreCCRequest coreCCRequest, FlowBasedConstraintDocument dailyFbDocument, String targetMinioFolder, boolean isManualRun) {
         byte[] dailyFbConstraint = JaxbUtil.writeInBytes(FlowBasedConstraintDocument.class, dailyFbDocument);
         String fbConstraintFileName = OutputFileNameUtil.generateOptimizedCbFileName(coreCCRequest);
         String fbConstraintDestinationPath = OutputFileNameUtil.generateOutputsDestinationPath(targetMinioFolder, fbConstraintFileName);

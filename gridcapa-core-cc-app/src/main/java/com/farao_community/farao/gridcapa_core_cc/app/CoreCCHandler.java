@@ -9,6 +9,7 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
@@ -71,23 +72,24 @@ public class CoreCCHandler {
     }
 
     public CoreCCResponse handleCoreCCRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
-        final String formattedTimestamp = setUpEventLogging(coreCCRequest);
+        InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
+        final String formattedTimestamp = setUpEventLogging(internalCoreCCRequest);
         String outputPath;
         try {
-            coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
-            outputPath = runRaoForEachTimeStamp(coreCCRequest, isManualRun);
+            coreCCPreProcessService.initializeTaskFromAutomatedLaunch(internalCoreCCRequest);
+            outputPath = runRaoForEachTimeStamp(internalCoreCCRequest, isManualRun);
         } catch (Exception e) {
             throw new CoreCCInternalException("Exception occurred:", e);
         }
-        return buildCoreCCResponse(coreCCRequest, outputPath);
+        return buildCoreCCResponse(internalCoreCCRequest, outputPath);
     }
 
-    private static String setUpEventLogging(CoreCCRequest coreCCRequest) {
+    private static String setUpEventLogging(InternalCoreCCRequest coreCCRequest) {
         MDC.put("gridcapa-task-id", coreCCRequest.getId());
         return TIMESTAMP_FORMATTER.format(coreCCRequest.getTimestamp());
     }
 
-    private String runRaoForEachTimeStamp(CoreCCRequest coreCCRequest, boolean isManualRun) {
+    private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         StringBuilder outputPathBuilder = new StringBuilder();
         coreCCRequest.getHourlyRaoRequests().forEach(hourlyRaoRequest -> {
             RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
@@ -118,7 +120,7 @@ public class CoreCCHandler {
         return outputPathBuilder.toString();
     }
 
-    private void convertAndSaveAsynchronouslyReceivedRaoResult(CoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult, RaoResponse raoResponse) {
+    private void convertAndSaveAsynchronouslyReceivedRaoResult(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult, RaoResponse raoResponse) {
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
@@ -134,7 +136,7 @@ public class CoreCCHandler {
         }
     }
 
-    private String runFinalPostProcessIfAllTimestampsAreFinished(CoreCCRequest coreCCRequest, boolean isManualRun) {
+    private String runFinalPostProcessIfAllTimestampsAreFinished(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         try {
             long requestedRaos = coreCCRequest.getHourlyRaoRequests().size();
             long receivedRaos = coreCCRequest.getHourlyRaoResults().stream().filter(hourlyRaoResult -> hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS)).count() +
@@ -147,7 +149,7 @@ public class CoreCCHandler {
             }
             return "";
         } catch (Exception e) {
-            coreCCRequest.setStatus(CoreCCRequest.Status.FAILURE);
+            coreCCRequest.setStatus(InternalCoreCCRequest.Status.FAILURE);
             return "";
         }
     }
@@ -179,7 +181,7 @@ public class CoreCCHandler {
         }
     }
 
-    private CoreCCResponse buildCoreCCResponse(CoreCCRequest coreCCRequest, String outputPath) {
+    private CoreCCResponse buildCoreCCResponse(InternalCoreCCRequest coreCCRequest, String outputPath) {
         return new CoreCCResponse(coreCCRequest.getId(), outputPath, coreCCRequest.getComputationStartInstant(), coreCCRequest.getComputationEndInstant());
     }
 

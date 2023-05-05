@@ -7,7 +7,7 @@ import com.farao_community.farao.data.crac_creation.creator.fb_constraint.FbCons
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.importer.FbConstraintImporter;
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.xsd.FlowBasedConstraintDocument;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class DailyF303Generator {
         this.minioAdapter = minioAdapter;
     }
 
-    public FlowBasedConstraintDocument generate(CoreCCRequest coreCCRequest) {
+    public FlowBasedConstraintDocument generate(InternalCoreCCRequest coreCCRequest) {
 
         try (InputStream cracXmlInputStream = minioAdapter.getFile(coreCCRequest.getCbcora().getUrl())) {
 

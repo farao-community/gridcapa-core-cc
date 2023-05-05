@@ -8,6 +8,7 @@
 
 package com.farao_community.farao.gridcapa_core_cc.api;
 
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -37,14 +38,23 @@ public class JsonApiConverter {
     }
 
     public <T> T fromJsonMessage(byte[] jsonMessage, Class<T> tClass) {
+        System.out.println("Before converter created");
         ResourceConverter converter = createConverter();
-        return converter.readDocument(jsonMessage, tClass).get();
+        System.out.println("Converter created");
+        T aaa;
+        try {
+            aaa = converter.readDocument(jsonMessage, tClass).get();
+        } catch (Exception e) {
+            throw new CoreCCInvalidDataException(e.getMessage());
+        }
+        return aaa;
     }
 
     public <T> byte[] toJsonMessage(T jsonApiObject) {
         ResourceConverter converter = createConverter();
         JSONAPIDocument<?> jsonapiDocument = new JSONAPIDocument<>(jsonApiObject);
         try {
+            System.out.println("Before writing document");
             return converter.writeDocument(jsonapiDocument);
         } catch (DocumentSerializationException e) {
             throw new CoreCCInternalException("Exception occurred during object conversion", e);
