@@ -131,7 +131,7 @@ public class CoreCCHandler {
             fileExporterHelper.exportNetworkInTmpOutput(coreCCRequest, hourlyRaoResult);
         } catch (Exception e) {
             //no throwing exception, just save cause and pass to next timestamp
-            String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getInstant(), e.getMessage());
+            String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getInstant(), e);
             LOGGER.error(errorMessage);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
             hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);

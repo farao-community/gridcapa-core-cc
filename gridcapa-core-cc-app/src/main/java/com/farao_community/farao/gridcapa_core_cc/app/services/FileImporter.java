@@ -98,6 +98,10 @@ public class FileImporter {
         }
     }
 
+    public InputStream importCracAsInputStream(String cbcoraUrl) {
+        return urlValidationService.openUrlStream(cbcoraUrl);
+    }
+
     public RequestMessage importRaoRequest(CoreCCFileResource raoRequestFileResource) {
         try (InputStream raoRequestInputStream = urlValidationService.openUrlStream(raoRequestFileResource.getUrl())) {
             LOGGER.info("Import of rao request from {} file ", raoRequestFileResource.getFilename());

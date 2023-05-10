@@ -159,7 +159,7 @@ public class InternalCoreCCRequest {
     }
 
     public String getDestinationKey() {
-        return "RAO_WORKING_DIR" + "/" + getTimestamp();
+        return ("RAO_WORKING_DIR" + "/" + getTimestamp()).replace(":", "");
     }
 
     public String getTimeInterval() {

@@ -3,6 +3,7 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
+import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoRequest {
+    private MinioAdapter minioAdapter;
     private String instant;
     private String networkFileUrl;
     private String cracFileUrl;
@@ -24,17 +26,19 @@ public class HourlyRaoRequest {
     public HourlyRaoRequest() {
     }
 
-    public HourlyRaoRequest(String instant,
+    public HourlyRaoRequest(MinioAdapter minioAdapter,
+                            String instant,
                             String networkFileUrl,
                             String cbFileUrl,
                             String refprogFileUrl,
                             String realGlskFileUrl,
                             String raoParametersFileUrl,
                             String resultsDestination) {
-        this(instant, networkFileUrl, cbFileUrl, refprogFileUrl, realGlskFileUrl, raoParametersFileUrl, resultsDestination, null);
+        this(minioAdapter, instant, networkFileUrl, cbFileUrl, refprogFileUrl, realGlskFileUrl, raoParametersFileUrl, resultsDestination, null);
     }
 
-    public HourlyRaoRequest(String instant,
+    public HourlyRaoRequest(MinioAdapter minioAdapter,
+                            String instant,
                             String networkFileUrl,
                             String cbFileUrl,
                             String refprogFileUrl,
@@ -42,6 +46,7 @@ public class HourlyRaoRequest {
                             String raoParametersFileUrl,
                             String resultsDestination,
                             Instant targetEndInstant) {
+        this.minioAdapter = minioAdapter;
         this.instant = instant;
         this.networkFileUrl = networkFileUrl;
         this.cracFileUrl = cbFileUrl;
@@ -109,7 +114,7 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(String id) {
-        return new RaoRequest(id + "_" + this.instant, this.instant, this.networkFileUrl, this.cracFileUrl, this.refprogFileUrl, this.realGlskFileUrl, this.raoParametersFileUrl, this.resultsDestination, this.targetEndInstant);
+        return new RaoRequest(id + "_" + this.instant, this.instant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), this.resultsDestination, this.targetEndInstant);
     }
 
     @Override

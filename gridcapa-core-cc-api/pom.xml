@@ -60,6 +60,10 @@
             <version>1.11.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>gridcapa-starter-minio-adapter</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

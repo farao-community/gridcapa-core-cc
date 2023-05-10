@@ -47,7 +47,7 @@ public class RaoParametersService {
         JsonRaoParameters.write(raoParameters, outputStream);
         String jsonRaoParametersFilePath = String.format(InputsNamingRules.S_INPUTS_S, destinationKey, InputsNamingRules.JSON_RAO_PARAMETERS_FILE_NAME);
         minioAdapter.uploadArtifact(jsonRaoParametersFilePath, new ByteArrayInputStream(outputStream.toByteArray()));
-        return minioAdapter.generatePreSignedUrl(jsonRaoParametersFilePath);
+        return jsonRaoParametersFilePath;
     }
 
     public RaoParameters createRaoParametersFromRequest(RequestMessage requestMessage) {

@@ -112,13 +112,13 @@ public class CoreCCPreProcessService {
                     String destinationPath = generateResultDestinationPath(destinationKey, utcInstant);
                     Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
 
-                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
+                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                         coreCCRequest.getRefProg().getUrl(),
                         coreCCRequest.getGlsk().getUrl(),
                         raoParametersFileUrl, destinationPath, targetEndInstant);
                     raoRequestList.add(raoRequest);
                 } catch (Exception e) {
-                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), null, null, null, null, null, null);
+                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null);
                     raoRequestList.add(raoRequest);
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
@@ -153,10 +153,11 @@ public class CoreCCPreProcessService {
         Path iidmTmpPath = Paths.get(cgmPath.toString().replace(cgmFileName, iidmFileName)); //NOSONAR
         network.write(XIIDM_EXPORT_FORMAT, null, iidmTmpPath);
         String iidmNetworkDestinationPath = String.format(InputsNamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(InputsNamingRules.IIDM_EXTENSION));
+        LOGGER.info("IidmNetworkDestinationPath: {}", iidmNetworkDestinationPath);
         try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
         }
-        return minioAdapter.generatePreSignedUrl(iidmNetworkDestinationPath);
+        return iidmNetworkDestinationPath;
     }
 
     private void addVirtualHubsExtensionToNetwork(Network network, VirtualHubsConfiguration virtualHubsConfiguration) {
@@ -177,7 +178,7 @@ public class CoreCCPreProcessService {
                 minioAdapter.uploadArtifact(jsonCracFilePath, is);
             }
             cracByteArrayOutputStream.close();
-            return minioAdapter.generatePreSignedUrl(jsonCracFilePath);
+            return jsonCracFilePath;
         } catch (Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", coreCCRequest.getCbcora().getFilename(), e.getMessage()));
         }

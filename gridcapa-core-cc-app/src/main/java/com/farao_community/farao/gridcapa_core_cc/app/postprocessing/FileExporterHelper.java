@@ -11,6 +11,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_api.json.JsonRaoParameters;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class FileExporterHelper {
 
     private final MinioAdapter minioAdapter;
+    private final FileImporter fileImporter;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileExporterHelper.class);
 
@@ -44,8 +46,9 @@ public class FileExporterHelper {
     private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
     private static final String DOMAIN_ID = "10Y1001C--00059P";
 
-    public FileExporterHelper(MinioAdapter minioAdapter) {
+    public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter) {
         this.minioAdapter = minioAdapter;
+        this.fileImporter = fileImporter;
     }
 
     public void exportNetworkInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
@@ -124,7 +127,8 @@ public class FileExporterHelper {
         //import input crac xml file and get FbConstraintCreationContext
         String cracXmlFileUrl = coreCCRequest.getCbcora().getUrl();
         FbConstraintCreationContext fbConstraintCreationContext;
-        try (InputStream cracInputStream = minioAdapter.getFile(cracXmlFileUrl)) {
+        LOGGER.info("CBCORA: {}", cracXmlFileUrl);
+        try (InputStream cracInputStream = fileImporter.importCracAsInputStream(cracXmlFileUrl)) {
             fbConstraintCreationContext = CracHelper.importCracXmlGetFbInfoWithNetwork(hourlyRaoResult.getInstant(), network, cracInputStream);
         }
 
