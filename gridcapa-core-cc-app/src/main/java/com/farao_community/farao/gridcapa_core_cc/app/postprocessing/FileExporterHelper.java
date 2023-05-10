@@ -116,6 +116,7 @@ public class FileExporterHelper {
         //get input network
         String networkFileUrl = hourlyRaoRequest.getNetworkFileUrl();
         Network network;
+        LOGGER.info("NetworkFileUrl: {}", networkFileUrl);
         try (InputStream networkInputStream = minioAdapter.getFile(networkFileUrl)) {
             network = Network.read(Path.of(networkFileUrl).getFileName().toString(), networkInputStream);
         }

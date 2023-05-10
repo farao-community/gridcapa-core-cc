@@ -104,7 +104,7 @@ public class CoreCCHandler {
                     hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
                     convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
                     coreCCRequest.getHourlyRaoResults().add(hourlyRaoResult);
-                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
+//                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
                 }
                 return null;
             }).exceptionally(exception -> {
@@ -115,7 +115,7 @@ public class CoreCCHandler {
                     hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
                     handleRaoRunnerException(hourlyRaoResult, exception);
                     coreCCRequest.getHourlyRaoResults().add(hourlyRaoResult);
-                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
+//                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
                 }
                 return null;
             });

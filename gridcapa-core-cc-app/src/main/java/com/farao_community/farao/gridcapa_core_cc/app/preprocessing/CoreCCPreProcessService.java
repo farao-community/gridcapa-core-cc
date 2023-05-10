@@ -102,38 +102,44 @@ public class CoreCCPreProcessService {
         Set<HourlyRaoResult> raoResultsList = new HashSet<>();
         raoRequestMessage.getPayload().getRequestItems().getRequestItem().forEach(requestItem -> {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
-            try {
-                Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
-                Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
-                String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
-                String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
-                String destinationPath = generateResultDestinationPath(destinationKey, utcInstant);
-                Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
+            if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
+                LOGGER.info("CoreCCRequest timestamp : {}, raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
+                try {
+                    Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
+                    Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
+                    String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
+                    String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
+                    String destinationPath = generateResultDestinationPath(destinationKey, utcInstant);
+                    Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
 
-                HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
-                    coreCCRequest.getRefProg().getUrl(),
-                    coreCCRequest.getGlsk().getUrl(),
-                    raoParametersFileUrl, destinationPath, targetEndInstant);
-                raoRequestList.add(raoRequest);
-            } catch (Exception e) {
-                HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), null, null, null, null, null, null);
-                raoRequestList.add(raoRequest);
-                String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
-                LOGGER.error(errorMessage);
-                HourlyRaoResult raoResult = new HourlyRaoResult();
-                raoResult.setInstant(utcInstant.toString());
-                raoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
-                raoResult.setErrorMessage(errorMessage);
-                raoResultsList.add(raoResult);
+                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
+                        coreCCRequest.getRefProg().getUrl(),
+                        coreCCRequest.getGlsk().getUrl(),
+                        raoParametersFileUrl, destinationPath, targetEndInstant);
+                    raoRequestList.add(raoRequest);
+                } catch (Exception e) {
+                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(utcInstant.toString(), null, null, null, null, null, null);
+                    raoRequestList.add(raoRequest);
+                    String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
+                    LOGGER.error(errorMessage);
+                    HourlyRaoResult raoResult = new HourlyRaoResult();
+                    raoResult.setInstant(utcInstant.toString());
+                    raoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+                    raoResult.setErrorMessage(errorMessage);
+                    raoResultsList.add(raoResult);
+                }
             }
         });
+        if (raoRequestList.isEmpty()) {
+            LOGGER.warn("No raoRequest timestamp matched the coreCCRequest timestamp");
+        }
         coreCCRequest.setHourlyRaoRequests(raoRequestList);
         coreCCRequest.setHourlyRaoResults(raoResultsList);
     }
 
     private String generateResultDestinationPath(String destinationKey, Instant instant) {
         String hourlyFolderName = HOURLY_NAME_FORMATTER.format(Instant.parse(instant.toString()));
-        return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey, hourlyFolderName);
+        return String.format(S_HOURLY_RAO_RESULTS_S, "CORE/CC/" + destinationKey, hourlyFolderName);
     }
 
     private Network convertNetworkToIidm(Path cgmPath, VirtualHubsConfiguration virtualHubsConfiguration) {
