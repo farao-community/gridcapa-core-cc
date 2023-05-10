@@ -8,13 +8,10 @@
 
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -22,8 +19,8 @@ import java.util.Set;
  */
 public class InternalCoreCCRequest {
     private CoreCCRequest coreCCRequest;
-    private Set<HourlyRaoRequest> hourlyRaoRequests = new HashSet<>();
-    private Set<HourlyRaoResult> hourlyRaoResults = new HashSet<>();
+    private HourlyRaoRequest hourlyRaoRequest;
+    private HourlyRaoResult hourlyRaoResult;
     private DailyOutputs dailyOutputs = new DailyOutputs();
     private int version;
     private Status status;
@@ -81,25 +78,20 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getLaunchedAutomatically();
     }
 
-    public Set<HourlyRaoRequest> getHourlyRaoRequests() {
-        return hourlyRaoRequests;
+    public HourlyRaoRequest getHourlyRaoRequest() {
+        return hourlyRaoRequest;
     }
 
-    public void setHourlyRaoRequests(Set<HourlyRaoRequest> hourlyInputs) {
-        this.hourlyRaoRequests = hourlyInputs;
+    public void setHourlyRaoRequest(HourlyRaoRequest hourlyInput) {
+        this.hourlyRaoRequest = hourlyInput;
     }
 
-    public HourlyRaoRequest getHourlyRequestFromResponse(HourlyRaoResult hourlyRaoResponse) {
-        return this.getHourlyRaoRequests().stream().filter(request -> request.getInstant().equals(hourlyRaoResponse.getInstant()))
-            .findFirst().orElseThrow(() -> new CoreCCInternalException(String.format("Rao response not found for timestamp %s .", hourlyRaoResponse.getInstant())));
+    public HourlyRaoResult getHourlyRaoResult() {
+        return hourlyRaoResult;
     }
 
-    public Set<HourlyRaoResult> getHourlyRaoResults() {
-        return hourlyRaoResults;
-    }
-
-    public void setHourlyRaoResults(Set<HourlyRaoResult> hourlyArtifacts) {
-        this.hourlyRaoResults = hourlyArtifacts;
+    public void setHourlyRaoResult(HourlyRaoResult hourlyArtifact) {
+        this.hourlyRaoResult = hourlyArtifact;
     }
 
     public DailyOutputs getDailyOutputs() {

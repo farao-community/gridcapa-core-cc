@@ -38,8 +38,8 @@ public class CoreCCRequest {
     private final CoreCCFileResource cbcora;
     private final CoreCCFileResource glsk;
     private final CoreCCFileResource refProg;
-    private final CoreCCFileResource raorequest;
-    private final CoreCCFileResource virtualhub;
+    private final CoreCCFileResource raoRequest;
+    private final CoreCCFileResource virtualHub;
     private final boolean launchedAutomatically;
 
     @JsonCreator
@@ -49,8 +49,8 @@ public class CoreCCRequest {
                          @JsonProperty("cbcora") CoreCCFileResource cbcora,
                          @JsonProperty("glsk") CoreCCFileResource glsk,
                          @JsonProperty("refProg") CoreCCFileResource refProg,
-                         @JsonProperty("raoRequest") CoreCCFileResource raorequest,
-                         @JsonProperty("virtualHub") CoreCCFileResource virtualhub,
+                         @JsonProperty("raoRequest") CoreCCFileResource raoRequest,
+                         @JsonProperty("virtualHub") CoreCCFileResource virtualHub,
                          @JsonProperty("launchedAutomatically") boolean launchedAutomatically) {
         this.id = id;
         this.timestamp = timestamp;
@@ -58,8 +58,8 @@ public class CoreCCRequest {
         this.cbcora = cbcora;
         this.glsk = glsk;
         this.refProg = refProg;
-        this.raorequest = raorequest;
-        this.virtualhub = virtualhub;
+        this.raoRequest = raoRequest;
+        this.virtualHub = virtualHub;
         this.launchedAutomatically = launchedAutomatically;
     }
 
@@ -69,9 +69,9 @@ public class CoreCCRequest {
                          CoreCCFileResource cbcora,
                          CoreCCFileResource glsk,
                          CoreCCFileResource refProg,
-                         CoreCCFileResource raorequest,
-                         CoreCCFileResource virtualhub) {
-        this(id, timestamp, cgm, cbcora, glsk, refProg, raorequest, virtualhub, false);
+                         CoreCCFileResource raoRequest,
+                         CoreCCFileResource virtualHub) {
+        this(id, timestamp, cgm, cbcora, glsk, refProg, raoRequest, virtualHub, false);
     }
 
     public String getId() {
@@ -99,11 +99,11 @@ public class CoreCCRequest {
     }
 
     public CoreCCFileResource getRaoRequest() {
-        return raorequest;
+        return raoRequest;
     }
 
     public CoreCCFileResource getVirtualHub() {
-        return virtualhub;
+        return virtualHub;
     }
 
     public boolean getLaunchedAutomatically() {

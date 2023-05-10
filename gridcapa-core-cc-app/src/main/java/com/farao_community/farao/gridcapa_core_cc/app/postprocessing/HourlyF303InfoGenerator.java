@@ -63,8 +63,8 @@ class HourlyF303InfoGenerator {
     }
 
     HourlyF303Info generate() {
-        HourlyRaoRequest hourlyRaoRequest = getRaoRequestForInterval(interval, coreCCRequest);
-        HourlyRaoResult hourlyRaoResult = getRaoResultForInterval(interval, coreCCRequest);
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
 
         if (hourlyRaoRequest == null || hourlyRaoResult == null || !hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS)) {
             return getInfoForNonRequestedOrFailedInterval(interval, nativeCrac);
@@ -197,18 +197,6 @@ class HourlyF303InfoGenerator {
         } catch (IOException e) {
             throw new CoreCCInternalException(String.format("Cannot import RAO result of hourly RAO response of instant %s", hourlyRaoResult.getInstant()));
         }
-    }
-
-    private static HourlyRaoRequest getRaoRequestForInterval(Interval interval, InternalCoreCCRequest coreCCRequest) {
-        return coreCCRequest.getHourlyRaoRequests().stream()
-                .filter(hrr -> interval.contains(java.time.Instant.parse(hrr.getInstant())))
-                .findAny().orElse(null);
-    }
-
-    private static HourlyRaoResult getRaoResultForInterval(Interval interval, InternalCoreCCRequest coreCCRequest) {
-        return coreCCRequest.getHourlyRaoResults().stream()
-                .filter(hrr -> interval.contains(java.time.Instant.parse(hrr.getInstant())))
-                .findAny().orElse(null);
     }
 
     private static void setPermanentLimit(CriticalBranchType criticalBranch) {

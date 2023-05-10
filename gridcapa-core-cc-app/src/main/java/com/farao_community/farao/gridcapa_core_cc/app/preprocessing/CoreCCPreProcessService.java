@@ -41,8 +41,8 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -98,8 +98,8 @@ public class CoreCCPreProcessService {
 
         VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
 
-        Set<HourlyRaoRequest> raoRequestList = new HashSet<>();
-        Set<HourlyRaoResult> raoResultsList = new HashSet<>();
+        AtomicReference<HourlyRaoRequest> raoRequest = null;
+        AtomicReference<HourlyRaoResult> raoResult = null;
         raoRequestMessage.getPayload().getRequestItems().getRequestItem().forEach(requestItem -> {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
@@ -112,29 +112,26 @@ public class CoreCCPreProcessService {
                     String destinationPath = generateResultDestinationPath(destinationKey, utcInstant);
                     Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
 
-                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
+                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                         coreCCRequest.getRefProg().getUrl(),
                         coreCCRequest.getGlsk().getUrl(),
-                        raoParametersFileUrl, destinationPath, targetEndInstant);
-                    raoRequestList.add(raoRequest);
+                        raoParametersFileUrl, destinationPath, targetEndInstant));
                 } catch (Exception e) {
-                    HourlyRaoRequest raoRequest = new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null);
-                    raoRequestList.add(raoRequest);
+                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null));
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
-                    HourlyRaoResult raoResult = new HourlyRaoResult();
-                    raoResult.setInstant(utcInstant.toString());
-                    raoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
-                    raoResult.setErrorMessage(errorMessage);
-                    raoResultsList.add(raoResult);
+                    raoResult.set(new HourlyRaoResult());
+                    raoResult.get().setInstant(utcInstant.toString());
+                    raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+                    raoResult.get().setErrorMessage(errorMessage);
                 }
             }
         });
-        if (raoRequestList.isEmpty()) {
+        if (Objects.isNull(raoRequest.get())) {
             LOGGER.warn("No raoRequest timestamp matched the coreCCRequest timestamp");
         }
-        coreCCRequest.setHourlyRaoRequests(raoRequestList);
-        coreCCRequest.setHourlyRaoResults(raoResultsList);
+        coreCCRequest.setHourlyRaoRequest(raoRequest.get());
+        coreCCRequest.setHourlyRaoResult(raoResult.get());
     }
 
     private String generateResultDestinationPath(String destinationKey, Instant instant) {

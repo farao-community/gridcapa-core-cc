@@ -23,15 +23,15 @@ public class CoreCCInputsProperties {
         private final String crac;
         private final String glsk;
         private final String refprog;
-        private final String virtualhubs;
+        private final String virtualHubs;
 
-        public FilenamesProperties(String request, String cgms, String glsk, String refprog, String crac, String virtualhubs) {
+        public FilenamesProperties(String request, String cgms, String glsk, String refprog, String crac, String virtualHubs) {
             this.request = request;
             this.cgms = cgms;
             this.glsk = glsk;
             this.refprog = refprog;
             this.crac = crac;
-            this.virtualhubs = virtualhubs;
+            this.virtualHubs = virtualHubs;
         }
 
         public String getRequest() {
@@ -55,7 +55,7 @@ public class CoreCCInputsProperties {
         }
 
         public String getVirtualhubs() {
-            return virtualhubs;
+            return virtualHubs;
         }
     }
 }

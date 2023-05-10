@@ -58,12 +58,12 @@ class CoreCCHandlerTest {
 
         OffsetDateTime dateTime = OffsetDateTime.parse("2021-07-22T22:30Z");
         CoreCCFileResource refProgFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F110.xml"));
-        CoreCCFileResource raorequestFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F302-v3.xml"));
-        CoreCCFileResource virtualhubFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F327-fake.xml"));
+        CoreCCFileResource raoRequestFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F302-v3.xml"));
+        CoreCCFileResource virtualHubFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F327-fake.xml"));
         CoreCCFileResource glskFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
         CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
-        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raorequestFile, virtualhubFile, true);
+        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raoRequestFile, virtualHubFile, true);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(request, true);
         assertEquals(requestId, response.getId());
         //should upload 7 artifacts: parameters + 3 networks + 3 cracs

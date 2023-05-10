@@ -8,10 +8,7 @@
 package com.farao_community.farao.gridcapa_core_cc.app;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCPostProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
@@ -28,7 +25,6 @@ import org.slf4j.MDC;
 import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 
@@ -91,34 +87,33 @@ public class CoreCCHandler {
 
     private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         StringBuilder outputPathBuilder = new StringBuilder();
-        coreCCRequest.getHourlyRaoRequests().forEach(hourlyRaoRequest -> {
-            RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
-            LOGGER.info("raoRequest received in runRaoForEachTimeStamp");
-            CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
-            LOGGER.info("raoResponseFuture received ini runRaoForEachTimeStamp");
-            raoResponseFuture.thenApply(raoResponse -> {
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
+        LOGGER.info("raoRequest received in runRaoForEachTimeStamp");
+        CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
+        LOGGER.info("raoResponseFuture received ini runRaoForEachTimeStamp");
+        raoResponseFuture.thenApply(raoResponse -> {
 
-                synchronized (this) {
-                    LOGGER.info("RAO computation answer received  for TimeStamp: '{}'", hourlyRaoRequest.getInstant());
-                    HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-                    hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-                    convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
-                    coreCCRequest.getHourlyRaoResults().add(hourlyRaoResult);
+            synchronized (this) {
+                LOGGER.info("RAO computation answer received  for TimeStamp: '{}'", hourlyRaoRequest.getInstant());
+                HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
+                hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
+                convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
+                coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
 //                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
-                }
-                return null;
-            }).exceptionally(exception -> {
+            }
+            return null;
+        }).exceptionally(exception -> {
 
-                synchronized (this) {
-                    LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
-                    HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-                    hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-                    handleRaoRunnerException(hourlyRaoResult, exception);
-                    coreCCRequest.getHourlyRaoResults().add(hourlyRaoResult);
+            synchronized (this) {
+                LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
+                HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
+                hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
+                handleRaoRunnerException(hourlyRaoResult, exception);
+                coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
 //                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
-                }
-                return null;
-            });
+            }
+            return null;
         });
         return outputPathBuilder.toString();
     }
@@ -136,24 +131,6 @@ public class CoreCCHandler {
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
             hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
             hourlyRaoResult.setErrorMessage(errorMessage);
-        }
-    }
-
-    private String runFinalPostProcessIfAllTimestampsAreFinished(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
-        try {
-            long requestedRaos = coreCCRequest.getHourlyRaoRequests().size();
-            long receivedRaos = coreCCRequest.getHourlyRaoResults().stream().filter(hourlyRaoResult -> hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS)).count() +
-                coreCCRequest.getHourlyRaoResults().stream().filter(hourlyRaoResult -> hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)).count();
-            if (requestedRaos == receivedRaos) {
-                LOGGER.info("Core CC server received answers for all requested '{}' timestamps, --> proceeding to generating outputs", requestedRaos);
-                coreCCRequest.setComputationEndInstant(Instant.now());
-                logsExporter.exportLogs(coreCCRequest);
-                return coreCCPostProcessService.postProcessHourlyResults(coreCCRequest, isManualRun);
-            }
-            return "";
-        } catch (Exception e) {
-            coreCCRequest.setStatus(InternalCoreCCRequest.Status.FAILURE);
-            return "";
         }
     }
 

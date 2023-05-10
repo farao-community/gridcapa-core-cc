@@ -24,8 +24,8 @@ class CoreCCRequestTest {
     private CoreCCFileResource cbcora;
     private CoreCCFileResource glsk;
     private CoreCCFileResource refProg;
-    private CoreCCFileResource raorequest;
-    private CoreCCFileResource virtualhub;
+    private CoreCCFileResource raoRequest;
+    private CoreCCFileResource virtualHub;
 
     private OffsetDateTime dateTime;
 
@@ -35,14 +35,14 @@ class CoreCCRequestTest {
         cbcora = new CoreCCFileResource("cbcora.txt", "http://path/to/cbcora/file");
         glsk = new CoreCCFileResource("glsk.txt", "http://path/to/glsk/file");
         refProg = new CoreCCFileResource("refprog.txt", "http://path/to/refProg/file");
-        raorequest = new CoreCCFileResource("raorequest.txt", "http://path/to/raorequest/file");
-        virtualhub = new CoreCCFileResource("virtualhub.txt", "http://path/to/virtualhub/file");
+        raoRequest = new CoreCCFileResource("raoRequest.txt", "http://path/to/raoRequest/file");
+        virtualHub = new CoreCCFileResource("virtualHub.txt", "http://path/to/virtualHub/file");
         dateTime = OffsetDateTime.parse("2021-10-03T00:30Z");
     }
 
     @Test
     void checkManualCoreCCRequest() {
-        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, cbcora, glsk, refProg, raorequest, virtualhub);
+        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, cbcora, glsk, refProg, raoRequest, virtualHub);
         assertNotNull(coreCCRequest);
         assertEquals("id", coreCCRequest.getId());
         assertEquals("2021-10-03T00:30Z", coreCCRequest.getTimestamp().toString());
@@ -50,14 +50,14 @@ class CoreCCRequestTest {
         assertEquals("cbcora.txt", coreCCRequest.getCbcora().getFilename());
         assertEquals("refprog.txt", coreCCRequest.getRefProg().getFilename());
         assertEquals("glsk.txt", coreCCRequest.getGlsk().getFilename());
-        assertEquals("raorequest.txt", coreCCRequest.getRaoRequest().getFilename());
-        assertEquals("virtualhub.txt", coreCCRequest.getVirtualHub().getFilename());
+        assertEquals("raoRequest.txt", coreCCRequest.getRaoRequest().getFilename());
+        assertEquals("virtualHub.txt", coreCCRequest.getVirtualHub().getFilename());
         assertFalse(coreCCRequest.getLaunchedAutomatically());
     }
 
     @Test
     void checkAutoCoreCCRequest() {
-        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, cbcora, glsk, refProg, raorequest, virtualhub, true);
+        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, cbcora, glsk, refProg, raoRequest, virtualHub, true);
         assertTrue(coreCCRequest.getLaunchedAutomatically());
     }
 

@@ -20,13 +20,13 @@
         "filename": "refProg.txt",
         "url": "https://refProg/file/url"
       },
-      "raorequest": {
-        "filename": "raorequest.txt",
-        "url": "https://raorequest/file/url"
+      "raoRequest": {
+        "filename": "raoRequest.txt",
+        "url": "https://raoRequest/file/url"
       },
-      "virtualhub": {
-        "filename": "virtualhub.txt",
-        "url": "https://virtualhub/file/url"
+      "virtualHub": {
+        "filename": "virtualHub.txt",
+        "url": "https://virtualHub/file/url"
       }
     }
   }

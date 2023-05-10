@@ -28,8 +28,6 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 
 /**
  * @author Pengbo Wang {@literal <pengbo.wang at rte-international.com>}
@@ -115,7 +113,7 @@ public class CoreCCXmlResponseGenerator {
     }
 
     void generateRaoResponsePayLoad(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
-        ResponseItems responseItems = new ResponseItems();
+        /*ResponseItems responseItems = new ResponseItems();
         responseItems.setTimeInterval(coreCCRequest.getTimeInterval());
         coreCCRequest.getHourlyRaoResults().stream().sorted(Comparator.comparing(HourlyRaoResult::getInstant))
             .forEach(hourlyRaoResult -> {
@@ -154,11 +152,11 @@ public class CoreCCXmlResponseGenerator {
             });
         PayloadType payload = new PayloadType();
         payload.setResponseItems(responseItems);
-        responseMessage.setPayload(payload);
+        responseMessage.setPayload(payload);*/
     }
 
     void generateCgmXmlHeaderFilePayLoad(InternalCoreCCRequest coreCCRequest, ResponseMessageType responseMessage) {
-        ResponseItems responseItems = new ResponseItems();
+        /*ResponseItems responseItems = new ResponseItems();
         responseItems.setTimeInterval(coreCCRequest.getTimeInterval());
 
         String[] timeInterval = coreCCRequest.getTimeInterval().split("/");
@@ -189,7 +187,7 @@ public class CoreCCXmlResponseGenerator {
         }
         PayloadType payload = new PayloadType();
         payload.setResponseItems(responseItems);
-        responseMessage.setPayload(payload);
+        responseMessage.setPayload(payload);*/
     }
 
     private Instant parseInstantWithoutSeconds(String instant) {

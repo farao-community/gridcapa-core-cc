@@ -100,8 +100,8 @@ public class FileExporterHelper {
         loadsToRemove.forEach(id -> network.getLoad(id).remove());
     }
 
-    Crac importCracFromHourlyRaoRequest(InternalCoreCCRequest coreCCRequest, HourlyRaoResult raoResult) {
-        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRequestFromResponse(raoResult);
+    Crac importCracFromHourlyRaoRequest(InternalCoreCCRequest coreCCRequest) {
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         try (InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
             return CracImporters.importCrac(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream);
@@ -113,8 +113,7 @@ public class FileExporterHelper {
     public void exportCneInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
         LOGGER.info("Core CC task: '{}', creating CNE Result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
         //create CNE with input from inputNetwork, outputCracJson and inputCraxXml
-        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequests().stream().filter(request -> request.getInstant().equals(hourlyRaoResult.getInstant()))
-                .findFirst().orElseThrow(() -> new CoreCCInternalException(String.format("Exception occurred while creating CNE file for timestamp %s. Cause: no rao result.", hourlyRaoResult.getInstant())));
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
         //get input network
         String networkFileUrl = hourlyRaoRequest.getNetworkFileUrl();
@@ -133,7 +132,7 @@ public class FileExporterHelper {
         }
 
         //get crac from hourly inputs
-        Crac cracJson = importCracFromHourlyRaoRequest(coreCCRequest, hourlyRaoResult);
+        Crac cracJson = importCracFromHourlyRaoRequest(coreCCRequest);
 
         //get raoResult from result
         RaoResult raoResult;

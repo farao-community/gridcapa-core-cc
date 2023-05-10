@@ -6,7 +6,6 @@ package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.app.util.RaoMetadata;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
@@ -14,10 +13,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.farao_community.farao.gridcapa_core_cc.app.util.RaoMetadata.Indicator.*;
 
@@ -61,22 +56,17 @@ public class CoreCCMetadataGenerator {
         data.put(RAO_REQUEST_RECEPTION_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getInputsReceivedInstant().toString());
         data.put(RAO_OUTPUTS_SENT, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().equals(InternalCoreCCRequest.Status.SUCCESS) ? "YES" : "NO");
         data.put(RAO_OUTPUTS_SENDING_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getOutputsSentInstant().toString());
-        data.put(RAO_COMPUTATION_STATUS, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().toString());
-        data.put(RAO_START_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getComputationStartInstant().toString());
-        data.put(RAO_END_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getComputationEndInstant().toString());
-        data.put(RAO_COMPUTATION_TIME, coreCCRequest.getTimestamp(), String.valueOf(ChronoUnit.MINUTES.between(coreCCRequest.getComputationStartInstant(), coreCCRequest.getComputationEndInstant())));
-        coreCCRequest.getHourlyRaoResults().forEach(hourlyRaoResult -> {
-            data.put(RAO_START_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationStartInstant().toString());
-            data.put(RAO_END_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationEndInstant().toString());
-            data.put(RAO_COMPUTATION_TIME, hourlyRaoResult.getInstant(), String.valueOf(ChronoUnit.MINUTES.between(hourlyRaoResult.getComputationStartInstant(), hourlyRaoResult.getComputationEndInstant())));
-            data.put(RAO_RESULTS_PROVIDED, hourlyRaoResult.getInstant(), hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS) ? "YES" : "NO");
-            data.put(RAO_COMPUTATION_STATUS, hourlyRaoResult.getInstant(), hourlyRaoResult.getStatus().toString());
-        });
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        data.put(RAO_START_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationStartInstant().toString());
+        data.put(RAO_END_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationEndInstant().toString());
+        data.put(RAO_COMPUTATION_TIME, hourlyRaoResult.getInstant(), String.valueOf(ChronoUnit.MINUTES.between(hourlyRaoResult.getComputationStartInstant(), hourlyRaoResult.getComputationEndInstant())));
+        data.put(RAO_RESULTS_PROVIDED, hourlyRaoResult.getInstant(), hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS) ? "YES" : "NO");
+        data.put(RAO_COMPUTATION_STATUS, hourlyRaoResult.getInstant(), hourlyRaoResult.getStatus().toString());
         return data;
     }
 
     private static String writeCsvFromMap(InternalCoreCCRequest coreCCRequest, MultiKeyMap data) {
-        // Get headers for columns & lines
+        /*// Get headers for columns & lines
         List<RaoMetadata.Indicator> indicators = Arrays.stream(values())
                 .sorted(Comparator.comparing(RaoMetadata.Indicator::getOrder))
                 .collect(Collectors.toList());
@@ -99,6 +89,7 @@ public class CoreCCMetadataGenerator {
             }
             csvBuilder.append(cr);
         }
-        return csvBuilder.toString();
+        return csvBuilder.toString();*/
+        return null;
     }
 }
