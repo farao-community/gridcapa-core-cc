@@ -98,6 +98,7 @@ public class CoreCCHandler {
         CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
         raoResponseFuture.thenApply(raoResponse -> {
             Thread.currentThread().setContextClassLoader(classLoader);
+            LOGGER.info("RaoResponse received for timestamp {}", hourlyRaoRequest.getInstant()):
             HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
             hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);

@@ -146,7 +146,6 @@ public class FileExporterHelper {
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
             cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
             minioAdapter.uploadArtifact(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()));
-            LOGGER.info("cne uploaded to {}", cneFilePath);
 
             //remember mrid f299 for f305 rao response payload
             hourlyRaoResult.setCneResultDocumentId(cneExporterParameters.getDocumentId());
