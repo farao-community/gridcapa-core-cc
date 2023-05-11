@@ -33,9 +33,7 @@ public class CoreCCClient {
     }
 
     public void run(CoreCCRequest coreCCRequest, int priority) {
-        LOGGER.info("Core cc request sent: {}", coreCCRequest);
         amqpTemplate.send(coreCCClientProperties.getAmqp().getQueueName(), buildMessage(coreCCRequest, priority));
-        LOGGER.info("After sending core cc request");
     }
 
     public void run(CoreCCRequest coreCCRequest) {

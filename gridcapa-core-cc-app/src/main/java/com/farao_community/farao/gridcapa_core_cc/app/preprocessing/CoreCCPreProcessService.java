@@ -6,6 +6,7 @@ package com.farao_community.farao.gridcapa_core_cc.app.preprocessing;
 import com.farao_community.farao.data.crac_creation.creator.api.CracCreationContext;
 import com.farao_community.farao.data.crac_io_api.CracExporters;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCXmlResponseGenerator;
@@ -90,20 +91,22 @@ public class CoreCCPreProcessService {
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
         String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, destinationKey);
-
         CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
-        //TODO:checkTimeIntervalCoherence?
 
-        //TODO:sendRaoRequestAcknowledgment(coreCCRequest, destinationKey, raoRequestMessage, isManualRun);
+        if (!Interval.parse(raoRequestMessage.getPayload().getRequestItems().getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader.getXmlHeader().getPayload().getResponseItems().getTimeInterval()))) {
+            throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
+        }
+
+        sendRaoRequestAcknowledgment(coreCCRequest, destinationKey, raoRequestMessage, isManualRun);
 
         VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
 
-        AtomicReference<HourlyRaoRequest> raoRequest = null;
-        AtomicReference<HourlyRaoResult> raoResult = null;
+        AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
+        AtomicReference<HourlyRaoResult> raoResult = new AtomicReference<>();
         raoRequestMessage.getPayload().getRequestItems().getRequestItem().forEach(requestItem -> {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
-                LOGGER.info("CoreCCRequest timestamp : {}, raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
+                LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
@@ -136,7 +139,7 @@ public class CoreCCPreProcessService {
 
     private String generateResultDestinationPath(String destinationKey, Instant instant) {
         String hourlyFolderName = HOURLY_NAME_FORMATTER.format(Instant.parse(instant.toString()));
-        return String.format(S_HOURLY_RAO_RESULTS_S, "CORE/CC/" + destinationKey, hourlyFolderName);
+        return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey, hourlyFolderName);
     }
 
     private Network convertNetworkToIidm(Path cgmPath, VirtualHubsConfiguration virtualHubsConfiguration) {
@@ -150,7 +153,6 @@ public class CoreCCPreProcessService {
         Path iidmTmpPath = Paths.get(cgmPath.toString().replace(cgmFileName, iidmFileName)); //NOSONAR
         network.write(XIIDM_EXPORT_FORMAT, null, iidmTmpPath);
         String iidmNetworkDestinationPath = String.format(InputsNamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(InputsNamingRules.IIDM_EXTENSION));
-        LOGGER.info("IidmNetworkDestinationPath: {}", iidmNetworkDestinationPath);
         try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
         }
@@ -204,12 +206,10 @@ public class CoreCCPreProcessService {
     }
 
     private void exportRaoRequestAcknowledgment(ResponseMessage responseMessage, InternalCoreCCRequest coreCCRequest, String destinationKey) {
-        String outputsDestinationKey = destinationKey.replace("RAO_WORKING_DIR/", "RAO_OUTPUTS_DIR/");
-
         byte[] xml = marshallMessageAndSetJaxbProperties(responseMessage);
 
         String raoRequestAckFileName = OutputFileNameUtil.generateRaoRequestAckFileName(coreCCRequest);
-        String destinationPath = OutputFileNameUtil.generateOutputsDestinationPath(outputsDestinationKey, raoRequestAckFileName);
+        String destinationPath = OutputFileNameUtil.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
         try (InputStream xmlIs = new ByteArrayInputStream(xml)) {
             minioAdapter.uploadArtifact(destinationPath, xmlIs);
         } catch (IOException e) {

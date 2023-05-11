@@ -6,8 +6,8 @@ import com.farao_community.farao.data.crac_api.Crac;
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
 import com.farao_community.farao.data.crac_io_api.CracImporters;
 import com.farao_community.farao.data.rao_result_api.RaoResult;
-import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
@@ -24,13 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,13 +47,12 @@ public class FileExporterHelper {
         this.fileImporter = fileImporter;
     }
 
-    public void exportNetworkInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
+    public void exportNetworkToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         LOGGER.info("Core CC task: '{}', exporting uct network with pra for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
 
-        Network network;
-        try (InputStream cgmInputStream = minioAdapter.getFile(hourlyRaoResult.getNetworkWithPraUrl())) {
-            network = Network.read(Path.of(hourlyRaoResult.getNetworkWithPraUrl()).getFileName().toString(), cgmInputStream);
-        }
+        //get input network
+        Network network = fileImporter.importNetworkFromUrl(hourlyRaoResult.getNetworkWithPraUrl());
         MemDataSource memDataSource = new MemDataSource();
 
         // work around until the problem of "Too many loads connected to this bus" is corrected
@@ -69,10 +64,10 @@ public class FileExporterHelper {
         removeFictitiousLoadsFromNetwork(network);
         network.write("UCTE", new Properties(), memDataSource);
         String networkNewFileName = OutputFileNameUtil.generateUctFileName(hourlyRaoResult.getInstant(), coreCCRequest.getVersion());
-        File targetFile = new File(coreCCRequest.getDailyOutputs().getNetworkTmpOutputsPath(), networkNewFileName); //NOSONAR
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
-            Files.copy(is, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
+            minioAdapter.uploadArtifact(networkWithPraFilePath, is);
         }
     }
 
@@ -110,7 +105,8 @@ public class FileExporterHelper {
         }
     }
 
-    public void exportCneInTmpOutput(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult) throws IOException {
+    public void exportCneToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         LOGGER.info("Core CC task: '{}', creating CNE Result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
         //create CNE with input from inputNetwork, outputCracJson and inputCraxXml
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
@@ -118,7 +114,6 @@ public class FileExporterHelper {
         //get input network
         String networkFileUrl = hourlyRaoRequest.getNetworkFileUrl();
         Network network;
-        LOGGER.info("NetworkFileUrl: {}", networkFileUrl);
         try (InputStream networkInputStream = minioAdapter.getFile(networkFileUrl)) {
             network = Network.read(Path.of(networkFileUrl).getFileName().toString(), networkInputStream);
         }
@@ -126,20 +121,16 @@ public class FileExporterHelper {
         //import input crac xml file and get FbConstraintCreationContext
         String cracXmlFileUrl = coreCCRequest.getCbcora().getUrl();
         FbConstraintCreationContext fbConstraintCreationContext;
-        LOGGER.info("CBCORA: {}", cracXmlFileUrl);
-        try (InputStream cracInputStream = fileImporter.importCracAsInputStream(cracXmlFileUrl)) {
-            fbConstraintCreationContext = CracHelper.importCracXmlGetFbInfoWithNetwork(hourlyRaoResult.getInstant(), network, cracInputStream);
+        fbConstraintCreationContext = fileImporter.importCrac(cracXmlFileUrl, OffsetDateTime.parse(hourlyRaoResult.getInstant()), network);
+        if (!fbConstraintCreationContext.isCreationSuccessful()) {
+            throw new CoreCCInvalidDataException("Crac creation context failed for timestamp: " + hourlyRaoResult.getInstant());
         }
-
         //get crac from hourly inputs
         Crac cracJson = importCracFromHourlyRaoRequest(coreCCRequest);
 
         //get raoResult from result
-        RaoResult raoResult;
-        try (InputStream raoResultInputStream = minioAdapter.getFile(hourlyRaoResult.getRaoResultFileUrl())) {
-            RaoResultImporter raoResultImporter = new RaoResultImporter();
-            raoResult = raoResultImporter.importRaoResult(raoResultInputStream, cracJson);
-        }
+        RaoResult raoResult = fileImporter.importRaoResult(hourlyRaoResult.getRaoResultFileUrl(), cracJson);
+
         //get raoParams from input
         RaoParameters raoParameters;
         try (InputStream raoParametersInputStream = minioAdapter.getFile(hourlyRaoRequest.getRaoParametersFileUrl())) {
@@ -148,12 +139,14 @@ public class FileExporterHelper {
 
         //export CNE
         String cneNewFileName = OutputFileNameUtil.generateCneFileName(hourlyRaoResult.getInstant(), coreCCRequest);
-        File targetFile = new File(coreCCRequest.getDailyOutputs().getCneTmpOutputsPath(), cneNewFileName); //NOSONAR
 
-        try (FileOutputStream outputStreamCne = new FileOutputStream(targetFile)) {
+        try (ByteArrayOutputStream outputStreamCne = new ByteArrayOutputStream()) {
+            String cneFilePath = hourlyRaoRequest.getResultsDestination() + "/" + cneNewFileName;
             CoreCneExporter cneExporter = new CoreCneExporter();
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
             cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
+            minioAdapter.uploadArtifact(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()));
+            LOGGER.info("cne uploaded to {}", cneFilePath);
 
             //remember mrid f299 for f305 rao response payload
             hourlyRaoResult.setCneResultDocumentId(cneExporterParameters.getDocumentId());

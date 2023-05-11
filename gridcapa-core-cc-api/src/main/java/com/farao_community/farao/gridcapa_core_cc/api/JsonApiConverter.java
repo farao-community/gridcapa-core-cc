@@ -38,9 +38,7 @@ public class JsonApiConverter {
     }
 
     public <T> T fromJsonMessage(byte[] jsonMessage, Class<T> tClass) {
-        System.out.println("Before converter created");
         ResourceConverter converter = createConverter();
-        System.out.println("Converter created");
         T aaa;
         try {
             aaa = converter.readDocument(jsonMessage, tClass).get();
@@ -54,7 +52,6 @@ public class JsonApiConverter {
         ResourceConverter converter = createConverter();
         JSONAPIDocument<?> jsonapiDocument = new JSONAPIDocument<>(jsonApiObject);
         try {
-            System.out.println("Before writing document");
             return converter.writeDocument(jsonapiDocument);
         } catch (DocumentSerializationException e) {
             throw new CoreCCInternalException("Exception occurred during object conversion", e);

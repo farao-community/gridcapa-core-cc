@@ -26,6 +26,7 @@ import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -88,31 +89,25 @@ public class CoreCCHandler {
     private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
         StringBuilder outputPathBuilder = new StringBuilder();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        if (Objects.isNull(hourlyRaoRequest)) {
+            LOGGER.info("Skipping RAO - no hourly raoRequest was defined");
+            return null;
+        }
         RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
-        LOGGER.info("raoRequest received in runRaoForEachTimeStamp");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
-        LOGGER.info("raoResponseFuture received ini runRaoForEachTimeStamp");
         raoResponseFuture.thenApply(raoResponse -> {
-
-            synchronized (this) {
-                LOGGER.info("RAO computation answer received  for TimeStamp: '{}'", hourlyRaoRequest.getInstant());
-                HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-                hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-                convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
-                coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
-//                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
-            }
+            Thread.currentThread().setContextClassLoader(classLoader);
+            HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
+            hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
+            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
+            convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
             return null;
         }).exceptionally(exception -> {
-
-            synchronized (this) {
-                LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
-                HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-                hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-                handleRaoRunnerException(hourlyRaoResult, exception);
-                coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
-//                    outputPathBuilder.append(runFinalPostProcessIfAllTimestampsAreFinished(coreCCRequest, isManualRun));
-            }
+            LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
+            HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
+            hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
+            handleRaoRunnerException(hourlyRaoResult, exception);
             return null;
         });
         return outputPathBuilder.toString();
@@ -122,8 +117,9 @@ public class CoreCCHandler {
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
-            fileExporterHelper.exportCneInTmpOutput(coreCCRequest, hourlyRaoResult);
-            fileExporterHelper.exportNetworkInTmpOutput(coreCCRequest, hourlyRaoResult);
+            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
+            fileExporterHelper.exportCneToMinio(coreCCRequest);
+            fileExporterHelper.exportNetworkToMinio(coreCCRequest);
         } catch (Exception e) {
             //no throwing exception, just save cause and pass to next timestamp
             String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getInstant(), e);

@@ -7,6 +7,9 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
+import com.farao_community.farao.data.crac_api.Crac;
+import com.farao_community.farao.data.rao_result_api.RaoResult;
+import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.data.crac_creation.creator.api.parameters.CracCreationParameters;
@@ -84,6 +87,14 @@ public class FileImporter {
             return RefProgImporter.importRefProg(refProgStream, timestamp);
         } catch (IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download GLSK file from URL '%s'", refProgFile.getUrl()), e);
+        }
+    }
+
+    public RaoResult importRaoResult(String raoResultUrl, Crac crac) {
+        try (InputStream raoResultStream = urlValidationService.openUrlStream(raoResultUrl)) {
+            return (new RaoResultImporter()).importRaoResult(raoResultStream, crac);
+        } catch (IOException e) {
+            throw new CoreCCInvalidDataException(String.format("Cannot download RaoResult file from URL '%s'", raoResultUrl), e);
         }
     }
 
