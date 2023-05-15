@@ -67,7 +67,7 @@ public class FileExporterHelper {
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
-            minioAdapter.uploadArtifact(networkWithPraFilePath, is);
+            minioAdapter.uploadOutput(networkWithPraFilePath, is, "CORE_CC", "CGM", coreCCRequest.getTimestamp().toString());
         }
     }
 
@@ -145,10 +145,7 @@ public class FileExporterHelper {
             CoreCneExporter cneExporter = new CoreCneExporter();
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
             cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
-            minioAdapter.uploadArtifact(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()));
-
-            //remember mrid f299 for f305 rao response payload
-            hourlyRaoResult.setCneResultDocumentId(cneExporterParameters.getDocumentId());
+            minioAdapter.uploadOutput(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), "CORE_CC", "CNE", coreCCRequest.getTimestamp().toString());
         }
     }
 
