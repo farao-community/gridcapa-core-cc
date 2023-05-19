@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -29,7 +29,7 @@ public class LogsExporter {
     }
 
     public void exportLogs(InternalCoreCCRequest coreCCRequest) {
-        Map<String, SortedSet<String>> logsMap = logsEventsListener.getLogsByInstant();
+        Map<String, Set<String>> logsMap = logsEventsListener.getLogsByInstant();
         logsMap.forEach((k, v) -> {
             String instant = k.substring(k.indexOf("_") + 1);
             String fileName = OutputFileNameUtil.generateCracCreationReportFileName(instant, coreCCRequest);

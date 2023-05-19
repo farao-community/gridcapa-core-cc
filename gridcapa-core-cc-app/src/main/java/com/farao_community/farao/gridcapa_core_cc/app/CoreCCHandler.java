@@ -15,6 +15,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporte
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.LogsExporter;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
+import com.farao_community.farao.gridcapa_core_cc.app.util.TaskUtil;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
@@ -70,6 +71,8 @@ public class CoreCCHandler {
 
     public CoreCCResponse handleCoreCCRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
+        TaskUtil.setTaskId(internalCoreCCRequest.getId());
+        LOGGER.info("Task id was set to {}", internalCoreCCRequest.getId());
         final String formattedTimestamp = setUpEventLogging(internalCoreCCRequest);
         String outputPath;
         try {
@@ -94,6 +97,7 @@ public class CoreCCHandler {
             return null;
         }
         RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
+        LOGGER.info("coreCCRequest id is {}", coreCCRequest.getId());
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
         raoResponseFuture.thenApply(raoResponse -> {
@@ -121,6 +125,10 @@ public class CoreCCHandler {
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
+            // MetaData
+            fileExporterHelper.exportMetadataToMinio(coreCCRequest);
+            // Log
+            fileExporterHelper.exportLogToMinio(coreCCRequest);
         } catch (Exception e) {
             //no throwing exception, just save cause and pass to next timestamp
             String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getInstant(), e);

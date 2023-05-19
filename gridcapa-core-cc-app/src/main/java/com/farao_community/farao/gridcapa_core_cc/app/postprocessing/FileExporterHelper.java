@@ -11,6 +11,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDat
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.app.messaging.LogsEventsListener;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
@@ -35,6 +36,7 @@ public class FileExporterHelper {
 
     private final MinioAdapter minioAdapter;
     private final FileImporter fileImporter;
+    private final LogsEventsListener logsEventsListener;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileExporterHelper.class);
 
@@ -42,9 +44,10 @@ public class FileExporterHelper {
     private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
     private static final String DOMAIN_ID = "10Y1001C--00059P";
 
-    public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter) {
+    public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter, LogsEventsListener logsEventsListener) {
         this.minioAdapter = minioAdapter;
         this.fileImporter = fileImporter;
+        this.logsEventsListener = logsEventsListener;
     }
 
     public void exportNetworkToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
@@ -172,6 +175,48 @@ public class FileExporterHelper {
             new CoreCCMetadataGenerator(minioAdapter).exportMetadataFile(coreCCRequest, targetMinioFolder, isManualRun);
         } catch (Exception e) {
             LOGGER.error("Could not generate metadata file for rao task {}: {}", coreCCRequest.getId(), e.getMessage());
+        }
+    }
+
+    public void exportMetadataToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+
+        String metaDataFileName = OutputFileNameUtil.generateMetaDataFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+
+        try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
+            String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;
+
+            String result = "computation start ; " + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString()
+                + "; computation end ;" + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString()
+                + "; status ;" + coreCCRequest.getHourlyRaoResult().getStatus()
+                + "; error code ;" + coreCCRequest.getHourlyRaoResult().getErrorCodeString()
+                + "; error message ;" + coreCCRequest.getHourlyRaoResult().getErrorMessage();
+            outputStreamMetaData.write(result.getBytes());
+
+            minioAdapter.uploadOutput(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp().toString());
+        }
+    }
+
+    public void exportLogToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        LOGGER.info("Core CC task: '{}', creating logs for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+
+        Map<String, Set<String>> logsMap = logsEventsListener.getLogsByInstant();
+        String fileName = OutputFileNameUtil.generateCracCreationReportFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String logFilePath = hourlyRaoRequest.getResultsDestination() + "/" + fileName;
+        List<String> logs = logsMap.values().stream().collect(Collectors.toList()).stream().flatMap(Set::stream).collect(Collectors.toList());
+        try (ByteArrayOutputStream outputStreamLogs = new ByteArrayOutputStream()) {
+            PrintWriter pw = new PrintWriter(outputStreamLogs);
+            for (String logRecord : logs) {
+                pw.println(logRecord);
+            }
+            pw.close();
+            minioAdapter.uploadOutput(logFilePath, new ByteArrayInputStream(outputStreamLogs.toByteArray()), "CORE_CC", "LOGS", coreCCRequest.getTimestamp().toString());
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Error while exporting logs", e);
         }
     }
 }
