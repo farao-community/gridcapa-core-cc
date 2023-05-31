@@ -70,7 +70,7 @@ public class FileExporterHelper {
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
-            minioAdapter.uploadOutput(networkWithPraFilePath, is, "CORE_CC", "CGM", coreCCRequest.getTimestamp().toString());
+            minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, "CORE_CC", "CGM_OUT", coreCCRequest.getTimestamp());
         }
     }
 
@@ -148,7 +148,7 @@ public class FileExporterHelper {
             CoreCneExporter cneExporter = new CoreCneExporter();
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
             cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
-            minioAdapter.uploadOutput(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), "CORE_CC", "CNE", coreCCRequest.getTimestamp().toString());
+            minioAdapter.uploadOutputForTimestamp(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), "CORE_CC", "CNE", coreCCRequest.getTimestamp());
         }
     }
 
@@ -195,7 +195,7 @@ public class FileExporterHelper {
                 + "; error message ;" + coreCCRequest.getHourlyRaoResult().getErrorMessage();
             outputStreamMetaData.write(result.getBytes());
 
-            minioAdapter.uploadOutput(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp().toString());
+            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp());
         }
     }
 
@@ -214,7 +214,7 @@ public class FileExporterHelper {
                 pw.println(logRecord);
             }
             pw.close();
-            minioAdapter.uploadOutput(logFilePath, new ByteArrayInputStream(outputStreamLogs.toByteArray()), "CORE_CC", "LOGS", coreCCRequest.getTimestamp().toString());
+            minioAdapter.uploadOutputForTimestamp(logFilePath, new ByteArrayInputStream(outputStreamLogs.toByteArray()), "CORE_CC", "LOGS", coreCCRequest.getTimestamp());
         } catch (Exception e) {
             throw new CoreCCInternalException("Error while exporting logs", e);
         }

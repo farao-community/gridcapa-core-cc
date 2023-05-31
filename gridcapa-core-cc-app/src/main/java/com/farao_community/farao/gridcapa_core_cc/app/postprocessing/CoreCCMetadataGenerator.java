@@ -33,7 +33,7 @@ public class CoreCCMetadataGenerator {
         String metadataDestinationPath = OutputFileNameUtil.generateOutputsDestinationPath(targetMinioFolder, metadataFileName);
 
         try (InputStream csvIs = new ByteArrayInputStream(csv)) {
-            minioAdapter.uploadOutput(metadataDestinationPath, csvIs);
+            minioAdapter.uploadOutputForTimestamp(metadataDestinationPath, csvIs, "CORE_CC", "METADATA", coreCCRequest.getTimestamp());
         } catch (IOException e) {
             throw new CoreCCInternalException(String.format("Exception occurred while uploading metadata file of task %s", coreCCRequest.getId()));
         }

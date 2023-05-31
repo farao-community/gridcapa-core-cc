@@ -10,15 +10,14 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
-import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCPostProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.LogsExporter;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
+import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.gridcapa_core_cc.app.util.TaskUtil;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
-import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -42,29 +40,26 @@ public class CoreCCHandler {
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm");
 
     private final CoreCCPreProcessService coreCCPreProcessService;
-    private final CoreCCPostProcessService coreCCPostProcessService;
     private final Logger eventsLogger;
     private final AmqpMessagesConfiguration amqpConfiguration;
     private final FileExporterHelper fileExporterHelper;
-    private final AsynchronousRaoRunnerClient raoRunnerClient;
+    private final RaoRunnerService raoRunnerService;
     private final LogsExporter logsExporter;
     private final FileImporter fileImporter;
     private static final String RAO_FAILED_LOG_PATTERN = "Exception occurred in RAO computation for TimeStamp: '{}'. Origin cause: '{}'";
 
     public CoreCCHandler(CoreCCPreProcessService coreCCPreProcessService,
-                         CoreCCPostProcessService coreCCPostProcessService,
                          Logger eventsLogger,
                          AmqpMessagesConfiguration amqpConfiguration,
-                         AsynchronousRaoRunnerClient raoRunnerClient,
+                         RaoRunnerService raoRunnerService,
                          FileExporterHelper fileExporterHelper,
                          FileImporter fileImporter,
                          LogsExporter logsExporter) {
         this.coreCCPreProcessService = coreCCPreProcessService;
-        this.coreCCPostProcessService = coreCCPostProcessService;
         this.amqpConfiguration = amqpConfiguration;
         this.fileExporterHelper = fileExporterHelper;
         this.eventsLogger = eventsLogger;
-        this.raoRunnerClient = raoRunnerClient;
+        this.raoRunnerService = raoRunnerService;
         this.fileImporter = fileImporter;
         this.logsExporter = logsExporter;
     }
@@ -77,7 +72,7 @@ public class CoreCCHandler {
         String outputPath;
         try {
             coreCCPreProcessService.initializeTaskFromAutomatedLaunch(internalCoreCCRequest);
-            outputPath = runRaoForEachTimeStamp(internalCoreCCRequest, isManualRun);
+            outputPath = runRaoForEachTimeStamp(internalCoreCCRequest);
         } catch (Exception e) {
             throw new CoreCCInternalException("Exception occurred:", e);
         }
@@ -89,7 +84,7 @@ public class CoreCCHandler {
         return TIMESTAMP_FORMATTER.format(coreCCRequest.getTimestamp());
     }
 
-    private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
+    private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest) {
         StringBuilder outputPathBuilder = new StringBuilder();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         if (Objects.isNull(hourlyRaoRequest)) {
@@ -98,27 +93,23 @@ public class CoreCCHandler {
         }
         RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
         LOGGER.info("coreCCRequest id is {}", coreCCRequest.getId());
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        CompletableFuture<RaoResponse> raoResponseFuture = raoRunnerClient.runRaoAsynchronously(raoRequest);
-        raoResponseFuture.thenApply(raoResponse -> {
-            Thread.currentThread().setContextClassLoader(classLoader);
+        try {
+            RaoResponse raoResponse = raoRunnerService.run(raoRequest);
             LOGGER.info("RaoResponse received for timestamp {}", hourlyRaoRequest.getInstant());
             HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
             hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
-            convertAndSaveAsynchronouslyReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
-            return null;
-        }).exceptionally(exception -> {
-            LOGGER.info("Exception for TimeStamp: '{}' : '{}'", exception, hourlyRaoRequest.getInstant());
+            convertAndSaveReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
+        } catch (CoreCCInternalException e) {
+            LOGGER.info("Exception for TimeStamp: '{}' : '{}'", e, hourlyRaoRequest.getInstant());
             HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
             hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-            handleRaoRunnerException(hourlyRaoResult, exception);
-            return null;
-        });
+            handleRaoRunnerException(hourlyRaoResult, e);
+        }
         return outputPathBuilder.toString();
     }
 
-    private void convertAndSaveAsynchronouslyReceivedRaoResult(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult, RaoResponse raoResponse) {
+    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult, RaoResponse raoResponse) {
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
