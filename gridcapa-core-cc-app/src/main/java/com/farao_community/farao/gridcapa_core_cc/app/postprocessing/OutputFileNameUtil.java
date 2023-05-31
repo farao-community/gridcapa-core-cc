@@ -42,10 +42,6 @@ public final class OutputFileNameUtil {
         return handle25TimestampCase(output, instant);
     }
 
-    public static String generateMetaDataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        return "metadata.json";
-    }
-
     public static String generateOptimizedCbFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.OPTIMIZED_CB_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
@@ -65,8 +61,8 @@ public final class OutputFileNameUtil {
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateMetadataFileName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.METADATA_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
+    public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
+        return OutputsNamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant))
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 

@@ -12,6 +12,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -151,7 +153,8 @@ public class InternalCoreCCRequest {
     }
 
     public String getDestinationKey() {
-        return ("RAO_WORKING_DIR" + "/" + getTimestamp()).replace(":", "");
+        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("Europe/Brussels")));
+        return "RAO_WORKING_DIR" + "/" + hourlyFolderName;
     }
 
     public String getTimeInterval() {

@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class CoreCCPreProcessService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCPreProcessService.class);
-    private static final String S_HOURLY_RAO_RESULTS_S = "%s/hourly_rao_results/%s";
+    private static final String S_HOURLY_RAO_RESULTS_S = "%s/hourly_rao_results";
     private static final String XIIDM_EXPORT_FORMAT = "XIIDM";
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
@@ -86,7 +86,9 @@ public class CoreCCPreProcessService {
     }
 
     private void splitRaoRequest(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
+        LOGGER.info("****** timestamp is {}", coreCCRequest.getTimestamp());
         String destinationKey = coreCCRequest.getDestinationKey();
+        LOGGER.info("destination key is {}", destinationKey);
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
@@ -97,8 +99,6 @@ public class CoreCCPreProcessService {
             throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
         }
 
-        sendRaoRequestAcknowledgment(coreCCRequest, destinationKey, raoRequestMessage, isManualRun);
-
         VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
 
         AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
@@ -107,12 +107,13 @@ public class CoreCCPreProcessService {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
                 LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
+                sendRaoRequestAcknowledgment(coreCCRequest, destinationKey, raoRequestMessage, isManualRun);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
                     String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
                     String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
-                    String destinationPath = generateResultDestinationPath(destinationKey, utcInstant);
+                    String destinationPath = generateResultDestinationPath(destinationKey);
                     Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
 
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
@@ -137,9 +138,8 @@ public class CoreCCPreProcessService {
         coreCCRequest.setHourlyRaoResult(raoResult.get());
     }
 
-    private String generateResultDestinationPath(String destinationKey, Instant instant) {
-        String hourlyFolderName = HOURLY_NAME_FORMATTER.format(Instant.parse(instant.toString()));
-        return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey, hourlyFolderName);
+    private String generateResultDestinationPath(String destinationKey) {
+        return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey);
     }
 
     private Network convertNetworkToIidm(Path cgmPath, VirtualHubsConfiguration virtualHubsConfiguration) {

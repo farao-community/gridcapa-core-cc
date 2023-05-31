@@ -10,12 +10,12 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
+import com.farao_community.farao.gridcapa_core_cc.app.messaging.LogsEventsListener;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.LogsExporter;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
-import com.farao_community.farao.gridcapa_core_cc.app.util.TaskUtil;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
@@ -46,6 +46,8 @@ public class CoreCCHandler {
     private final RaoRunnerService raoRunnerService;
     private final LogsExporter logsExporter;
     private final FileImporter fileImporter;
+
+    private final LogsEventsListener logsEventsListener;
     private static final String RAO_FAILED_LOG_PATTERN = "Exception occurred in RAO computation for TimeStamp: '{}'. Origin cause: '{}'";
 
     public CoreCCHandler(CoreCCPreProcessService coreCCPreProcessService,
@@ -54,7 +56,8 @@ public class CoreCCHandler {
                          RaoRunnerService raoRunnerService,
                          FileExporterHelper fileExporterHelper,
                          FileImporter fileImporter,
-                         LogsExporter logsExporter) {
+                         LogsExporter logsExporter,
+                         LogsEventsListener logsEventsListener) {
         this.coreCCPreProcessService = coreCCPreProcessService;
         this.amqpConfiguration = amqpConfiguration;
         this.fileExporterHelper = fileExporterHelper;
@@ -62,12 +65,11 @@ public class CoreCCHandler {
         this.raoRunnerService = raoRunnerService;
         this.fileImporter = fileImporter;
         this.logsExporter = logsExporter;
+        this.logsEventsListener = logsEventsListener;
     }
 
     public CoreCCResponse handleCoreCCRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
-        TaskUtil.setTaskId(internalCoreCCRequest.getId());
-        LOGGER.info("Task id was set to {}", internalCoreCCRequest.getId());
         final String formattedTimestamp = setUpEventLogging(internalCoreCCRequest);
         String outputPath;
         try {
@@ -92,7 +94,8 @@ public class CoreCCHandler {
             return null;
         }
         RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
-        LOGGER.info("coreCCRequest id is {}", coreCCRequest.getId());
+        logsEventsListener.setTaskId(coreCCRequest.getId());
+        LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
         try {
             RaoResponse raoResponse = raoRunnerService.run(raoRequest);
             LOGGER.info("RaoResponse received for timestamp {}", hourlyRaoRequest.getInstant());

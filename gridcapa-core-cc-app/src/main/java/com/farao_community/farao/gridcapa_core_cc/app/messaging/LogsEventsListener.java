@@ -3,7 +3,6 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.messaging;
 
-import com.farao_community.farao.gridcapa_core_cc.app.util.TaskUtil;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import java.util.function.Consumer;
 @Service
 public class LogsEventsListener {
 
+    String taskId;
     ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     // key = timestamp, List of messages written on that timestamp (can be plural)
@@ -36,20 +36,23 @@ public class LogsEventsListener {
             .subscribe(this::saveLogsByTimestamp);
     }
 
+    public void setTaskId(String taskIdToBeSet) {
+        taskId = taskIdToBeSet;
+    }
+
     void saveLogsByTimestamp(String loggerEventString) {
         try {
             RaoLogEvent loggerEvent = objectMapper.readValue(loggerEventString, RaoLogEvent.class);
             // Only keep logs from rao-runner
-            // TODO : only keep logs from this coreCCRequest : check id ? id seems to be concatenated to a timestamp starting with _2023
-            // Ex : b17a33c0-83a3-4b22-9208-ef46ede44fdb_2023-02-02T23:00:00Z
-            String loggerId = loggerEvent.getId().substring(0, loggerEvent.getId().indexOf("_") + 1);
-            LOGGER.info("loggerId is {} and taskId is {}", loggerId, TaskUtil.getTaskId());
-            if (loggerEvent.getServiceName().equals("rao-runner-app") && loggerId.equals(TaskUtil.getTaskId())) {
-                logsByInstant.putIfAbsent(loggerEvent.getTimestamp(), createNewSet(loggerEvent));
-                logsByInstant.computeIfPresent(loggerEvent.getTimestamp(), (key, val) -> {
-                    val.add(loggerEvent.toString());
-                    return val;
-                });
+            if (Objects.nonNull(loggerEvent.getId())) {
+                String loggerId = loggerEvent.getId().substring(0, loggerEvent.getId().indexOf("_"));
+                if (loggerEvent.getServiceName().equals("rao-runner-app") && loggerId.equals(taskId)) {
+                    logsByInstant.putIfAbsent(loggerEvent.getTimestamp(), createNewSet(loggerEvent));
+                    logsByInstant.computeIfPresent(loggerEvent.getTimestamp(), (key, val) -> {
+                        val.add(loggerEvent.toString());
+                        return val;
+                    });
+                }
             }
         } catch (Exception e) {
             LOGGER.warn("Error occurred while reading rao logs from queue, cause: {} , {}", e.getMessage(), e);
