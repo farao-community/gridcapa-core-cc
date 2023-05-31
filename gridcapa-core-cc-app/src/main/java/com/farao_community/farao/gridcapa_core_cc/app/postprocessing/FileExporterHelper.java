@@ -77,9 +77,9 @@ public class FileExporterHelper {
     private void removeVirtualLoadsFromNetwork(Network network) {
         List<String> virtualLoadsList = new ArrayList<>();
         network.getSubstationStream().forEach(substation -> substation.getVoltageLevels()
-                .forEach(voltageLevel -> voltageLevel.getBusBreakerView().getBuses()
-                        .forEach(bus -> bus.getLoadStream().filter(busLoad -> busLoad.getNameOrId().contains("_virtualLoad")).forEach(virtualLoad -> virtualLoadsList.add(virtualLoad.getNameOrId()))
-                        )));
+            .forEach(voltageLevel -> voltageLevel.getBusBreakerView().getBuses()
+                .forEach(bus -> bus.getLoadStream().filter(busLoad -> busLoad.getNameOrId().contains("_virtualLoad")).forEach(virtualLoad -> virtualLoadsList.add(virtualLoad.getNameOrId()))
+                )));
         virtualLoadsList.forEach(virtualLoad -> network.getLoad(virtualLoad).remove());
     }
 
@@ -154,15 +154,15 @@ public class FileExporterHelper {
 
     private CneExporterParameters getCneExporterParameters(InternalCoreCCRequest coreCCRequest) {
         return new CneExporterParameters(
-                generateCneMRID(coreCCRequest),
-                coreCCRequest.getVersion(),
-                DOMAIN_ID,
-                CneExporterParameters.ProcessType.DAY_AHEAD_CC,
-                CoreCCXmlResponseGenerator.SENDER_ID,
-                CneExporterParameters.RoleType.REGIONAL_SECURITY_COORDINATOR,
-                CoreCCXmlResponseGenerator.RECEIVER_ID,
-                CneExporterParameters.RoleType.CAPACITY_COORDINATOR,
-                coreCCRequest.getTimeInterval()
+            generateCneMRID(coreCCRequest),
+            coreCCRequest.getVersion(),
+            DOMAIN_ID,
+            CneExporterParameters.ProcessType.DAY_AHEAD_CC,
+            CoreCCXmlResponseGenerator.SENDER_ID,
+            CneExporterParameters.RoleType.REGIONAL_SECURITY_COORDINATOR,
+            CoreCCXmlResponseGenerator.RECEIVER_ID,
+            CneExporterParameters.RoleType.CAPACITY_COORDINATOR,
+            coreCCRequest.getTimeInterval()
         );
     }
 
@@ -183,16 +183,18 @@ public class FileExporterHelper {
         LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
-        String metaDataFileName = OutputFileNameUtil.generateMetaDataFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String metaDataFileName = OutputFileNameUtil.generateMetadataFileName(hourlyRaoResult.getInstant(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;
 
-            String result = "computation start ; " + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString()
-                + "; computation end ;" + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString()
-                + "; status ;" + coreCCRequest.getHourlyRaoResult().getStatus()
-                + "; error code ;" + coreCCRequest.getHourlyRaoResult().getErrorCodeString()
-                + "; error message ;" + coreCCRequest.getHourlyRaoResult().getErrorMessage();
+            String result = "{"
+                + "\n \"computation start\" : " + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString()
+                + "\n \"computation end\" : " + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString()
+                + "\n \"status\" : " + coreCCRequest.getHourlyRaoResult().getStatus()
+                + "\n \"error code\" : " + coreCCRequest.getHourlyRaoResult().getErrorCodeString()
+                + "\n\"error message\" : " + coreCCRequest.getHourlyRaoResult().getErrorMessage()
+                + "\n}";
             outputStreamMetaData.write(result.getBytes());
 
             minioAdapter.uploadOutput(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp().toString());

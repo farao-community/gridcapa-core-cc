@@ -29,7 +29,7 @@ public class CoreCCMetadataGenerator {
 
     public void exportMetadataFile(InternalCoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
         byte[] csv = generateMetadataCsv(coreCCRequest).getBytes();
-        String metadataFileName = OutputFileNameUtil.generateMetadataFileName(coreCCRequest);
+        String metadataFileName = OutputFileNameUtil.generateMetadataFileName(coreCCRequest.getTimestamp().toString(), coreCCRequest);
         String metadataDestinationPath = OutputFileNameUtil.generateOutputsDestinationPath(targetMinioFolder, metadataFileName);
 
         try (InputStream csvIs = new ByteArrayInputStream(csv)) {
