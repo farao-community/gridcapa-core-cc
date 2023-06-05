@@ -25,6 +25,7 @@ import org.slf4j.MDC;
 import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -70,6 +71,7 @@ public class CoreCCHandler {
 
     public CoreCCResponse handleCoreCCRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
+        internalCoreCCRequest.setRequestReceivedInstant(Instant.now());
         final String formattedTimestamp = setUpEventLogging(internalCoreCCRequest);
         String outputPath;
         try {

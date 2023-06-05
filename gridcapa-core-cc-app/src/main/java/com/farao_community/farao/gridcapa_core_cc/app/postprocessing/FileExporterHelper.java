@@ -8,6 +8,7 @@ import com.farao_community.farao.data.crac_io_api.CracImporters;
 import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCMetadata;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
@@ -17,6 +18,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_api.json.JsonRaoParameters;
 import com.farao_community.farao.rao_api.parameters.RaoParameters;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Load;
@@ -170,14 +172,6 @@ public class FileExporterHelper {
         return String.format("%s-%s-F299v%s", CoreCCXmlResponseGenerator.SENDER_ID, IntervalUtil.getFormattedBusinessDay(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
-    public void exportMetadataFile(InternalCoreCCRequest coreCCRequest, String targetMinioFolder, boolean isManualRun) {
-        try {
-            new CoreCCMetadataGenerator(minioAdapter).exportMetadataFile(coreCCRequest, targetMinioFolder, isManualRun);
-        } catch (Exception e) {
-            LOGGER.error("Could not generate metadata file for rao task {}: {}", coreCCRequest.getId(), e.getMessage());
-        }
-    }
-
     public void exportMetadataToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
@@ -187,16 +181,29 @@ public class FileExporterHelper {
 
         try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;
-
-            String result = "{"
-                + "\n \"computation start\" : " + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString()
-                + "\n \"computation end\" : " + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString()
-                + "\n \"status\" : " + coreCCRequest.getHourlyRaoResult().getStatus()
-                + "\n \"error code\" : " + coreCCRequest.getHourlyRaoResult().getErrorCodeString()
-                + "\n\"error message\" : " + coreCCRequest.getHourlyRaoResult().getErrorMessage()
-                + "\n}";
-            outputStreamMetaData.write(result.getBytes());
-
+            CoreCCMetadata metadata = new CoreCCMetadata(coreCCRequest.getRaoRequest().getFilename(),
+                coreCCRequest.getRequestReceivedInstant().toString(),
+                coreCCRequest.getHourlyRaoResult().getInstant(),
+                coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString(),
+                coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString(),
+                coreCCRequest.getTimeInterval(),
+                coreCCRequest.getHourlyRaoResult().getStatus().toString(),
+                coreCCRequest.getHourlyRaoResult().getErrorCodeString(),
+                coreCCRequest.getHourlyRaoResult().getErrorMessage(),
+                coreCCRequest.getVersion());
+            new ObjectMapper().writeValue(outputStreamMetaData, metadata);
+//            String result = "{"
+//                + "\n \"raoRequestFileName\" : \"" + coreCCRequest.getRaoRequest().getFilename() + "\","
+//                + "\n \"requestReceivedInstant\" : \"" + coreCCRequest.getRequestReceivedInstant() + "\","
+//                + "\n \"instant\" : \"" + coreCCRequest.getHourlyRaoResult().getInstant() + "\","
+//                + "\n \"computationStart\" : \"" + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString() + "\","
+//                + "\n \"computationEnd\" : \"" + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString() + "\","
+//                + "\n \"timeInterval\" : \"" + coreCCRequest.getTimeInterval() + "\","
+//                + "\n \"status\" : \"" + coreCCRequest.getHourlyRaoResult().getStatus() + "\","
+//                + "\n \"errorCode\" : \"" + coreCCRequest.getHourlyRaoResult().getErrorCodeString() + "\","
+//                + "\n\"errorMessage\" : \"" + coreCCRequest.getHourlyRaoResult().getErrorMessage() + "\","
+//                + "\n\"version\" : " + coreCCRequest.getVersion()
+//                + "\n}";
             minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp());
         }
     }

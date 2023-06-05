@@ -86,9 +86,7 @@ public class CoreCCPreProcessService {
     }
 
     private void splitRaoRequest(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
-        LOGGER.info("****** timestamp is {}", coreCCRequest.getTimestamp());
         String destinationKey = coreCCRequest.getDestinationKey();
-        LOGGER.info("destination key is {}", destinationKey);
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
