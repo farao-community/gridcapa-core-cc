@@ -25,6 +25,7 @@ import org.slf4j.MDC;
 import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
@@ -69,6 +70,8 @@ public class CoreCCHandler {
     }
 
     public CoreCCResponse handleCoreCCRequest(InternalCoreCCRequest internalCoreCCRequest) {
+        internalCoreCCRequest.setRequestReceivedInstant(Instant.now());
+        setUpEventLogging(internalCoreCCRequest);
         String outputPath;
         try {
             coreCCPreProcessService.initializeTaskFromAutomatedLaunch(internalCoreCCRequest);

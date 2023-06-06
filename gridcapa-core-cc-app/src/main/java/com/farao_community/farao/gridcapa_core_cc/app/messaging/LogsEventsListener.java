@@ -64,7 +64,7 @@ public class LogsEventsListener {
     }
 
     private Set<String> createNewSet(RaoLogEvent loggerEvent) {
-        Set<String> logsForTs = new HashSet<>();
+        SortedSet<String> logsForTs = new TreeSet<>();
         logsForTs.add(loggerEvent.toString());
         return logsForTs;
     }

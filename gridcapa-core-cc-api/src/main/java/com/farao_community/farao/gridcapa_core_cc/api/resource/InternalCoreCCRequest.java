@@ -25,7 +25,7 @@ public class InternalCoreCCRequest {
     private HourlyRaoResult hourlyRaoResult;
     private DailyOutputs dailyOutputs = new DailyOutputs();
     private int version;
-    private Instant inputsReceivedInstant;
+    private Instant requestReceivedInstant;
     private Instant computationStartInstant;
     private Instant computationEndInstant;
     private Instant outputsSentInstant;
@@ -120,12 +120,12 @@ public class InternalCoreCCRequest {
         this.outputsSentInstant = outputsSentInstant;
     }
 
-    public Instant getInputsReceivedInstant() {
-        return inputsReceivedInstant;
+    public Instant getRequestReceivedInstant() {
+        return requestReceivedInstant;
     }
 
-    public void setInputsReceivedInstant(Instant inputsReceivedInstant) {
-        this.inputsReceivedInstant = inputsReceivedInstant;
+    public void setRequestReceivedInstant(Instant inputsReceivedInstant) {
+        this.requestReceivedInstant = inputsReceivedInstant;
     }
 
     public Instant getComputationStartInstant() {
