@@ -51,12 +51,12 @@ public class CoreCCMetadataGenerator {
         // Second key is timestamp (or whole business day)
         // Value is the value of the indicator for the given timestamp
         MultiKeyMap data = new MultiKeyMap<>();
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
 
         data.put(RAO_REQUESTS_RECEIVED, coreCCRequest.getTimestamp(), coreCCRequest.getRaoRequest().getFilename());
         data.put(RAO_REQUEST_RECEPTION_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getInputsReceivedInstant().toString());
-        data.put(RAO_OUTPUTS_SENT, coreCCRequest.getTimestamp(), coreCCRequest.getStatus().equals(InternalCoreCCRequest.Status.SUCCESS) ? "YES" : "NO");
+        data.put(RAO_OUTPUTS_SENT, coreCCRequest.getTimestamp(), hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.SUCCESS) ? "YES" : "NO");
         data.put(RAO_OUTPUTS_SENDING_TIME, coreCCRequest.getTimestamp(), coreCCRequest.getOutputsSentInstant().toString());
-        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         data.put(RAO_START_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationStartInstant().toString());
         data.put(RAO_END_TIME, hourlyRaoResult.getInstant(), hourlyRaoResult.getComputationEndInstant().toString());
         data.put(RAO_COMPUTATION_TIME, hourlyRaoResult.getInstant(), String.valueOf(ChronoUnit.MINUTES.between(hourlyRaoResult.getComputationStartInstant(), hourlyRaoResult.getComputationEndInstant())));

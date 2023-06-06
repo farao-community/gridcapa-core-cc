@@ -133,6 +133,10 @@ public class CoreCCPreProcessService {
         });
         if (Objects.isNull(raoRequest.get())) {
             LOGGER.warn("No raoRequest timestamp matched the coreCCRequest timestamp");
+            raoResult.set(new HourlyRaoResult());
+            raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+            raoResult.get().setErrorMessage("No raoRequest timestamp matched the coreCCRequest timestamp");
+            raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
         }
         coreCCRequest.setHourlyRaoRequest(raoRequest.get());
         coreCCRequest.setHourlyRaoResult(raoResult.get());

@@ -7,8 +7,8 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,10 +71,10 @@ class CoreCCListenerTest {
         Instant computationStartInstant = Instant.now();
         Instant computationEndInstant = Instant.now();
         CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf", resultFileUrl, computationStartInstant, computationEndInstant);
-        Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean())).thenReturn(coreCCResponse);
+        Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class))).thenReturn(coreCCResponse);
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(2)).send(Mockito.anyString(), Mockito.any());
-        Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean());
+        Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
     }
 
     @Test
@@ -83,7 +83,7 @@ class CoreCCListenerTest {
         Message message = MessageBuilder.withBody(invalidMessage).build();
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(0)).send(Mockito.anyString(), Mockito.any());
-        Mockito.verify(coreCCHandler, Mockito.times(0)).handleCoreCCRequest(Mockito.any(CoreCCRequest.class), Mockito.anyBoolean());
+        Mockito.verify(coreCCHandler, Mockito.times(0)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
     }
 
 }

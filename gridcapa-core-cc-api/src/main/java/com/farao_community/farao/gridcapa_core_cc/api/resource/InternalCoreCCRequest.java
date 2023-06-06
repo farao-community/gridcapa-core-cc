@@ -25,7 +25,6 @@ public class InternalCoreCCRequest {
     private HourlyRaoResult hourlyRaoResult;
     private DailyOutputs dailyOutputs = new DailyOutputs();
     private int version;
-    private Status status;
     private Instant inputsReceivedInstant;
     private Instant computationStartInstant;
     private Instant computationEndInstant;
@@ -35,13 +34,6 @@ public class InternalCoreCCRequest {
 
     public InternalCoreCCRequest(CoreCCRequest coreCCRequest) {
         this.coreCCRequest = coreCCRequest;
-    }
-
-    public enum Status {
-        PENDING,
-        RUNNING,
-        SUCCESS,
-        FAILURE
     }
 
     public String getId() {
@@ -110,14 +102,6 @@ public class InternalCoreCCRequest {
 
     public void setVersion(int version) {
         this.version = version;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 
     public Instant getComputationEndInstant() {

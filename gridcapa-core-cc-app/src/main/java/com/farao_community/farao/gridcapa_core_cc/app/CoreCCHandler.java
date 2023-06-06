@@ -68,13 +68,11 @@ public class CoreCCHandler {
         this.logsEventsListener = logsEventsListener;
     }
 
-    public CoreCCResponse handleCoreCCRequest(CoreCCRequest coreCCRequest, boolean isManualRun) {
-        InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
-        final String formattedTimestamp = setUpEventLogging(internalCoreCCRequest);
+    public CoreCCResponse handleCoreCCRequest(InternalCoreCCRequest internalCoreCCRequest) {
         String outputPath;
         try {
             coreCCPreProcessService.initializeTaskFromAutomatedLaunch(internalCoreCCRequest);
-            outputPath = runRaoForEachTimeStamp(internalCoreCCRequest);
+            outputPath = runRao(internalCoreCCRequest);
         } catch (Exception e) {
             throw new CoreCCInternalException("Exception occurred:", e);
         }
@@ -86,7 +84,7 @@ public class CoreCCHandler {
         return TIMESTAMP_FORMATTER.format(coreCCRequest.getTimestamp());
     }
 
-    private String runRaoForEachTimeStamp(InternalCoreCCRequest coreCCRequest) {
+    private String runRao(InternalCoreCCRequest coreCCRequest) {
         StringBuilder outputPathBuilder = new StringBuilder();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         if (Objects.isNull(hourlyRaoRequest)) {
@@ -103,6 +101,7 @@ public class CoreCCHandler {
             hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
             convertAndSaveReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
+            LOGGER.info("Finished writing data for timestamp {}", hourlyRaoRequest.getInstant());
         } catch (CoreCCInternalException e) {
             LOGGER.info("Exception for TimeStamp: '{}' : '{}'", e, hourlyRaoRequest.getInstant());
             HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();

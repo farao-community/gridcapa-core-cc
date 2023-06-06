@@ -10,6 +10,7 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
@@ -64,7 +65,8 @@ class CoreCCHandlerTest {
         CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
         CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raoRequestFile, virtualHubFile, true);
-        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(request, true);
+        InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
+        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         assertEquals(requestId, response.getId());
         //should upload 7 artifacts: parameters + 3 networks + 3 cracs
         Mockito.verify(minioAdapter, Mockito.times(7)).uploadArtifact(Mockito.any(), Mockito.any());

@@ -14,6 +14,8 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCEx
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,8 +63,10 @@ public class CoreCCListener implements MessageListener {
             CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(message.getBody(), CoreCCRequest.class);
             MDC.put("gridcapa-task-id", coreCCRequest.getId());
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
-            CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(coreCCRequest, true);
-            sendCoreCCResponse(coreCCResponse, replyTo, correlationId);
+            InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
+            CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
+            LOGGER.info("Core cc response written for timestamp {}", coreCCRequest.getTimestamp());
+            sendCoreCCResponse(coreCCResponse, replyTo, correlationId, internalCoreCCRequest.getHourlyRaoResult().getStatus());
         } catch (AbstractCoreCCException e) {
             LOGGER.error("Core cc exception occured", e);
             sendRequestErrorResponse(e, replyTo, correlationId);
@@ -89,8 +93,13 @@ public class CoreCCListener implements MessageListener {
         }
     }
 
-    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String replyTo, String correlationId) {
-        streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.SUCCESS));
+    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String replyTo, String correlationId, HourlyRaoResult.Status status) {
+        LOGGER.info("Updating task status to SUCCESS for timestamp {}", coreCCResponse.getId());
+        if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
+            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.SUCCESS));
+        } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
+            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.ERROR));
+        }
         if (replyTo != null) {
             amqpTemplate.send(replyTo, createMessageResponse(coreCCResponse, correlationId));
         } else {
