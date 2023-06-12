@@ -24,11 +24,6 @@ public final class OutputFileNameUtil {
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
-    public static String generateCoreCCResponseFileName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.CORE_CC_RESPONSE_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
-                .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
-    }
-
     public static String generateUctFileName(String instant, int version) {
         String output = OutputsNamingRules.UCT_FILENAME_FORMATTER.format(Instant.parse(instant));
         output = output.replace("2D0", "2D" + Instant.parse(instant).atZone(OutputsNamingRules.ZONE_ID).getDayOfWeek().getValue())
@@ -48,23 +43,8 @@ public final class OutputFileNameUtil {
         return handle25TimestampCase(output, instant);
     }
 
-    public static String generateOptimizedCbFileName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.OPTIMIZED_CB_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
-                .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
-    }
-
     public static String generateOutputsDestinationPath(String destinationPrefix, String fileName) {
         return String.format(OutputsNamingRules.OUTPUTS, destinationPrefix, fileName);
-    }
-
-    public static String generateCgmZipName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.UCT_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
-                .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
-    }
-
-    public static String generateCneZipName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.CNE_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
-                .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
     public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
@@ -76,11 +56,6 @@ public final class OutputFileNameUtil {
         String output = OutputsNamingRules.RAO_LOGS_FILENAME_FORMATTER.format(Instant.parse(instant))
             .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
         return handle25TimestampCase(output, instant);
-    }
-
-    public static String generateLogsZipName(InternalCoreCCRequest coreCCRequest) {
-        return OutputsNamingRules.LOGS_OUTPUT_FORMATTER.format(coreCCRequest.getTimestamp())
-            .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
     }
 
     /**

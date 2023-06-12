@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.*;
 import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -48,21 +47,6 @@ public final class JaxbUtil {
             return requestMessageTypeElement.getValue();
         } catch (JAXBException e) {
             String errorMessage = String.format("Error occurred when converting InputStream to object of type %s", clazz.getName());
-            LOGGER.error(errorMessage);
-            throw new CoreCCInternalException(errorMessage, e);
-        }
-    }
-
-    public static <T> byte[] writeInBytes(Class<T> clazz, T type) {
-        try {
-            JAXBContext context = JAXBContext.newInstance(clazz);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            marshaller.marshal(type, bos);
-            return bos.toByteArray();
-        } catch (JAXBException e) {
-            String errorMessage = String.format("Error occurred when writing content of object of type %s to bytes", clazz.getName());
             LOGGER.error(errorMessage);
             throw new CoreCCInternalException(errorMessage, e);
         }

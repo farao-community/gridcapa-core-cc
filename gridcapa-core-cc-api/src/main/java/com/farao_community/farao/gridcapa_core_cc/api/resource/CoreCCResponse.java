@@ -23,24 +23,18 @@ public class CoreCCResponse {
 
     @Id
     private final String id;
-    private final String mainResultFileUrl;
     private final Instant computationStartInstant;
     private final Instant computationEndInstant;
 
     @JsonCreator
-    public CoreCCResponse(@JsonProperty("id") String id, @JsonProperty("mainResultFileUrl") String mainResultFileUrl, @JsonProperty("computationStartInstant") Instant computationStartInstant, @JsonProperty("computationEndInstant") Instant computationEndInstant) {
+    public CoreCCResponse(@JsonProperty("id") String id, @JsonProperty("computationStartInstant") Instant computationStartInstant, @JsonProperty("computationEndInstant") Instant computationEndInstant) {
         this.id = id;
-        this.mainResultFileUrl = mainResultFileUrl;
         this.computationStartInstant = computationStartInstant;
         this.computationEndInstant = computationEndInstant;
     }
 
     public String getId() {
         return id;
-    }
-
-    public String getMainResultFileUrl() {
-        return mainResultFileUrl;
     }
 
     public Instant getComputationStartInstant() {

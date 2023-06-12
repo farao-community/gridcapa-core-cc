@@ -36,10 +36,6 @@ public class LogsEventsListener {
             .subscribe(this::saveLogsByTimestamp);
     }
 
-    public void setTaskId(String taskIdToBeSet) {
-        taskId = taskIdToBeSet;
-    }
-
     void saveLogsByTimestamp(String loggerEventString) {
         try {
             RaoLogEvent loggerEvent = objectMapper.readValue(loggerEventString, RaoLogEvent.class);

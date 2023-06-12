@@ -9,7 +9,6 @@ package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.powsybl.iidm.network.Bus;
 import com.powsybl.iidm.network.DanglingLine;
-import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +22,6 @@ import java.util.Optional;
 public final class NetworkHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
-    private static final String ALEGRO_GEN_BE = "XLI_OB1B_generator";
-    private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
 
     private NetworkHandler() {
         throw new IllegalStateException("Utility class");
@@ -101,11 +98,6 @@ public final class NetworkHandler {
                     .add()
                     .newMinMaxReactiveLimits().setMaxQ(99999).setMinQ(99999).add();
         }
-    }
-
-    public static void removeAlegroVirtualGeneratorsFromNetwork(Network network) {
-        Optional.ofNullable(network.getGenerator(ALEGRO_GEN_BE)).ifPresent(Generator::remove);
-        Optional.ofNullable(network.getGenerator(ALEGRO_GEN_DE)).ifPresent(Generator::remove);
     }
 
 }

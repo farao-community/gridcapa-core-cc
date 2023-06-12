@@ -22,10 +22,6 @@ public class CgmsAndXmlHeader {
         return xmlHeader;
     }
 
-    public List<Path> getNetworkPaths() {
-        return networkPaths;
-    }
-
     public Path getNetworkPath(Instant instant) {
         ResponseItem instantResponseItem = xmlHeader.getPayload().getResponseItems().getResponseItem().stream()
             .filter(responseItem -> Interval.parse(responseItem.getTimeInterval()).contains(instant))
