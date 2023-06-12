@@ -109,8 +109,8 @@ public class FileImporter {
         }
     }
 
-    public InputStream importCracAsInputStream(String cbcoraUrl) {
-        return urlValidationService.openUrlStream(cbcoraUrl);
+    public InputStream importFileUrlAsInputStream(String fileUrl) {
+        return urlValidationService.openUrlStream(fileUrl);
     }
 
     public RequestMessage importRaoRequest(CoreCCFileResource raoRequestFileResource) {

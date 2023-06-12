@@ -121,6 +121,7 @@ public class CoreCCHandler {
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
+            fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
             // MetaData
             fileExporterHelper.exportMetadataToMinio(coreCCRequest);
             // Log

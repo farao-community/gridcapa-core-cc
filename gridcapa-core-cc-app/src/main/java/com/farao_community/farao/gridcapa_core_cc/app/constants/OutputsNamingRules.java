@@ -28,5 +28,6 @@ public final class OutputsNamingRules {
     public static final String CGM_XML_HEADER_FILENAME = "CGM_XML_Header.xml";
     public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-0V.json'").withZone(ZONE_ID);
     public static final DateTimeFormatter RAO_LOGS_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-LOGS-0V.txt'").withZone(ZONE_ID);
+    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-RESULT-0V.txt'").withZone(ZONE_ID);
     public static final DateTimeFormatter LOGS_OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F342_'yyyyMMdd'-F342-0V.zip'").withZone(ZONE_ID);
 }

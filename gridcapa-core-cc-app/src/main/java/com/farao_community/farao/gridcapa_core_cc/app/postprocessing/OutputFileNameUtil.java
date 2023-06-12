@@ -42,6 +42,12 @@ public final class OutputFileNameUtil {
         return handle25TimestampCase(output, instant);
     }
 
+    public static String generateRaoResultFileName(String instant, InternalCoreCCRequest coreCCRequest) {
+        String output = OutputsNamingRules.RAO_RESULT_FILENAME_FORMATTER.format(Instant.parse(instant))
+            .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
+        return handle25TimestampCase(output, instant);
+    }
+
     public static String generateOptimizedCbFileName(InternalCoreCCRequest coreCCRequest) {
         return OutputsNamingRules.OPTIMIZED_CB_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));

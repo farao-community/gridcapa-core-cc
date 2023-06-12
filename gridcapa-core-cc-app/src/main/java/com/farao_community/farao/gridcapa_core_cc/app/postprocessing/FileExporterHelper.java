@@ -154,6 +154,15 @@ public class FileExporterHelper {
         }
     }
 
+    public void exportRaoResultToMinio(InternalCoreCCRequest coreCCRequest) {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+
+        String raoResultNewFileName = OutputFileNameUtil.generateRaoResultFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + raoResultNewFileName;
+        minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), "CORE_CC", "RAO_RESULT", coreCCRequest.getTimestamp());
+    }
+
     private CneExporterParameters getCneExporterParameters(InternalCoreCCRequest coreCCRequest) {
         return new CneExporterParameters(
             generateCneMRID(coreCCRequest),
