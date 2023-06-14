@@ -24,7 +24,7 @@ public class InternalCoreCCRequest {
     private HourlyRaoRequest hourlyRaoRequest;
     private HourlyRaoResult hourlyRaoResult;
     private DailyOutputs dailyOutputs = new DailyOutputs();
-    private int version;
+    private int version = 1;
     private Instant requestReceivedInstant;
     private Instant computationStartInstant;
     private Instant computationEndInstant;
