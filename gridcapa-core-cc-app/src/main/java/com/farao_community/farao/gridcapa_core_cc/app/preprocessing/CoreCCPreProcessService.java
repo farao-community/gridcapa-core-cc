@@ -105,7 +105,7 @@ public class CoreCCPreProcessService {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
                 LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
-                sendRaoRequestAcknowledgment(coreCCRequest, destinationKey, raoRequestMessage, isManualRun);
+                sendRaoRequestAcknowledgment(coreCCRequest, coreCCRequest.getAckDestinationKey(), raoRequestMessage, isManualRun);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
@@ -212,10 +212,16 @@ public class CoreCCPreProcessService {
 
         String raoRequestAckFileName = OutputFileNameUtil.generateRaoRequestAckFileName(coreCCRequest);
         String destinationPath = OutputFileNameUtil.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
-        try (InputStream xmlIs = new ByteArrayInputStream(xml)) {
-            minioAdapter.uploadArtifact(destinationPath, xmlIs);
-        } catch (IOException e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()));
+        // Only upload ACK if no ACK has been uploaded
+        if (minioAdapter.fileExists(destinationPath)) {
+            LOGGER.info("ACK has already been uploaded !");
+        } else {
+            try (InputStream xmlIs = new ByteArrayInputStream(xml)) {
+                LOGGER.info("Uploading ACK !");
+                minioAdapter.uploadArtifact(destinationPath, xmlIs);
+            } catch (IOException e) {
+                throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()));
+            }
         }
         coreCCRequest.getDailyOutputs().setRaoRequestAckPath(destinationPath);
     }

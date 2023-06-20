@@ -141,6 +141,11 @@ public class InternalCoreCCRequest {
         return "RAO_WORKING_DIR" + "/" + hourlyFolderName;
     }
 
+    public String getAckDestinationKey() {
+        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("Europe/Brussels")));
+        return "RAO_OUTPUTS_DIR" + "/" + hourlyFolderName;
+    }
+
     public String getTimeInterval() {
         return timeInterval;
     }
