@@ -19,7 +19,7 @@ import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_c
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.importer.FbConstraintImporter;
 import com.farao_community.farao.data.refprog.reference_program.ReferenceProgram;
 import com.farao_community.farao.data.refprog.refprog_xml_importer.RefProgImporter;
-import com.farao_community.farao.gridcapa_core_cc.app.constants.InputsNamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
@@ -129,11 +129,10 @@ public class FileImporter {
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
             Path tmpCgmInputsPath = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir" + File.separator + "cgm"), attr);
             List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
-            Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(InputsNamingRules.CGM_XML_HEADER_NAME))
+            Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_XML_HEADER_NAME))
                 .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
             ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
-            //TODO: filter with InputsNamingRules.CGM_FILE_NAME?
-            List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(InputsNamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
+            List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download rao request file from URL '%s'", cgmsZimFileResource.getUrl()), e);

@@ -8,12 +8,12 @@
 package com.farao_community.farao.gridcapa_core_cc.app;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
-import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
 import org.slf4j.Logger;
@@ -27,9 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
- * @author Theo Pascoli {@literal <theo.pascoli at rte-france.com>}
- * @author Vincent Bochet {@literal <vincent.bochet at rte-france.com>}
+ * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
+ * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
  */
 @Component
 public class CoreCCHandler {
@@ -73,33 +72,30 @@ public class CoreCCHandler {
 
     private void runRao(InternalCoreCCRequest coreCCRequest) {
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         if (Objects.isNull(hourlyRaoRequest)) {
             LOGGER.info("Skipping RAO - no hourly raoRequest was defined");
             return;
         }
-        RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest(coreCCRequest.getId());
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
+        String raoRequestInstant = hourlyRaoRequest.getRaoRequestInstant();
+        hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
         try {
-            RaoResponse raoResponse = raoRunnerService.run(raoRequest);
-            LOGGER.info("RaoResponse received for timestamp {}", hourlyRaoRequest.getInstant());
-            HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-            hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
-            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
-            convertAndSaveReceivedRaoResult(coreCCRequest, hourlyRaoResult, raoResponse);
-            LOGGER.info("Finished writing data for timestamp {}", hourlyRaoRequest.getInstant());
+            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
+            hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
+            convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
         } catch (CoreCCInternalException e) {
-            LOGGER.info("Exception for TimeStamp: '{}' : '{}'", e, hourlyRaoRequest.getInstant());
-            HourlyRaoResult hourlyRaoResult = new HourlyRaoResult();
-            hourlyRaoResult.setInstant(hourlyRaoRequest.getInstant());
+            handleRaoRunnerException(hourlyRaoResult, e);
+        } catch (CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
         }
     }
 
-    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, HourlyRaoResult hourlyRaoResult, RaoResponse raoResponse) {
+    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, RaoResponse raoResponse) {
+        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
-            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
             fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
@@ -107,7 +103,7 @@ public class CoreCCHandler {
             fileExporterHelper.exportMetadataToMinio(coreCCRequest);
         } catch (Exception e) {
             //no throwing exception, just save cause and pass to next timestamp
-            String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getInstant(), e);
+            String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
             LOGGER.error(errorMessage);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
             hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
@@ -123,27 +119,27 @@ public class CoreCCHandler {
             ResourceParseException resourceParseException = (ResourceParseException) exception;
             String originCause = resourceParseException.getErrors().getErrors().get(0).getDetail();
             hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getInstant(), originCause);
+            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
         } else if (exception.getCause() instanceof ResourceParseException) {
             // Async scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format, which is wrapped itself into a ConcurrencyException.
             ResourceParseException resourceParseException = (ResourceParseException) exception.getCause();
             String originCause = resourceParseException.getErrors().getErrors().get(0).getDetail();
             hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getInstant(), originCause);
+            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
         } else if (exception.getCause() instanceof AmqpReplyTimeoutException) {
             String originCause = "Timeout reached, Rao has not finished within allocated time of : " + amqpConfiguration.getAsyncTimeOutInMinutes() + " minutes";
             hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getInstant(), originCause);
+            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
         } else {
             // if exception is not a json api Error neither an AmqpReplyTimeoutException
             String originCause = exception.getMessage();
             hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getInstant(), originCause);
+            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
         }
     }
 
     private CoreCCResponse buildCoreCCResponse(InternalCoreCCRequest coreCCRequest) {
-        return new CoreCCResponse(coreCCRequest.getId(), coreCCRequest.getComputationStartInstant(), coreCCRequest.getComputationEndInstant());
+        return new CoreCCResponse(coreCCRequest.getId());
     }
 
 }

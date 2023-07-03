@@ -23,10 +23,8 @@ class CoreCCResponseTest {
     void checkCoreCCResponse() {
         Instant computationStartInstant = Instant.parse("2021-01-01T00:30:00Z");
         Instant computationEndInstant = Instant.parse("2021-01-01T00:35:00Z");
-        CoreCCResponse coreCCResponse = new CoreCCResponse("id", computationStartInstant, computationEndInstant);
+        CoreCCResponse coreCCResponse = new CoreCCResponse("id");
         assertNotNull(coreCCResponse);
         assertEquals("id", coreCCResponse.getId());
-        assertEquals("2021-01-01T00:30:00Z", coreCCResponse.getComputationStartInstant().toString());
-        assertEquals("2021-01-01T00:35:00Z", coreCCResponse.getComputationEndInstant().toString());
     }
 }

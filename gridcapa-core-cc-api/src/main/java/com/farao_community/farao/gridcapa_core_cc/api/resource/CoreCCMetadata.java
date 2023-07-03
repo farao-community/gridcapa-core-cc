@@ -18,7 +18,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public class CoreCCMetadata {
     private final String raoRequestFileName;
     private final String requestReceivedInstant;
-    private final String instant;
+    private final String raoRequestInstant;
 
     private final String computationStart;
 
@@ -33,7 +33,7 @@ public class CoreCCMetadata {
     @JsonCreator
     public CoreCCMetadata(@JsonProperty("raoRequestFileName") String raoRequestFileName,
                           @JsonProperty("requestReceivedInstant") String requestReceivedInstant,
-                          @JsonProperty("instant") String instant,
+                          @JsonProperty("raoRequestInstant") String raoRequestInstant,
                           @JsonProperty("computationStart") String computationStart,
                           @JsonProperty("computationEnd") String computationEnd,
                           @JsonProperty("timeInterval") String timeInterval,
@@ -43,7 +43,7 @@ public class CoreCCMetadata {
                           @JsonProperty("version") int version) {
         this.raoRequestFileName = raoRequestFileName;
         this.requestReceivedInstant = requestReceivedInstant;
-        this.instant = instant;
+        this.raoRequestInstant = raoRequestInstant;
         this.computationStart = computationStart;
         this.computationEnd = computationEnd;
         this.timeInterval = timeInterval;
@@ -65,8 +65,8 @@ public class CoreCCMetadata {
         return computationStart;
     }
 
-    public String getInstant() {
-        return instant;
+    public String getRaoRequestInstant() {
+        return raoRequestInstant;
     }
 
     public String getComputationEnd() {

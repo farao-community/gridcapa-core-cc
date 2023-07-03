@@ -12,7 +12,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCMetadata;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
-import com.farao_community.farao.gridcapa_core_cc.app.messaging.LogsEventsListener;
+import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
@@ -38,23 +38,20 @@ public class FileExporterHelper {
 
     private final MinioAdapter minioAdapter;
     private final FileImporter fileImporter;
-    private final LogsEventsListener logsEventsListener;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FileExporterHelper.class);
 
     private static final String ALEGRO_GEN_BE = "XLI_OB1B_generator";
     private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
     private static final String DOMAIN_ID = "10Y1001C--00059P";
 
-    public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter, LogsEventsListener logsEventsListener) {
+    public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter) {
         this.minioAdapter = minioAdapter;
         this.fileImporter = fileImporter;
-        this.logsEventsListener = logsEventsListener;
     }
 
     public void exportNetworkToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
-        LOGGER.info("Core CC task: '{}', exporting uct network with pra for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
+        LOGGER.info("Core CC task: '{}', exporting uct network with pra for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getRaoRequestInstant());
 
         //get input network
         Network network = fileImporter.importNetworkFromUrl(hourlyRaoResult.getNetworkWithPraUrl());
@@ -68,7 +65,7 @@ public class FileExporterHelper {
         removeFictitiousGeneratorsFromNetwork(network);
         removeFictitiousLoadsFromNetwork(network);
         network.write("UCTE", new Properties(), memDataSource);
-        String networkNewFileName = OutputFileNameUtil.generateUctFileName(hourlyRaoResult.getInstant(), coreCCRequest.getVersion());
+        String networkNewFileName = OutputFileNameUtil.generateUctFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest.getVersion());
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
@@ -112,7 +109,7 @@ public class FileExporterHelper {
 
     public void exportCneToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
-        LOGGER.info("Core CC task: '{}', creating CNE Result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
+        LOGGER.info("Core CC task: '{}', creating CNE Result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getRaoRequestInstant());
         //create CNE with input from inputNetwork, outputCracJson and inputCraxXml
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
@@ -126,9 +123,9 @@ public class FileExporterHelper {
         //import input crac xml file and get FbConstraintCreationContext
         String cracXmlFileUrl = coreCCRequest.getCbcora().getUrl();
         FbConstraintCreationContext fbConstraintCreationContext;
-        fbConstraintCreationContext = fileImporter.importCrac(cracXmlFileUrl, OffsetDateTime.parse(hourlyRaoResult.getInstant()), network);
+        fbConstraintCreationContext = fileImporter.importCrac(cracXmlFileUrl, OffsetDateTime.parse(hourlyRaoResult.getRaoRequestInstant()), network);
         if (!fbConstraintCreationContext.isCreationSuccessful()) {
-            throw new CoreCCInvalidDataException("Crac creation context failed for timestamp: " + hourlyRaoResult.getInstant());
+            throw new CoreCCInvalidDataException("Crac creation context failed for timestamp: " + hourlyRaoResult.getRaoRequestInstant());
         }
         //get crac from hourly inputs
         Crac cracJson = importCracFromHourlyRaoRequest(coreCCRequest);
@@ -143,7 +140,7 @@ public class FileExporterHelper {
         }
 
         //export CNE
-        String cneNewFileName = OutputFileNameUtil.generateCneFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String cneNewFileName = OutputFileNameUtil.generateCneFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamCne = new ByteArrayOutputStream()) {
             String cneFilePath = hourlyRaoRequest.getResultsDestination() + "/" + cneNewFileName;
@@ -158,7 +155,7 @@ public class FileExporterHelper {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
-        String raoResultNewFileName = OutputFileNameUtil.generateRaoResultFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String raoResultNewFileName = OutputFileNameUtil.generateRaoResultFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
         String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + raoResultNewFileName;
         minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), "CORE_CC", "RAO_RESULT", coreCCRequest.getTimestamp());
     }
@@ -169,30 +166,30 @@ public class FileExporterHelper {
             coreCCRequest.getVersion(),
             DOMAIN_ID,
             CneExporterParameters.ProcessType.DAY_AHEAD_CC,
-            CoreCCXmlResponseGenerator.SENDER_ID,
+            NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID,
             CneExporterParameters.RoleType.REGIONAL_SECURITY_COORDINATOR,
-            CoreCCXmlResponseGenerator.RECEIVER_ID,
+            NamingRules.XML_RESPONSE_GENERATOR_RECEIVER_ID,
             CneExporterParameters.RoleType.CAPACITY_COORDINATOR,
             coreCCRequest.getTimeInterval()
         );
     }
 
     private String generateCneMRID(InternalCoreCCRequest coreCCRequest) {
-        return String.format("%s-%s-F299v%s", CoreCCXmlResponseGenerator.SENDER_ID, IntervalUtil.getFormattedBusinessDay(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
+        return String.format("%s-%s-F299v%s", NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID, IntervalUtil.getFormattedBusinessDay(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
     public void exportMetadataToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
-        LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
+        LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getRaoRequestInstant());
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
-        String metaDataFileName = OutputFileNameUtil.generateMetadataFileName(hourlyRaoResult.getInstant(), coreCCRequest);
+        String metaDataFileName = OutputFileNameUtil.generateMetadataFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;
             CoreCCMetadata metadata = new CoreCCMetadata(coreCCRequest.getRaoRequest().getFilename(),
                 coreCCRequest.getRequestReceivedInstant().toString(),
-                coreCCRequest.getHourlyRaoResult().getInstant(),
+                coreCCRequest.getHourlyRaoResult().getRaoRequestInstant(),
                 coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString(),
                 coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString(),
                 coreCCRequest.getTimeInterval(),
@@ -201,40 +198,7 @@ public class FileExporterHelper {
                 coreCCRequest.getHourlyRaoResult().getErrorMessage(),
                 coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
-//            String result = "{"
-//                + "\n \"raoRequestFileName\" : \"" + coreCCRequest.getRaoRequest().getFilename() + "\","
-//                + "\n \"requestReceivedInstant\" : \"" + coreCCRequest.getRequestReceivedInstant() + "\","
-//                + "\n \"instant\" : \"" + coreCCRequest.getHourlyRaoResult().getInstant() + "\","
-//                + "\n \"computationStart\" : \"" + coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString() + "\","
-//                + "\n \"computationEnd\" : \"" + coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString() + "\","
-//                + "\n \"timeInterval\" : \"" + coreCCRequest.getTimeInterval() + "\","
-//                + "\n \"status\" : \"" + coreCCRequest.getHourlyRaoResult().getStatus() + "\","
-//                + "\n \"errorCode\" : \"" + coreCCRequest.getHourlyRaoResult().getErrorCodeString() + "\","
-//                + "\n\"errorMessage\" : \"" + coreCCRequest.getHourlyRaoResult().getErrorMessage() + "\","
-//                + "\n\"version\" : " + coreCCRequest.getVersion()
-//                + "\n}";
             minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp());
-        }
-    }
-
-    public void exportLogToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
-        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
-        LOGGER.info("Core CC task: '{}', creating logs for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getInstant());
-        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-
-        Map<String, Set<String>> logsMap = logsEventsListener.getLogsByInstant();
-        String fileName = OutputFileNameUtil.generateCracCreationReportFileName(hourlyRaoResult.getInstant(), coreCCRequest);
-        String logFilePath = hourlyRaoRequest.getResultsDestination() + "/" + fileName;
-        List<String> logs = logsMap.values().stream().collect(Collectors.toList()).stream().flatMap(Set::stream).collect(Collectors.toList());
-        try (ByteArrayOutputStream outputStreamLogs = new ByteArrayOutputStream()) {
-            PrintWriter pw = new PrintWriter(outputStreamLogs);
-            for (String logRecord : logs) {
-                pw.println(logRecord);
-            }
-            pw.close();
-            minioAdapter.uploadOutputForTimestamp(logFilePath, new ByteArrayInputStream(outputStreamLogs.toByteArray()), "CORE_CC", "LOGS", coreCCRequest.getTimestamp());
-        } catch (Exception e) {
-            throw new CoreCCInternalException("Error while exporting logs", e);
         }
     }
 }

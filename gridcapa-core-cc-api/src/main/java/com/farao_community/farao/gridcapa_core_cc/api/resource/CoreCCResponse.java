@@ -13,36 +13,23 @@ import com.github.jasminb.jsonapi.annotations.Id;
 import com.github.jasminb.jsonapi.annotations.Type;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.time.Instant;
-
 /**
- * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
+ * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
+ * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
  */
 @Type("core-cc-response")
 public class CoreCCResponse {
 
     @Id
     private final String id;
-    private final Instant computationStartInstant;
-    private final Instant computationEndInstant;
 
     @JsonCreator
-    public CoreCCResponse(@JsonProperty("id") String id, @JsonProperty("computationStartInstant") Instant computationStartInstant, @JsonProperty("computationEndInstant") Instant computationEndInstant) {
+    public CoreCCResponse(@JsonProperty("id") String id) {
         this.id = id;
-        this.computationStartInstant = computationStartInstant;
-        this.computationEndInstant = computationEndInstant;
     }
 
     public String getId() {
         return id;
-    }
-
-    public Instant getComputationStartInstant() {
-        return computationStartInstant;
-    }
-
-    public Instant getComputationEndInstant() {
-        return computationEndInstant;
     }
 
     @Override

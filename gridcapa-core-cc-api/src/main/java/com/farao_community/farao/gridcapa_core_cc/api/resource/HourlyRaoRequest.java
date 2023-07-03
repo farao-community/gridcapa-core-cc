@@ -13,8 +13,9 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoRequest {
+    private String resultsDestinationUrl = "CORE/CC";
     private MinioAdapter minioAdapter;
-    private String instant;
+    private String raoRequestInstant;
     private String networkFileUrl;
     private String cracFileUrl;
     private String refprogFileUrl;
@@ -23,22 +24,19 @@ public class HourlyRaoRequest {
     private String resultsDestination;
     private Instant targetEndInstant;
 
-    public HourlyRaoRequest() {
-    }
-
     public HourlyRaoRequest(MinioAdapter minioAdapter,
-                            String instant,
+                            String raoRequestInstant,
                             String networkFileUrl,
                             String cbFileUrl,
                             String refprogFileUrl,
                             String realGlskFileUrl,
                             String raoParametersFileUrl,
                             String resultsDestination) {
-        this(minioAdapter, instant, networkFileUrl, cbFileUrl, refprogFileUrl, realGlskFileUrl, raoParametersFileUrl, resultsDestination, null);
+        this(minioAdapter, raoRequestInstant, networkFileUrl, cbFileUrl, refprogFileUrl, realGlskFileUrl, raoParametersFileUrl, resultsDestination, null);
     }
 
     public HourlyRaoRequest(MinioAdapter minioAdapter,
-                            String instant,
+                            String raoRequestInstant,
                             String networkFileUrl,
                             String cbFileUrl,
                             String refprogFileUrl,
@@ -47,7 +45,7 @@ public class HourlyRaoRequest {
                             String resultsDestination,
                             Instant targetEndInstant) {
         this.minioAdapter = minioAdapter;
-        this.instant = instant;
+        this.raoRequestInstant = raoRequestInstant;
         this.networkFileUrl = networkFileUrl;
         this.cracFileUrl = cbFileUrl;
         this.refprogFileUrl = refprogFileUrl;
@@ -57,64 +55,28 @@ public class HourlyRaoRequest {
         this.targetEndInstant = targetEndInstant;
     }
 
-    public String getInstant() {
-        return instant;
-    }
-
-    public void setInstant(String instant) {
-        this.instant = instant;
+    public String getRaoRequestInstant() {
+        return raoRequestInstant;
     }
 
     public String getNetworkFileUrl() {
         return networkFileUrl;
     }
 
-    public void setNetworkFileUrl(String cgmFileUrl) {
-        this.networkFileUrl = cgmFileUrl;
-    }
-
-    public String getRefprogFileUrl() {
-        return refprogFileUrl;
-    }
-
-    public void setRefprogFileUrl(String refprogFileUrl) {
-        this.refprogFileUrl = refprogFileUrl;
-    }
-
-    public String getRealGlskFileUrl() {
-        return realGlskFileUrl;
-    }
-
-    public void setRealGlskFileUrl(String realGlskFileUrl) {
-        this.realGlskFileUrl = realGlskFileUrl;
-    }
-
     public String getCracFileUrl() {
         return cracFileUrl;
-    }
-
-    public void setCracFileUrl(String cbFileUrl) {
-        this.cracFileUrl = cbFileUrl;
     }
 
     public String getRaoParametersFileUrl() {
         return raoParametersFileUrl;
     }
 
-    public void setRaoParametersFileUrl(String raoParametersFileUrl) {
-        this.raoParametersFileUrl = raoParametersFileUrl;
-    }
-
     public String getResultsDestination() {
         return resultsDestination;
     }
 
-    public void setResultsDestination(String resultsDestination) {
-        this.resultsDestination = resultsDestination;
-    }
-
     public RaoRequest toRaoRequest(String id) {
-        return new RaoRequest(id, this.instant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), "CORE/CC/" + this.resultsDestination, this.targetEndInstant);
+        return new RaoRequest(id, this.raoRequestInstant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), resultsDestinationUrl + this.resultsDestination, this.targetEndInstant);
     }
 
     @Override
@@ -127,8 +89,8 @@ public class HourlyRaoRequest {
             return false;
         }
         HourlyRaoRequest hourlyRaoRequest = (HourlyRaoRequest) o;
-        if (hourlyRaoRequest.instant != null) {
-            return hourlyRaoRequest.instant.equals(instant);
+        if (hourlyRaoRequest.raoRequestInstant != null) {
+            return hourlyRaoRequest.raoRequestInstant.equals(raoRequestInstant);
         } else {
             return false;
         }
@@ -136,7 +98,7 @@ public class HourlyRaoRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instant);
+        return Objects.hash(raoRequestInstant);
     }
 
 }

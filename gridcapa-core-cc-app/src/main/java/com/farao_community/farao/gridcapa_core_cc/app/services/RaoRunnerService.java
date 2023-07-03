@@ -7,6 +7,7 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
 import com.farao_community.farao.rao_runner.starter.RaoRunnerClient;
@@ -33,7 +34,7 @@ public class RaoRunnerService {
             LOGGER.info("RAO response received: {}", raoResponse);
             return raoResponse;
         } catch (Exception e) {
-            throw new CoreCCInternalException("RAO run failed. Nested exception: " + e.getMessage());
+            throw new CoreCCRaoException("RAO run failed. Nested exception: " + e.getMessage());
         }
     }
 

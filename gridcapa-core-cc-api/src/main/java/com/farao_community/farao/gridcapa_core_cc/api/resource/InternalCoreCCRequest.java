@@ -23,12 +23,8 @@ public class InternalCoreCCRequest {
     private CoreCCRequest coreCCRequest;
     private HourlyRaoRequest hourlyRaoRequest;
     private HourlyRaoResult hourlyRaoResult;
-    private DailyOutputs dailyOutputs = new DailyOutputs();
     private int version = 1;
     private Instant requestReceivedInstant;
-    private Instant computationStartInstant;
-    private Instant computationEndInstant;
-    private Instant outputsSentInstant;
     private String timeInterval;
     private String correlationId;
 
@@ -68,10 +64,6 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getVirtualHub();
     }
 
-    public boolean getLaunchedAutomatically() {
-        return coreCCRequest.getLaunchedAutomatically();
-    }
-
     public HourlyRaoRequest getHourlyRaoRequest() {
         return hourlyRaoRequest;
     }
@@ -88,14 +80,6 @@ public class InternalCoreCCRequest {
         this.hourlyRaoResult = hourlyArtifact;
     }
 
-    public DailyOutputs getDailyOutputs() {
-        return dailyOutputs;
-    }
-
-    public void setDailyOutputs(DailyOutputs dailyOutputs) {
-        this.dailyOutputs = dailyOutputs;
-    }
-
     public int getVersion() {
         return version;
     }
@@ -104,36 +88,12 @@ public class InternalCoreCCRequest {
         this.version = version;
     }
 
-    public Instant getComputationEndInstant() {
-        return computationEndInstant;
-    }
-
-    public void setComputationEndInstant(Instant computationEndInstant) {
-        this.computationEndInstant = computationEndInstant;
-    }
-
-    public Instant getOutputsSentInstant() {
-        return outputsSentInstant;
-    }
-
-    public void setOutputsSentInstant(Instant outputsSentInstant) {
-        this.outputsSentInstant = outputsSentInstant;
-    }
-
     public Instant getRequestReceivedInstant() {
         return requestReceivedInstant;
     }
 
     public void setRequestReceivedInstant(Instant inputsReceivedInstant) {
         this.requestReceivedInstant = inputsReceivedInstant;
-    }
-
-    public Instant getComputationStartInstant() {
-        return computationStartInstant;
-    }
-
-    public void setComputationStartInstant(Instant computationStartInstant) {
-        this.computationStartInstant = computationStartInstant;
     }
 
     public String getDestinationKey() {

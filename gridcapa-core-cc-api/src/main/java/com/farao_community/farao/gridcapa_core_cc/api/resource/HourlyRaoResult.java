@@ -12,34 +12,29 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoResult {
-    private String instant;
+    private String raoRequestInstant;
 
     private String networkWithPraUrl;
     private String raoResultFileUrl;
     private Status status = Status.PENDING;
     private ErrorCode errorCode = ErrorCode.UNKNOWN_FAILURE;
     private String errorMessage;
-    private String cneResultDocumentId;
     private Instant computationStartInstant =  Instant.ofEpochSecond(0);
     private Instant computationEndInstant =  Instant.ofEpochSecond(0);
 
     public HourlyRaoResult() {
     }
 
-    public String getInstant() {
-        return instant;
+    public String getRaoRequestInstant() {
+        return raoRequestInstant;
     }
 
-    public void setInstant(String instant) {
-        this.instant = instant;
+    public void setRaoRequestInstant(String raoRequestInstant) {
+        this.raoRequestInstant = raoRequestInstant;
     }
 
     public String getNetworkWithPraUrl() {
         return networkWithPraUrl;
-    }
-
-    public void setNetworkWithPraUrl(String networkWithPraUrl) {
-        this.networkWithPraUrl = networkWithPraUrl;
     }
 
     public String getErrorMessage() {
@@ -85,8 +80,8 @@ public class HourlyRaoResult {
             return false;
         }
         HourlyRaoResult hourlyRaoResult = (HourlyRaoResult) o;
-        if (hourlyRaoResult.instant != null) {
-            return hourlyRaoResult.instant.equals(instant);
+        if (hourlyRaoResult.raoRequestInstant != null) {
+            return hourlyRaoResult.raoRequestInstant.equals(raoRequestInstant);
         } else {
             return false;
         }
@@ -94,23 +89,11 @@ public class HourlyRaoResult {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instant);
+        return Objects.hash(raoRequestInstant);
     }
 
     public String getRaoResultFileUrl() {
         return raoResultFileUrl;
-    }
-
-    public void setRaoResultFileUrl(String raoResultFileUrl) {
-        this.raoResultFileUrl = raoResultFileUrl;
-    }
-
-    public String getCneResultDocumentId() {
-        return cneResultDocumentId;
-    }
-
-    public void setCneResultDocumentId(String cneResultDocumentId) {
-        this.cneResultDocumentId = cneResultDocumentId;
     }
 
     public String getErrorCodeString() {
@@ -133,16 +116,8 @@ public class HourlyRaoResult {
         return computationStartInstant;
     }
 
-    public void setComputationStartInstant(Instant computationStartInstant) {
-        this.computationStartInstant = computationStartInstant;
-    }
-
     public Instant getComputationEndInstant() {
         return computationEndInstant;
-    }
-
-    public void setComputationEndInstant(Instant computationEndInstant) {
-        this.computationEndInstant = computationEndInstant;
     }
 
     public void setRaoResponseData(RaoResponse raoResponse) {

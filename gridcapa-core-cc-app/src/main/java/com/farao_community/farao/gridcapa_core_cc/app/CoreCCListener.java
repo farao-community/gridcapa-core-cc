@@ -27,7 +27,8 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
+ * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
+ * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
  */
 @Component
 public class CoreCCListener implements MessageListener {
@@ -55,7 +56,6 @@ public class CoreCCListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        String replyTo = message.getMessageProperties().getReplyTo();
         String correlationId = message.getMessageProperties().getCorrelationId();
         // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
         // This should be done only once, as soon as the information to add in mdc is available.
@@ -65,23 +65,19 @@ public class CoreCCListener implements MessageListener {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
             InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
-            LOGGER.info("Core cc response written for timestamp {}", coreCCRequest.getTimestamp());
-            sendCoreCCResponse(coreCCResponse, replyTo, correlationId, internalCoreCCRequest.getHourlyRaoResult().getStatus());
+            LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
+            sendCoreCCResponse(coreCCResponse, correlationId, internalCoreCCRequest.getHourlyRaoResult().getStatus());
         } catch (AbstractCoreCCException e) {
-            LOGGER.error("Core cc exception occured", e);
-            sendRequestErrorResponse(e, replyTo, correlationId);
+            LOGGER.error("Core CC exception occured", e);
+            sendRequestErrorResponse(e, correlationId);
         } catch (RuntimeException e) {
             AbstractCoreCCException wrappingException = new CoreCCInvalidDataException("Unhandled exception: " + e.getMessage(), e);
-            sendRequestErrorResponse(wrappingException, replyTo, correlationId);
+            sendRequestErrorResponse(wrappingException, correlationId);
         }
     }
 
-    private void sendRequestErrorResponse(AbstractCoreCCException e, String replyTo, String correlationId) {
-        if (replyTo != null) {
-            amqpTemplate.send(replyTo, createErrorResponse(e, correlationId));
-        } else {
-            amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
-        }
+    private void sendRequestErrorResponse(AbstractCoreCCException e, String correlationId) {
+        amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
     }
 
     private void sendErrorResponse(String requestId, AbstractCoreCCException e, String replyTo, String correlationId) {
@@ -93,42 +89,38 @@ public class CoreCCListener implements MessageListener {
         }
     }
 
-    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String replyTo, String correlationId, HourlyRaoResult.Status status) {
+    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String correlationId, HourlyRaoResult.Status status) {
         LOGGER.info("Updating task status to SUCCESS for timestamp {}", coreCCResponse.getId());
         if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.SUCCESS));
         } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.ERROR));
         }
-        if (replyTo != null) {
-            amqpTemplate.send(replyTo, createMessageResponse(coreCCResponse, correlationId));
-        } else {
-            amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createMessageResponse(coreCCResponse, correlationId));
-        }
+        amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createMessageResponse(coreCCResponse, correlationId));
     }
 
     private Message createMessageResponse(CoreCCResponse coreCCResponse, String correlationId) {
         return MessageBuilder.withBody(jsonApiConverter.toJsonMessage(coreCCResponse))
-                .andProperties(buildMessageResponseProperties(correlationId))
-                .build();
+            .andProperties(buildMessageResponseProperties(correlationId))
+            .build();
     }
 
     private Message createErrorResponse(AbstractCoreCCException exception, String correlationId) {
         return MessageBuilder.withBody(jsonApiConverter.toJsonMessage(exception))
-                .andProperties(buildMessageResponseProperties(correlationId))
-                .build();
+            .andProperties(buildMessageResponseProperties(correlationId))
+            .build();
     }
 
     private MessageProperties buildMessageResponseProperties(String correlationId) {
         return MessagePropertiesBuilder.newInstance()
-                .setAppId(APPLICATION_ID)
-                .setContentEncoding(CONTENT_ENCODING)
-                .setContentType(CONTENT_TYPE)
-                .setCorrelationId(correlationId)
-                .setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT)
-                .setExpiration(amqpMessagesConfiguration.coreCCResponseExpiration())
-                .setPriority(PRIORITY)
-                .build();
+            .setAppId(APPLICATION_ID)
+            .setContentEncoding(CONTENT_ENCODING)
+            .setContentType(CONTENT_TYPE)
+            .setCorrelationId(correlationId)
+            .setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT)
+            .setExpiration(amqpMessagesConfiguration.coreCCResponseExpiration())
+            .setPriority(PRIORITY)
+            .build();
     }
 
 }

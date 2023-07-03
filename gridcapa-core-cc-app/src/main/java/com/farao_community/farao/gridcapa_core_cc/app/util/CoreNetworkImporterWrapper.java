@@ -5,7 +5,6 @@ package com.farao_community.farao.gridcapa_core_cc.app.util;
 
 import com.powsybl.iidm.network.*;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -13,12 +12,6 @@ import java.util.Optional;
  * @author Baptiste Seguinot {@literal <baptiste.seguinot at rte-france.com}
  */
 public class CoreNetworkImporterWrapper {
-
-    public static Network loadNetwork(String filename, InputStream inputStream) {
-        Network network = Network.read(filename, inputStream);
-        processNetworkForCoreCC(network);
-        return network;
-    }
 
     public static Network loadNetwork(Path path) {
         Network network = Network.read(path);

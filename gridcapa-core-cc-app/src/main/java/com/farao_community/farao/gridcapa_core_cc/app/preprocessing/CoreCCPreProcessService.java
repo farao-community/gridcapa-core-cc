@@ -9,8 +9,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
-import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCXmlResponseGenerator;
-import com.farao_community.farao.gridcapa_core_cc.app.constants.InputsNamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.OutputFileNameUtil;
@@ -56,7 +55,6 @@ public class CoreCCPreProcessService {
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
     private static final String JSON_CRAC_PROVIDER = "Json";
-    private static final String FLOW_BASED_CRAC_PROVIDER = "FlowBasedConstraintDocument";
 
     private final MinioAdapter minioAdapter;
     private final RaoParametersService raoParametersService;
@@ -64,13 +62,6 @@ public class CoreCCPreProcessService {
     private static final DateTimeFormatter HOURLY_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("UTC"));
 
     private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
-    private static final String ERR_CGM = "Please check the naming format of the CGMs. No match with: %s";
-    private static final String ERR_REFPROG = "Please check the naming format of Refprog. No match with: %s";
-    private static final String ERR_CRAC = "Please check the naming format of the Merged CB. No match with: %s";
-    private static final String ERR_GLSK = "Please check the naming format of the Real GLSK. No match with: %s";
-    private static final String ERR_VIRTUAL_HUBS = "Please check the naming format of the virtual hubs. No match with: %s";
-    private static final String ERR_REQUEST = "Please check the naming format of the RAO request. No match with: %s";
-    private static final String ERR_CONSISTENCY = "Package not consistent.";
 
     @Value("${core-cc-runner.async-time-out}")
     private long raoTimeOut;
@@ -82,10 +73,17 @@ public class CoreCCPreProcessService {
     }
 
     public void initializeTaskFromAutomatedLaunch(InternalCoreCCRequest coreCCRequest) {
-        splitRaoRequest(coreCCRequest, coreCCRequest.getLaunchedAutomatically());
+        splitRaoRequest(coreCCRequest);
     }
 
-    private void splitRaoRequest(InternalCoreCCRequest coreCCRequest, boolean isManualRun) {
+    /**
+     * RaoRequest contains the following data:
+     * - timeIntervals, correlation ID used for sanity checks
+     * - the list of hourly timestamps for which a RAO needs to be computed. That's why we check if coreCCRequest's timestamp
+     * matches one of the list's timestamps.
+     * - specific RAO parameters to be overloaded.
+     */
+    private void splitRaoRequest(InternalCoreCCRequest coreCCRequest) {
         String destinationKey = coreCCRequest.getDestinationKey();
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
@@ -101,11 +99,12 @@ public class CoreCCPreProcessService {
 
         AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
         AtomicReference<HourlyRaoResult> raoResult = new AtomicReference<>();
+        // Looping through all raoRequest items. Only item matching coreCCRequest's timestamp will set raoRequest
         raoRequestMessage.getPayload().getRequestItems().getRequestItem().forEach(requestItem -> {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
                 LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
-                sendRaoRequestAcknowledgment(coreCCRequest, coreCCRequest.getAckDestinationKey(), raoRequestMessage, isManualRun);
+                sendRaoRequestAcknowledgment(coreCCRequest, coreCCRequest.getAckDestinationKey(), raoRequestMessage);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
@@ -113,7 +112,6 @@ public class CoreCCPreProcessService {
                     String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
                     String destinationPath = generateResultDestinationPath(destinationKey);
                     Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
-
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                         coreCCRequest.getRefProg().getUrl(),
                         coreCCRequest.getGlsk().getUrl(),
@@ -123,17 +121,18 @@ public class CoreCCPreProcessService {
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
                     raoResult.set(new HourlyRaoResult());
-                    raoResult.get().setInstant(utcInstant.toString());
+                    raoResult.get().setRaoRequestInstant(utcInstant.toString());
                     raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
                     raoResult.get().setErrorMessage(errorMessage);
                 }
             }
         });
         if (Objects.isNull(raoRequest.get())) {
-            LOGGER.warn("No raoRequest timestamp matched the coreCCRequest timestamp");
+            String message = "No raoRequest timestamp matched the coreCCRequest timestamp";
+            LOGGER.warn(message);
             raoResult.set(new HourlyRaoResult());
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
-            raoResult.get().setErrorMessage("No raoRequest timestamp matched the coreCCRequest timestamp");
+            raoResult.get().setErrorMessage(message);
             raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
         }
         coreCCRequest.setHourlyRaoRequest(raoRequest.get());
@@ -154,7 +153,7 @@ public class CoreCCPreProcessService {
         String iidmFileName = cgmFileName.replaceAll("(?i)" + UCT_EXTENSION, XIIDM_EXTENSION);
         Path iidmTmpPath = Paths.get(cgmPath.toString().replace(cgmFileName, iidmFileName)); //NOSONAR
         network.write(XIIDM_EXPORT_FORMAT, null, iidmTmpPath);
-        String iidmNetworkDestinationPath = String.format(InputsNamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(InputsNamingRules.IIDM_EXTENSION));
+        String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION));
         try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
         }
@@ -173,7 +172,7 @@ public class CoreCCPreProcessService {
 
         try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             CracExporters.exportCrac(cracCreationContext.getCrac(), JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
-            String jsonCracFilePath = String.format(InputsNamingRules.S_INPUTS_CRACS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(InputsNamingRules.JSON_EXTENSION));
+            String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
 
             try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
                 minioAdapter.uploadArtifact(jsonCracFilePath, is);
@@ -185,7 +184,7 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private void sendRaoRequestAcknowledgment(InternalCoreCCRequest coreCCRequest, String destinationKey, RequestMessage receivedRequestMessage, boolean isManualRun) {
+    private void sendRaoRequestAcknowledgment(InternalCoreCCRequest coreCCRequest, String destinationKey, RequestMessage receivedRequestMessage) {
         ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
         exportRaoRequestAcknowledgment(responseMessage, coreCCRequest, destinationKey);
     }
@@ -198,8 +197,8 @@ public class CoreCCPreProcessService {
         responseMessage.getHeader().setRevision(receivedRequestMessage.getHeader().getRevision());
         responseMessage.getHeader().setContext(receivedRequestMessage.getHeader().getContext());
         responseMessage.getHeader().setTimestamp(receivedRequestMessage.getHeader().getTimestamp());
-        responseMessage.getHeader().setSource(CoreCCXmlResponseGenerator.SENDER_ID);
-        responseMessage.getHeader().setMessageID(String.format("%s-%s-F302-ACK", CoreCCXmlResponseGenerator.SENDER_ID, DateTimeFormatter.ofPattern("yyyyMMdd").format(coreCCRequest.getTimestamp())));
+        responseMessage.getHeader().setSource(NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID);
+        responseMessage.getHeader().setMessageID(String.format("%s-%s-F302-ACK", NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID, DateTimeFormatter.ofPattern("yyyyMMdd").format(coreCCRequest.getTimestamp())));
         responseMessage.getHeader().setCorrelationID(receivedRequestMessage.getHeader().getCorrelationID());
         Reply reply = new Reply();
         reply.setResult("OK");
@@ -223,7 +222,6 @@ public class CoreCCPreProcessService {
                 throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()));
             }
         }
-        coreCCRequest.getDailyOutputs().setRaoRequestAckPath(destinationPath);
     }
 
     private byte[] marshallMessageAndSetJaxbProperties(ResponseMessage responseMessage) {

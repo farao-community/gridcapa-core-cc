@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Instant;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -68,9 +67,7 @@ class CoreCCListenerTest {
         byte[] correctMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
         Message message = MessageBuilder.withBody(correctMessage).build();
         String resultFileUrl = "fileUrl";
-        Instant computationStartInstant = Instant.now();
-        Instant computationEndInstant = Instant.now();
-        CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf", computationStartInstant, computationEndInstant);
+        CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf");
         Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class))).thenReturn(coreCCResponse);
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(1)).send(Mockito.anyString(), Mockito.any());
