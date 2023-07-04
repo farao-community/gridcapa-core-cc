@@ -11,7 +11,11 @@ import java.util.Optional;
 /**
  * @author Baptiste Seguinot {@literal <baptiste.seguinot at rte-france.com}
  */
-public class CoreNetworkImporterWrapper {
+public final class CoreNetworkImporterWrapper {
+
+    private CoreNetworkImporterWrapper() {
+        // do nothing, sonar
+    }
 
     public static Network loadNetwork(Path path) {
         Network network = Network.read(path);
@@ -156,7 +160,7 @@ public class CoreNetworkImporterWrapper {
 
     private static void alignDisconnectionOfTieLines(Network network) {
         network.getBranchStream()
-                .filter(b -> b instanceof TieLine)
+                .filter(TieLine.class::isInstance)
                 .forEach(tl -> {
                     if (!tl.getTerminal1().isConnected() || !tl.getTerminal2().isConnected()) {
                         tl.getTerminal1().disconnect();

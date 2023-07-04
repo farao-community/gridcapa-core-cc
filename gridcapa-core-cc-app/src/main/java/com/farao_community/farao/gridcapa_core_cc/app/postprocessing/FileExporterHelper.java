@@ -43,6 +43,7 @@ public class FileExporterHelper {
     private static final String ALEGRO_GEN_BE = "XLI_OB1B_generator";
     private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
     private static final String DOMAIN_ID = "10Y1001C--00059P";
+    private static final String CORE_CC = "CORE_CC";
 
     public FileExporterHelper(MinioAdapter minioAdapter, FileImporter fileImporter) {
         this.minioAdapter = minioAdapter;
@@ -69,7 +70,7 @@ public class FileExporterHelper {
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
-            minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, "CORE_CC", "CGM_OUT", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, CORE_CC, "CGM_OUT", coreCCRequest.getTimestamp());
         }
     }
 
@@ -147,7 +148,7 @@ public class FileExporterHelper {
             CoreCneExporter cneExporter = new CoreCneExporter();
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
             cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
-            minioAdapter.uploadOutputForTimestamp(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), "CORE_CC", "CNE", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), CORE_CC, "CNE", coreCCRequest.getTimestamp());
         }
     }
 
@@ -157,7 +158,7 @@ public class FileExporterHelper {
 
         String raoResultNewFileName = OutputFileNameUtil.generateRaoResultFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
         String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + raoResultNewFileName;
-        minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), "CORE_CC", "RAO_RESULT", coreCCRequest.getTimestamp());
+        minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), CORE_CC, "RAO_RESULT", coreCCRequest.getTimestamp());
     }
 
     private CneExporterParameters getCneExporterParameters(InternalCoreCCRequest coreCCRequest) {
@@ -198,7 +199,7 @@ public class FileExporterHelper {
                 coreCCRequest.getHourlyRaoResult().getErrorMessage(),
                 coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
-            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), "CORE_CC", "METADATA", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), CORE_CC, "METADATA", coreCCRequest.getTimestamp());
         }
     }
 }

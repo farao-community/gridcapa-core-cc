@@ -8,7 +8,15 @@
 package com.farao_community.farao.gridcapa_core_cc.starter;
 
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.Message;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -17,16 +25,16 @@ class CoreCCClientTest {
     private final JsonApiConverter jsonApiConverter = new JsonApiConverter();
 
     @Test
-//    void checkThatClientHandleMessageCorrectly() throws IOException {
-//        AmqpTemplate amqpTemplate = Mockito.mock(AmqpTemplate.class);
-//        CoreCCClient client = new CoreCCClient(amqpTemplate, buildProperties());
-//        CoreCCRequest request = jsonApiConverter.fromJsonMessage(getClass().getResourceAsStream("/coreCCRequest.json").readAllBytes(), CoreCCRequest.class);
-//        Message responseMessage = Mockito.mock(Message.class);
-//
-//        Mockito.when(responseMessage.getBody()).thenReturn(getClass().getResourceAsStream("/coreCCResponse.json").readAllBytes());
-//        Mockito.when(amqpTemplate.sendAndReceive(Mockito.same("my-queue"), Mockito.any())).thenReturn(responseMessage);
-//        client.run(request);
-//    }
+    void checkThatClientHandleMessageCorrectly() throws IOException {
+        AmqpTemplate amqpTemplate = Mockito.mock(AmqpTemplate.class);
+        CoreCCClient client = new CoreCCClient(amqpTemplate, buildProperties());
+        CoreCCRequest request = jsonApiConverter.fromJsonMessage(getClass().getResourceAsStream("/coreCCRequest.json").readAllBytes(), CoreCCRequest.class);
+        Message responseMessage = Mockito.mock(Message.class);
+
+        Mockito.when(responseMessage.getBody()).thenReturn(getClass().getResourceAsStream("/coreCCResponse.json").readAllBytes());
+        Mockito.when(amqpTemplate.sendAndReceive(Mockito.same("my-queue"), Mockito.any())).thenReturn(responseMessage);
+        client.run(request);
+    }
 
     private CoreCCClientProperties buildProperties() {
         CoreCCClientProperties properties = new CoreCCClientProperties();

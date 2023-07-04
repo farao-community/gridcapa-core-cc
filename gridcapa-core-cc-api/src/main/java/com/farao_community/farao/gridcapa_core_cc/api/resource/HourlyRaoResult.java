@@ -22,15 +22,12 @@ public class HourlyRaoResult {
     private Instant computationStartInstant =  Instant.ofEpochSecond(0);
     private Instant computationEndInstant =  Instant.ofEpochSecond(0);
 
-    public HourlyRaoResult() {
+    public HourlyRaoResult(String raoRequestInstant) {
+        this.raoRequestInstant = raoRequestInstant;
     }
 
     public String getRaoRequestInstant() {
         return raoRequestInstant;
-    }
-
-    public void setRaoRequestInstant(String raoRequestInstant) {
-        this.raoRequestInstant = raoRequestInstant;
     }
 
     public String getNetworkWithPraUrl() {

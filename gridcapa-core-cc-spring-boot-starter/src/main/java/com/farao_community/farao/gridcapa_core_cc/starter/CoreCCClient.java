@@ -9,8 +9,6 @@ package com.farao_community.farao.gridcapa_core_cc.starter;
 
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
 
 /**
@@ -18,7 +16,6 @@ import org.springframework.amqp.core.*;
  */
 public class CoreCCClient {
     private static final int DEFAULT_PRIORITY = 1;
-    private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCClient.class);
     private static final String CONTENT_ENCODING = "UTF-8";
     private static final String CONTENT_TYPE = "application/vnd.api+json";
 

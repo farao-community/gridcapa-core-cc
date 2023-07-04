@@ -80,15 +80,6 @@ public class CoreCCListener implements MessageListener {
         amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
     }
 
-    private void sendErrorResponse(String requestId, AbstractCoreCCException e, String replyTo, String correlationId) {
-        streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(requestId), TaskStatus.ERROR));
-        if (replyTo != null) {
-            amqpTemplate.send(replyTo, createErrorResponse(e, correlationId));
-        } else {
-            amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
-        }
-    }
-
     private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String correlationId, HourlyRaoResult.Status status) {
         LOGGER.info("Updating task status to SUCCESS for timestamp {}", coreCCResponse.getId());
         if (status.equals(HourlyRaoResult.Status.SUCCESS)) {

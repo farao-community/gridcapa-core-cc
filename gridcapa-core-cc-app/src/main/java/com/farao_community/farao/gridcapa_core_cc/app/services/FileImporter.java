@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 @Service
 public class FileImporter {
 
+    public static final String CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL = "Cannot download rao request file from URL '%s'";
     private final UrlValidationService urlValidationService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileImporter.class);
 
@@ -118,7 +119,7 @@ public class FileImporter {
             LOGGER.info("Import of rao request from {} file ", raoRequestFileResource.getFilename());
             return JaxbUtil.unmarshalContent(RequestMessage.class, raoRequestInputStream);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download rao request file from URL '%s'", raoRequestFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, raoRequestFileResource.getUrl()), e);
         }
     }
 
@@ -135,7 +136,7 @@ public class FileImporter {
             List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download rao request file from URL '%s'", cgmsZimFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, cgmsZimFileResource.getUrl()), e);
         }
     }
 
@@ -144,7 +145,7 @@ public class FileImporter {
             LOGGER.info("Import of virtual hubs from {} file ", virtualHubsFileResource.getFilename());
             return XmlVirtualHubsConfiguration.importConfiguration(virtualHubsInputStream);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download rao request file from URL '%s'", virtualHubsFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, virtualHubsFileResource.getUrl()), e);
         }
     }
 

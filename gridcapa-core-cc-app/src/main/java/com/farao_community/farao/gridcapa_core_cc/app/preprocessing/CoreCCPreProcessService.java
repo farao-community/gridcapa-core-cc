@@ -120,8 +120,7 @@ public class CoreCCPreProcessService {
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null));
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
-                    raoResult.set(new HourlyRaoResult());
-                    raoResult.get().setRaoRequestInstant(utcInstant.toString());
+                    raoResult.set(new HourlyRaoResult(utcInstant.toString()));
                     raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
                     raoResult.get().setErrorMessage(errorMessage);
                 }
@@ -130,7 +129,7 @@ public class CoreCCPreProcessService {
         if (Objects.isNull(raoRequest.get())) {
             String message = "No raoRequest timestamp matched the coreCCRequest timestamp";
             LOGGER.warn(message);
-            raoResult.set(new HourlyRaoResult());
+            raoResult.set(new HourlyRaoResult(null));
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
             raoResult.get().setErrorMessage(message);
             raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
@@ -177,7 +176,6 @@ public class CoreCCPreProcessService {
             try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
                 minioAdapter.uploadArtifact(jsonCracFilePath, is);
             }
-            cracByteArrayOutputStream.close();
             return jsonCracFilePath;
         } catch (Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", coreCCRequest.getCbcora().getFilename(), e.getMessage()));

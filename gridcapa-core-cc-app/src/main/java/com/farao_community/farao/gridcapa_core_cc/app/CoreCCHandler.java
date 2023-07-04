@@ -76,7 +76,7 @@ public class CoreCCHandler {
         if (Objects.nonNull(coreCCRequest.getHourlyRaoResult())) {
             hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         } else {
-            hourlyRaoResult = new HourlyRaoResult();
+            hourlyRaoResult = new HourlyRaoResult(hourlyRaoRequest.getRaoRequestInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
         }
         if (Objects.isNull(hourlyRaoRequest)) {
@@ -84,11 +84,8 @@ public class CoreCCHandler {
             return;
         }
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
-        String raoRequestInstant = hourlyRaoRequest.getRaoRequestInstant();
-        hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
         try {
             RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
-            hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
         } catch (CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
