@@ -90,7 +90,7 @@ public class CoreCCHandler {
             RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
             hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
-        } catch (CoreCCInternalException|CoreCCRaoException e) {
+        } catch (CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
         }
     }
