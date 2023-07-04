@@ -16,8 +16,6 @@ import org.springframework.amqp.core.Message;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  */
