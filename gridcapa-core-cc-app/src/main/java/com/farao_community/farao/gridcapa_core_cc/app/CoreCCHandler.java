@@ -72,7 +72,13 @@ public class CoreCCHandler {
 
     private void runRao(InternalCoreCCRequest coreCCRequest) {
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        HourlyRaoResult hourlyRaoResult;
+        if (Objects.nonNull(coreCCRequest.getHourlyRaoResult())) {
+            hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        } else {
+            hourlyRaoResult = new HourlyRaoResult();
+            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
+        }
         if (Objects.isNull(hourlyRaoRequest)) {
             LOGGER.info("Skipping RAO - no hourly raoRequest was defined");
             return;
@@ -84,9 +90,7 @@ public class CoreCCHandler {
             RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
             hourlyRaoResult.setRaoRequestInstant(raoRequestInstant);
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
-        } catch (CoreCCInternalException e) {
-            handleRaoRunnerException(hourlyRaoResult, e);
-        } catch (CoreCCRaoException e) {
+        } catch (CoreCCInternalException|CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
         }
     }

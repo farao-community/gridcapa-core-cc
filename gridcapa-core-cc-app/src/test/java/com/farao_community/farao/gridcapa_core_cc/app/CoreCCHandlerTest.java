@@ -11,21 +11,22 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResourc
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
+import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
-import com.farao_community.farao.rao_runner.starter.AsynchronousRaoRunnerClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -42,15 +43,20 @@ class CoreCCHandlerTest {
     private MinioAdapter minioAdapter;
 
     @MockBean
-    private AsynchronousRaoRunnerClient asynchronousRaoRunnerClient;
+    private RaoRunnerService raoRunnerService;
+
+    @MockBean
+    private FileExporterHelper fileExporterHelper;
 
     @Test
-    void handleCoreCCRequestTest() {
+    void handleCoreCCRequestTest() throws IOException {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        CompletableFuture<RaoResponse> future = new CompletableFuture<>();
         RaoResponse raoResponse = new RaoResponse("id", "instant", "praUrl", "cracUrl", "raoUrl", Instant.now(), Instant.now());
-        future.complete(raoResponse);
-        Mockito.when(asynchronousRaoRunnerClient.runRaoAsynchronously(Mockito.any())).thenReturn(future);
+        Mockito.when(raoRunnerService.run(Mockito.any())).thenReturn(raoResponse);
+        Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportCneToMinio(Mockito.any());
+        Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportNetworkToMinio(Mockito.any());
+        Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportRaoResultToMinio(Mockito.any());
+        Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportMetadataToMinio(Mockito.any());
 
         String requestId = "Test request";
         String networkFileName = "20210723-F119-v1-17XTSO-CS------W-to-22XCORESO------S.zip";
@@ -68,8 +74,8 @@ class CoreCCHandlerTest {
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         assertEquals(requestId, response.getId());
-        //should upload 7 artifacts: parameters + 3 networks + 3 cracs
-        Mockito.verify(minioAdapter, Mockito.times(7)).uploadArtifact(Mockito.any(), Mockito.any());
+        //should upload 7 artifacts: parameters + ACK + crac + network
+        Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {
