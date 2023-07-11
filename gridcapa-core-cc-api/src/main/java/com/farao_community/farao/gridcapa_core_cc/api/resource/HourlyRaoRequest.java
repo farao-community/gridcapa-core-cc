@@ -13,7 +13,7 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoRequest {
-    private String resultsDestinationUrl = "CORE/CC";
+    private String resultsDestinationUrl = "CORE/CC/";
     private MinioAdapter minioAdapter;
     private String raoRequestInstant;
     private String networkFileUrl;
