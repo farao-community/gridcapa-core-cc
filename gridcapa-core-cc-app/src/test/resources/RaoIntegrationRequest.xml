@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RequestMessage xsi:noNamespaceSchemaLocation="common-message-specification-01.xsd" xmlns="http://iec.ch/TC57/2011/schema/message" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Header>
+	<Verb>create</Verb>
+	<Noun>OptimizedRemedialActions</Noun>
+	<Revision>1</Revision>
+	<Context>PRODUCTION</Context> <!-- or STUDY for low priority computation -->
+	<Timestamp>2019-04-06T15:41:47.00Z</Timestamp>
+	<Source>17XTSO-CS------W</Source>
+	<AsyncReplyFlag>true</AsyncReplyFlag>
+	<ReplyAddress>17XTSO-CS------W</ReplyAddress>
+	<AckRequired>true</AckRequired>
+	<MessageID>e880ff7e-8d81-4f89-86b0-e3276e9d9476</MessageID><!--Request ID created in Core CC Tool-->
+	<CorrelationID>e880ff7e-8d81-4f89-86b0-e3276e9d9476</CorrelationID><!--ID which is used to match future Response (follows the standard). Core CC Tool expects to produce identical ID to MessageID for now, but it could be different from Message ID in future (in theory) -->
+	<!--Parameters common for all Control areas-->
+	<Property>
+		<Name>Topo_RA_Min_impact</Name>
+		<Value>10</Value>
+	</Property>
+	<Property>
+		<Name>PST_RA_Min_impact</Name>
+		<Value>10</Value>
+	</Property>
+	<!--Parameters per Control Area-->
+	<!--LF_Constraint-->
+	<Property>
+		<Name>LF_Constraint_AT</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_BE</Name>
+		<Value>false</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_CZ</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_D2</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_D4</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_D7</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_D8</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_FR</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_HR</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_HU</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_NL</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_PL</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_RO</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_SI</Name>
+		<Value>true</Value>
+	</Property>
+	<Property>
+		<Name>LF_Constraint_SK</Name>
+		<Value>true</Value>
+	</Property>
+	<!--LF_Constraint end-->
+	<!--Max_cRA-->
+	<Property>
+		<Name>Max_cRA_AT</Name>
+		<Value>10</Value>
+	</Property>
+	<Property>
+		<Name>Max_cRA_BE</Name>
+		<Value>10</Value>
+	</Property>
+	<!--Max_cRA end-->
+	<!--Max_Topo_cRA-->
+	<Property>
+		<Name>Max_Topo_cRA_AT</Name>
+		<Value>10</Value>
+	</Property>
+	<Property>
+		<Name>Max_Topo_cRA_BE</Name>
+		<Value>10</Value>
+	</Property>
+	<Property>
+		<Name>Max_Topo_cRA_CZ</Name>
+		<Value>10</Value>
+	</Property>
+	<!--Max_Topo_cRA end-->
+	<!--Max_PST_cRA-->
+	<Property>
+		<Name>Max_PST_cRA_AT</Name>
+		<Value>10</Value>
+	</Property>
+	<!--Max_PST_cRA end-->
+</Header>
+<Payload>
+	<req:RequestItems timeInterval="2020-03-29T23:00:00Z/2020-03-30T00:00:00Z" xsi:noNamespaceSchemaLocation="request-payload-01.xsd" xmlns:req="http://unicorn.com/Request/request-payload" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <req:RequestItem timeInterval="2020-03-29T22:00Z/2020-03-29T23:00Z">
+      <req:Files>
+        <req:File code="CGM" url="documentIdentification://17XTSO-CS------W-20200330F119v1"/>
+        <req:File code="REFPROG" url="documentIdentification://17XTSO-CS------W-20200330F120v1"/>
+        <req:File code="CB" url="documentIdentification://17XTSO-CS------W-20200330F301v2"/>
+        <req:File code="GLSK" url="documentIdentification://17XTSO-CS------W-20200330F319v1"/>
+      </req:Files>
+    </req:RequestItem>
+	</req:RequestItems>
+</Payload>
+</RequestMessage>

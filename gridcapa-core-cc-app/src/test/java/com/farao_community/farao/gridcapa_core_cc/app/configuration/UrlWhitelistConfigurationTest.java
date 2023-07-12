@@ -24,6 +24,7 @@ class UrlWhitelistConfigurationTest {
 
     @Test
     void checkUrlWhiteListIsRetrievedCorrectly() {
+        // TODO: understand why not 1 and "http://localhost:9000"
         assertEquals(2, urlWhitelistConfiguration.getWhitelist().size());
         assertEquals("file:/", urlWhitelistConfiguration.getWhitelist().get(0));
     }
