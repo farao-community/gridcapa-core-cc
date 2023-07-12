@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class NamingRulesTest {
 
-    private LocalDateTime dateTime = LocalDateTime.of(2023, 7, 12, 15, 17, 41);
+    private final LocalDateTime dateTime = LocalDateTime.of(2023, 7, 12, 15, 17, 41);
 
     // TODO: testRaoRequestName
     // TODO: testCgmZipName
