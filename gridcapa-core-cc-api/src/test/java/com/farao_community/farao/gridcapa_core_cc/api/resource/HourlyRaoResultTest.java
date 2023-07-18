@@ -23,10 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  */
 public class HourlyRaoResultTest {
 
-    HourlyRaoResult hourlyRaoResult;
-    Instant initialInstant;
-    Instant oneSecondInstant;
-    RaoResponse raoResponse;
+    private HourlyRaoResult hourlyRaoResult;
+    private Instant initialInstant;
+    private Instant oneSecondInstant;
+    private RaoResponse raoResponse;
 
     @BeforeEach
     void setUp() {
