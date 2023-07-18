@@ -50,8 +50,8 @@ public class HourlyRaoRequestTest {
         HourlyRaoRequest differentInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "otherInstant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         assertEquals(hourlyRaoRequest, hourlyRaoRequest);
         assertEquals(hourlyRaoRequest, sameInstantHourlyRaoRequest);
-        assertNotEquals(hourlyRaoRequest, differentInstantHourlyRaoRequest);
-        assertNotEquals(hourlyRaoRequest, 0);
+        assertNotEquals(differentInstantHourlyRaoRequest, hourlyRaoRequest);
+        assertNotEquals(0, hourlyRaoRequest);
     }
 
 }
