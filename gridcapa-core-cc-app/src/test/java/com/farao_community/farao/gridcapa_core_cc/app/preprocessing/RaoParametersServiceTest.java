@@ -49,9 +49,7 @@ class RaoParametersServiceTest {
                 && expectedLoopFlowConstraintCountries.containsAll(actualLoopFlowConstraintCountries)
                 && actualLoopFlowConstraintCountries.containsAll(expectedLoopFlowConstraintCountries));
 
-        // TODO: understand null pointer exception
-        // SearchTreeParameters searchTreeParameters = raoParameters.getRaUsageLimitsPerContingencyParameters().getExtension(SearchTreeParameters.class);
-        // assertEquals(10.0, searchTreeParameters.getNetworkActionParameters().getAbsoluteNetworkActionMinimumImpactThreshold());
+        assertEquals(10.0, raoParameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
 
         Map<String, Integer> maxCurativeRaPerTsoExpected = new TreeMap<>();
         maxCurativeRaPerTsoExpected.put("AT", 10);
