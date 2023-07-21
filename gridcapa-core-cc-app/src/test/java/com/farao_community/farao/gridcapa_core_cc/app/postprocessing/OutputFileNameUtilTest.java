@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class OutputFileNameUtilTest {
 
-    InternalCoreCCRequest internalCoreCCRequest;
+    private InternalCoreCCRequest internalCoreCCRequest;
 
     @BeforeEach
     void setUp() {
