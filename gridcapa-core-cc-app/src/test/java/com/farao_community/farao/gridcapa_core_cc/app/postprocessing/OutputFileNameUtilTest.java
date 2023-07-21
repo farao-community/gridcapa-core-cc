@@ -6,7 +6,10 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,12 +19,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class OutputFileNameUtilTest {
 
+    InternalCoreCCRequest internalCoreCCRequest;
+
+    @BeforeEach
+    void setUp() {
+        internalCoreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
+        Mockito.when(internalCoreCCRequest.getVersion()).thenReturn(2);
+    }
+
     @Test
     void generateCgmFileNameTest() {
         assertEquals("20200330_0130_2D1_UX1.uct", OutputFileNameUtil.generateUctFileName("2020-03-29T23:00:00Z", 1));
     }
 
-    // TODO: generateOutputNamesFileNameTest
-    // TODO: test25TimestampDay
-    // TODO: test23TimestampDay
+    @Test
+    void generateCneFileName() {
+        assertEquals("20230721_1530_20230721-F299-v2-22XCORESO------S_to_17XTSO-CS------W.xml", OutputFileNameUtil.generateCneFileName("2023-07-21T13:51:33Z", internalCoreCCRequest));
+    }
+
+    @Test
+    void generateRaoResultFileName() {
+        assertEquals("20230721_1530_RAO-RESULT-0V.txt", OutputFileNameUtil.generateRaoResultFileName("2023-07-21T13:57:18Z", internalCoreCCRequest));
+    }
+
+    @Test
+    void generateMetadataFileName() {
+        assertEquals("20230721_1630_METADATA-02.json", OutputFileNameUtil.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
+    }
+
+    @Test
+    void generateCracCreationReportFileName() {
+        assertEquals("20230721_1630_RAO-LOGS-02.txt", OutputFileNameUtil.generateCracCreationReportFileName("2023-07-21T14:03:42Z", internalCoreCCRequest));
+    }
+
 }

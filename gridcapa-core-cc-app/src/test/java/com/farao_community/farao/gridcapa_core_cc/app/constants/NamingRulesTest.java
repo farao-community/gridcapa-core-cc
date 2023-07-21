@@ -20,9 +20,6 @@ public class NamingRulesTest {
 
     private final LocalDateTime dateTime = LocalDateTime.of(2023, 7, 12, 15, 17, 41);
 
-    // TODO: testRaoRequestName
-    // TODO: testCgmZipName
-
     @Test
     public void testCgmXmlHeaderName() {
         assertTrue("CGM_XML_HEADER.xml".matches(CGM_XML_HEADER_NAME));
@@ -31,11 +28,6 @@ public class NamingRulesTest {
         assertTrue("CGM_XML_HEAER.xml".matches(CGM_XML_HEADER_NAME));
         assertTrue("anything.xml".matches(CGM_XML_HEADER_NAME));
     }
-
-    // TODO: testRealGlskName
-    // TODO: testCracName
-    // TODO: testRefProgName
-    // TODO: testVirtualHubNames
 
     @Test
     public void testCgmFileName() {
