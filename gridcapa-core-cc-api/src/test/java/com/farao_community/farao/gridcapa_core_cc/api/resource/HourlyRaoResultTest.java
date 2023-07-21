@@ -94,9 +94,10 @@ public class HourlyRaoResultTest {
     void testEquals() {
         HourlyRaoResult sameInstantHourlyRaoResult = new HourlyRaoResult("instant");
         HourlyRaoResult differentInstantHourlyRaoResult = new HourlyRaoResult("otherInstant");
-        assertEquals(hourlyRaoResult, hourlyRaoResult);
-        assertEquals(hourlyRaoResult, sameInstantHourlyRaoResult);
-        assertNotEquals(differentInstantHourlyRaoResult, hourlyRaoResult);
-        assertNotEquals(0, hourlyRaoResult);
+        assertTrue(hourlyRaoResult.equals(hourlyRaoResult));
+        assertTrue(hourlyRaoResult.equals(sameInstantHourlyRaoResult));
+        assertFalse(hourlyRaoResult.equals(123));
+        assertFalse(hourlyRaoResult.equals(new HourlyRaoResult(null)));
+        assertFalse(hourlyRaoResult.equals(differentInstantHourlyRaoResult));
     }
 }
