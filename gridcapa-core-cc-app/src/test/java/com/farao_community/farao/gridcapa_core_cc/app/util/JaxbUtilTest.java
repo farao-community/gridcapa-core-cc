@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class JaxbUtilTest {
 
-    private InputStream inputStream = Mockito.mock(InputStream.class);;
+    private InputStream inputStream = Mockito.mock(InputStream.class);
 
     @Test
     void errorWhenUnmarshalFile() {
