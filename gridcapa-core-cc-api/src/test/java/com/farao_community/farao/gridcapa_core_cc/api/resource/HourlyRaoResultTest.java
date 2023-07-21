@@ -16,7 +16,6 @@ import org.mockito.Mockito;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
