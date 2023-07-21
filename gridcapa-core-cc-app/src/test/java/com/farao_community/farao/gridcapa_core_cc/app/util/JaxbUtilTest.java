@@ -5,18 +5,11 @@
  *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/**
- * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
- */
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -24,6 +17,9 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
+ */
 public class JaxbUtilTest {
 
     private InputStream inputStream = Mockito.mock(InputStream.class);;
