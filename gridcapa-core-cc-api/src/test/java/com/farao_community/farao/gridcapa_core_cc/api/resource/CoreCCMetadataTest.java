@@ -18,13 +18,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CoreCCMetadataTest {
     @Test
     void checkCoreCCMetadata() {
-        CoreCCMetadata coreCCMetadata = new CoreCCMetadata("raoRequestFileName", "requestReceivedInstant", "raoRequestInstant", "computationStart", "computationEnd", "timeInterval", "status", "errorCode", "errorMessage", 0);
+        CoreCCMetadata coreCCMetadata = new CoreCCMetadata("raoRequestFileName", "requestReceivedInstant", "raoRequestInstant", "computationStart", "computationEnd", "timeInterval", "correlationId", "status", "errorCode", "errorMessage", 0);
         assertEquals("raoRequestFileName", coreCCMetadata.getRaoRequestFileName());
         assertEquals("requestReceivedInstant", coreCCMetadata.getRequestReceivedInstant());
         assertEquals("computationStart", coreCCMetadata.getComputationStart());
         assertEquals("raoRequestInstant", coreCCMetadata.getRaoRequestInstant());
         assertEquals("computationEnd", coreCCMetadata.getComputationEnd());
         assertEquals("timeInterval", coreCCMetadata.getTimeInterval());
+        assertEquals("correlationId", coreCCMetadata.getCorrelationId());
         assertEquals("status", coreCCMetadata.getStatus());
         assertEquals("errorCode", coreCCMetadata.getErrorCode());
         assertEquals("errorMessage", coreCCMetadata.getErrorMessage());
