@@ -24,6 +24,8 @@ public class CoreCCMetadata {
 
     private final String computationEnd;
     private final String timeInterval;
+    private final String correlationId;
+
     private final String status;
     private final String errorCode;
     private final String errorMessage;
@@ -37,6 +39,7 @@ public class CoreCCMetadata {
                           @JsonProperty("computationStart") String computationStart,
                           @JsonProperty("computationEnd") String computationEnd,
                           @JsonProperty("timeInterval") String timeInterval,
+                          @JsonProperty("correlationId") String correlationId,
                           @JsonProperty("status") String status,
                           @JsonProperty("errorCode") String errorCode,
                           @JsonProperty("errorMessage") String errorMessage,
@@ -47,6 +50,7 @@ public class CoreCCMetadata {
         this.computationStart = computationStart;
         this.computationEnd = computationEnd;
         this.timeInterval = timeInterval;
+        this.correlationId = correlationId;
         this.status = status;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
@@ -75,6 +79,10 @@ public class CoreCCMetadata {
 
     public String getTimeInterval() {
         return timeInterval;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public String getStatus() {

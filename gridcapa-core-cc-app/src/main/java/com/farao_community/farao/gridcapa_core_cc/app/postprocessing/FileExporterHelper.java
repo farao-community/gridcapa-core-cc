@@ -194,6 +194,7 @@ public class FileExporterHelper {
                 coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString(),
                 coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString(),
                 coreCCRequest.getTimeInterval(),
+                coreCCRequest.getCorrelationId(),
                 coreCCRequest.getHourlyRaoResult().getStatus().toString(),
                 coreCCRequest.getHourlyRaoResult().getErrorCodeString(),
                 coreCCRequest.getHourlyRaoResult().getErrorMessage(),
