@@ -28,12 +28,12 @@ public class HourlyRaoRequestTest {
     void setUp() {
         minioAdapter = Mockito.mock(MinioAdapter.class);
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "instant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
     }
 
     @Test
     void checkHourlyRaoRequest() {
-        assertEquals("instant", hourlyRaoRequest.getRaoRequestInstant());
+        assertEquals("2023-07-25T14:13:00", hourlyRaoRequest.getRaoRequestInstant());
         assertEquals("file/path/network", hourlyRaoRequest.getNetworkFileUrl());
         assertEquals("file/path/cb", hourlyRaoRequest.getCracFileUrl());
         assertEquals("file/path/raoParameters", hourlyRaoRequest.getRaoParametersFileUrl());
@@ -41,12 +41,12 @@ public class HourlyRaoRequestTest {
         assertEquals("id", hourlyRaoRequest.toRaoRequest("id").getId());
         assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getCracFileUrl());
         assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getNetworkFileUrl());
-        assertEquals(1957570048, hourlyRaoRequest.hashCode());
+        assertEquals(-900004967, hourlyRaoRequest.hashCode());
     }
 
     @Test
     void testEquals() {
-        HourlyRaoRequest sameInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "instant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        HourlyRaoRequest sameInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         HourlyRaoRequest differentInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "otherInstant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         assertEquals(hourlyRaoRequest, hourlyRaoRequest);
         assertEquals(hourlyRaoRequest, sameInstantHourlyRaoRequest);

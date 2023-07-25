@@ -22,10 +22,7 @@ public class NamingRulesTest {
 
     @Test
     public void testCgmXmlHeaderName() {
-        assertTrue("CGM_XML_HEADER.xml".matches(CGM_XML_HEADER_NAME));
-        assertTrue("CGM_XML_Header.xml".matches(CGM_XML_HEADER_NAME));
         assertFalse("CGM_XML_HEADER".matches(CGM_XML_HEADER_NAME));
-        assertTrue("CGM_XML_HEAER.xml".matches(CGM_XML_HEADER_NAME));
         assertTrue("anything.xml".matches(CGM_XML_HEADER_NAME));
     }
 

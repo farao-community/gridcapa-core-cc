@@ -29,7 +29,7 @@ public class HourlyRaoResultTest {
 
     @BeforeEach
     void setUp() {
-        hourlyRaoResult = new HourlyRaoResult("instant");
+        hourlyRaoResult = new HourlyRaoResult("2023-07-25T14:09:00");
         initialInstant = Instant.ofEpochSecond(0);
         oneSecondInstant = Instant.ofEpochSecond(1);
         raoResponse = Mockito.mock(RaoResponse.class);
@@ -41,7 +41,7 @@ public class HourlyRaoResultTest {
 
     @Test
     void checkHourlyRaoResult() {
-        assertEquals("instant", hourlyRaoResult.getRaoRequestInstant());
+        assertEquals("2023-07-25T14:09:00", hourlyRaoResult.getRaoRequestInstant());
         assertNull(hourlyRaoResult.getNetworkWithPraUrl());
         assertNull(hourlyRaoResult.getErrorMessage());
         assertNull(hourlyRaoResult.getRaoResultFileUrl());
@@ -49,7 +49,7 @@ public class HourlyRaoResultTest {
         assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
         assertEquals(initialInstant, hourlyRaoResult.getComputationStartInstant());
         assertEquals(initialInstant, hourlyRaoResult.getComputationEndInstant());
-        assertEquals(1957570048, hourlyRaoResult.hashCode());
+        assertEquals(-900749742, hourlyRaoResult.hashCode());
     }
 
     @Test
@@ -91,12 +91,12 @@ public class HourlyRaoResultTest {
 
     @Test
     void testEquals() {
-        HourlyRaoResult sameInstantHourlyRaoResult = new HourlyRaoResult("instant");
+        HourlyRaoResult sameInstantHourlyRaoResult = new HourlyRaoResult("2023-07-25T14:09:00");
         HourlyRaoResult differentInstantHourlyRaoResult = new HourlyRaoResult("otherInstant");
-        assertTrue(hourlyRaoResult.equals(hourlyRaoResult));
-        assertTrue(hourlyRaoResult.equals(sameInstantHourlyRaoResult));
-        assertFalse(hourlyRaoResult.equals(123));
-        assertFalse(hourlyRaoResult.equals(new HourlyRaoResult(null)));
-        assertFalse(hourlyRaoResult.equals(differentInstantHourlyRaoResult));
+        assertEquals(hourlyRaoResult, hourlyRaoResult);
+        assertEquals(hourlyRaoResult, sameInstantHourlyRaoResult);
+        assertNotEquals(123, hourlyRaoResult);
+        assertNotEquals(hourlyRaoResult, new HourlyRaoResult(null));
+        assertNotEquals(hourlyRaoResult, differentInstantHourlyRaoResult);
     }
 }
