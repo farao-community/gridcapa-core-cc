@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CoreCCMetadataTest {
     @Test
     void checkCoreCCMetadata() {
-        CoreCCMetadata coreCCMetadata = new CoreCCMetadata("raoRequest.json", "2023-07-27T14:00:00", "2023-07-27T14:02:00", "2023-07-27T14:05:00", "2023-07-27T14:06:00", "interval", "correlationId", "status", "0", "This is an error.", 0);
+        CoreCCMetadata coreCCMetadata = new CoreCCMetadata("raoRequest.json", "2023-07-27T14:00:00Z", "2023-07-27T14:02:00Z", "2023-07-27T14:05:00Z", "2023-07-27T14:06:00Z", "interval", "correlationId", "status", "0", "This is an error.", 0);
         assertEquals("raoRequest.json", coreCCMetadata.getRaoRequestFileName());
-        assertEquals("2023-07-27T14:00:00", coreCCMetadata.getRequestReceivedInstant());
-        assertEquals("2023-07-27T14:05:00", coreCCMetadata.getComputationStart());
-        assertEquals("2023-07-27T14:02:00", coreCCMetadata.getRaoRequestInstant());
-        assertEquals("2023-07-27T14:06:00", coreCCMetadata.getComputationEnd());
+        assertEquals("2023-07-27T14:00:00Z", coreCCMetadata.getRequestReceivedInstant());
+        assertEquals("2023-07-27T14:05:00Z", coreCCMetadata.getComputationStart());
+        assertEquals("2023-07-27T14:02:00Z", coreCCMetadata.getRaoRequestInstant());
+        assertEquals("2023-07-27T14:06:00Z", coreCCMetadata.getComputationEnd());
         assertEquals("interval", coreCCMetadata.getTimeInterval());
         assertEquals("correlationId", coreCCMetadata.getCorrelationId());
         assertEquals("status", coreCCMetadata.getStatus());
