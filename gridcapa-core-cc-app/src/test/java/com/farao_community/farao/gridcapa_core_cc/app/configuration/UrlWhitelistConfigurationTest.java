@@ -27,5 +27,6 @@ class UrlWhitelistConfigurationTest {
         // TODO: understand why not 1 and "http://localhost:9000"
         assertEquals(2, urlWhitelistConfiguration.getWhitelist().size());
         assertEquals("file:/", urlWhitelistConfiguration.getWhitelist().get(0));
+        assertEquals("http://minio:9000/", urlWhitelistConfiguration.getWhitelist().get(1));
     }
 }
