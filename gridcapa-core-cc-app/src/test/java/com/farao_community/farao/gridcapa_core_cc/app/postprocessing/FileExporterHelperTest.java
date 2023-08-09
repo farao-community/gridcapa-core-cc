@@ -56,9 +56,6 @@ public class FileExporterHelperTest {
     private Instant instant = Instant.parse(instantString);
     private OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
 
-    public FileExporterHelperTest() {
-    }
-
     @BeforeEach
     void setUp() {
         networkIsUploaded = false;
