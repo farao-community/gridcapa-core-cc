@@ -73,7 +73,7 @@ public class NamingRulesTest {
 
     @Test
     public void testRaoResultFileName() {
-        assertEquals("20230712_1530_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
+        assertEquals("20230712_1530_RAO-RESULT-0V.json", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
     }

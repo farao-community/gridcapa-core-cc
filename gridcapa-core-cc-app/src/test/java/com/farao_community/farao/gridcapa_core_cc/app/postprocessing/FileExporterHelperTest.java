@@ -99,7 +99,7 @@ public class FileExporterHelperTest {
     @Test
     void exportRaoResultToMinio() {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        Mockito.doAnswer(answer -> raoResultIsUploaded = true).when(minioAdapter).uploadOutputForTimestamp(Mockito.eq("/path/20230725_1730_RAO-RESULT-0V.txt"), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(answer -> raoResultIsUploaded = true).when(minioAdapter).uploadOutputForTimestamp(Mockito.eq("/path/20230725_1730_RAO-RESULT-01.json"), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
         assertTrue(raoResultIsUploaded);
     }
