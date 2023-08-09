@@ -39,7 +39,7 @@ public final class OutputFileNameUtil {
 
     public static String generateRaoResultFileName(String instant, InternalCoreCCRequest coreCCRequest) {
         String output = NamingRules.RAO_RESULT_FILENAME_FORMATTER.format(Instant.parse(instant))
-            .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
+                .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
         return handle25TimestampCase(output, instant);
     }
 

@@ -35,7 +35,7 @@ public final class NamingRules {
     public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(ZONE_ID);
     public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-0V.json'").withZone(ZONE_ID);
     public static final DateTimeFormatter RAO_LOGS_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-LOGS-0V.txt'").withZone(ZONE_ID);
-    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-RESULT-0V.txt'").withZone(ZONE_ID);
+    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-RESULT-0V.json'").withZone(ZONE_ID);
 
     // -- Xml Response Generator constants
     public static final String XML_RESPONSE_GENERATOR_SENDER_ID = "22XCORESO------S";

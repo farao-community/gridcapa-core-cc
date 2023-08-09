@@ -39,7 +39,7 @@ public class OutputFileNameUtilTest {
 
     @Test
     void generateRaoResultFileName() {
-        assertEquals("20230721_1530_RAO-RESULT-0V.txt", OutputFileNameUtil.generateRaoResultFileName("2023-07-21T13:57:18Z", internalCoreCCRequest));
+        assertEquals("20230721_1530_RAO-RESULT-02.json", OutputFileNameUtil.generateRaoResultFileName("2023-07-21T13:57:18Z", internalCoreCCRequest));
     }
 
     @Test
