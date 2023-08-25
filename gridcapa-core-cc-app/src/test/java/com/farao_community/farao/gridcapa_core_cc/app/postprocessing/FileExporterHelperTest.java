@@ -8,7 +8,6 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.farao_community.farao.core_cc_post_processing.app.MinioFileWriter;
 import com.farao_community.farao.data.crac_api.Crac;
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
 import com.farao_community.farao.data.crac_io_api.CracImporters;
@@ -18,6 +17,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResourc
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.app.MinioFileWriter;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
@@ -58,7 +58,7 @@ class FileExporterHelperTest {
     private OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
-    private final com.farao_community.farao.core_cc_post_processing.app.MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
+    private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
 
     @BeforeEach
     void setUp() {
@@ -107,7 +107,7 @@ class FileExporterHelperTest {
     }
 
     @Test
-    void errorWhenUploadingRaoResultToMinio() throws IOException {
+    void errorWhenUploadingRaoResultToMinio() {
         Mockito.when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
         RuntimeException exception = assertThrows(RuntimeException.class, () -> fileExporterHelper.exportRaoResultToMinio(coreCCRequest));

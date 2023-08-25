@@ -21,10 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class RaoRunnerServiceTest {
+class RaoRunnerServiceTest {
 
     private RaoRequest raoRequest;
-    private RaoResponse raoResponse;
     private RaoRunnerClient raoRunnerClient;
     private RaoRunnerClient badRaoRunnerClient;
     private RaoRunnerService raoRunnerService;
@@ -33,7 +32,7 @@ public class RaoRunnerServiceTest {
     void setUp() {
         raoRequest = Mockito.mock(RaoRequest.class);
         Mockito.when(raoRequest.toString()).thenReturn("raoRequest");
-        raoResponse = Mockito.mock(RaoResponse.class);
+        RaoResponse raoResponse = Mockito.mock(RaoResponse.class);
         Mockito.when(raoResponse.toString()).thenReturn("raoResponse");
         Mockito.when(raoResponse.getId()).thenReturn("id");
         raoRunnerClient = Mockito.mock(RaoRunnerClient.class);

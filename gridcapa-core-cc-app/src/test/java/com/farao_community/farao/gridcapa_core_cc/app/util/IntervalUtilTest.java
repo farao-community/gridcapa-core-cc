@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class IntervalUtilTest {
+class IntervalUtilTest {
 
     @Test
     void getFormattedBusinessDay() {

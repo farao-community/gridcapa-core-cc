@@ -16,18 +16,18 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class NamingRulesTest {
+class NamingRulesTest {
 
     private final LocalDateTime dateTime = LocalDateTime.of(2023, 7, 12, 15, 17, 41);
 
     @Test
-    public void testCgmXmlHeaderName() {
+    void testCgmXmlHeaderName() {
         assertFalse("CGM_XML_HEADER".matches(CGM_XML_HEADER_NAME));
         assertTrue("anything.xml".matches(CGM_XML_HEADER_NAME));
     }
 
     @Test
-    public void testCgmFileName() {
+    void testCgmFileName() {
         assertTrue("01234567_8930_2D1.uct".matches(CGM_FILE_NAME));
         assertTrue("52900617_B230_2D6.uct".matches(CGM_FILE_NAME));
         assertFalse("148083467_B230_2D2".matches(CGM_FILE_NAME));
@@ -37,42 +37,42 @@ public class NamingRulesTest {
     }
 
     @Test
-    public void testRaoRequestAckFileName() {
+    void testRaoRequestAckFileName() {
         assertEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_20230712-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
         assertNotEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_2023-07-12-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
         assertNotEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_20230101-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
     }
 
     @Test
-    public void testUctFileName() {
+    void testUctFileName() {
         assertEquals("20230712_1530_2D0_UXV.uct", dateTime.format(UCT_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_2D0_UXV.uct", dateTime.format(UCT_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_2D0_UXV.uct", dateTime.format(UCT_FILENAME_FORMATTER));
     }
 
     @Test
-    public void testCneFileName() {
+    void testCneFileName() {
         assertEquals("20230712_1530_20230712-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml", dateTime.format(CNE_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_20230712-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml", dateTime.format(CNE_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_20230712-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml", dateTime.format(CNE_FILENAME_FORMATTER));
     }
 
     @Test
-    public void testIntermediateMetadataFileName() {
+    void testIntermediateMetadataFileName() {
         assertEquals("20230712_1530_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
     }
 
     @Test
-    public void testRaoLogsFileName() {
+    void testRaoLogsFileName() {
         assertEquals("20230712_1530_RAO-LOGS-0V.txt", dateTime.format(RAO_LOGS_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_RAO-LOGS-0V.txt", dateTime.format(RAO_LOGS_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_RAO-LOGS-0V.txt", dateTime.format(RAO_LOGS_FILENAME_FORMATTER));
     }
 
     @Test
-    public void testRaoResultFileName() {
+    void testRaoResultFileName() {
         assertEquals("20230712_1530_RAO-RESULT-0V.json", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));

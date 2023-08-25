@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class OutputFileNameUtilTest {
+class OutputFileNameUtilTest {
 
     private InternalCoreCCRequest internalCoreCCRequest;
 
