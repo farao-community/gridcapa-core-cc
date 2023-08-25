@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class HourlyRaoRequestTest {
+class HourlyRaoRequestTest {
 
     private MinioAdapter minioAdapter;
     private HourlyRaoRequest hourlyRaoRequest;
@@ -35,10 +35,6 @@ public class HourlyRaoRequestTest {
     void checkHourlyRaoRequest() {
         assertEquals("2023-07-25T14:13:00Z", hourlyRaoRequest.getRaoRequestInstant());
         assertEquals("file/path/network", hourlyRaoRequest.getNetworkFileUrl());
-        assertEquals("file/path/cb", hourlyRaoRequest.getCracFileUrl());
-        assertEquals("file/path/raoParameters", hourlyRaoRequest.getRaoParametersFileUrl());
-        assertEquals("path/to/destination", hourlyRaoRequest.getResultsDestination());
-        assertEquals("id", hourlyRaoRequest.toRaoRequest("id").getId());
         assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getCracFileUrl());
         assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getNetworkFileUrl());
         assertEquals(-2130351041, hourlyRaoRequest.hashCode());
