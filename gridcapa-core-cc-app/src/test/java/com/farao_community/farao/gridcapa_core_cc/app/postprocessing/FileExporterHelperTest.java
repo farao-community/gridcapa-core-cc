@@ -8,6 +8,7 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
+import com.farao_community.farao.data.core_cne_exporter.xsd.CriticalNetworkElementMarketDocument;
 import com.farao_community.farao.data.crac_api.Crac;
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
 import com.farao_community.farao.data.crac_io_api.CracImporters;
@@ -19,8 +20,11 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.MinioFileWriter;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
+import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
+import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
+import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
@@ -88,6 +92,13 @@ class FileExporterHelperTest {
         String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_2D2_UX1.uct";
         removeCreationDateFromUct(new File(generatedFilePath));
         assertFilesContentEqual("/fileExporterHelper/uploadedNetwork.uct", generatedFilePath);
+
+        Network networkAfterPostTreatment = CoreNetworkImporterWrapper.loadNetwork(Path.of(generatedFilePath));
+
+        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(load -> load.getId().contains("_virtualLoad")));
+        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(Identifiable::isFictitious));
+        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1A"));
+        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1B"));
     }
 
     @Test
@@ -175,6 +186,22 @@ class FileExporterHelperTest {
         String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
         removeCreationDateInCne(new File(generatedFilePath));
         assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
+
+        try (FileInputStream inputStreamCne = new FileInputStream(generatedFilePath)) {
+            CriticalNetworkElementMarketDocument cneFile = JaxbUtil.unmarshalContent(CriticalNetworkElementMarketDocument.class, inputStreamCne);
+            assertEquals("22XCORESO------S-20230727-F299v1", cneFile.getMRID());
+            assertEquals("1", cneFile.getRevisionNumber());
+            assertEquals("10Y1001C--00059P", cneFile.getDomainMRID().getValue());
+            assertEquals("A48", cneFile.getProcessProcessType());
+            assertEquals("A44", cneFile.getSenderMarketParticipantMarketRoleType());
+            assertEquals("22XCORESO------S", cneFile.getSenderMarketParticipantMRID().getValue());
+            assertEquals("A36", cneFile.getReceiverMarketParticipantMarketRoleType());
+            assertEquals("17XTSO-CS------W", cneFile.getReceiverMarketParticipantMRID().getValue());
+            assertEquals("2023-07-25T15:02Z", cneFile.getTimePeriodTimeInterval().getStart());
+            assertEquals("2023-07-25T15:03Z", cneFile.getTimePeriodTimeInterval().getEnd());
+        } catch (Exception e) {
+            fail("Failed to read generated CNE file");
+        }
     }
 
     private void removeCreationDateFromUct(File file) throws IOException {
