@@ -179,7 +179,7 @@ class FileExporterHelperTest {
 
     private void removeCreationDateFromUct(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}(\\+\\d{2}:\\d{2})";
+        String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}(?:\\+\\d{2}:\\d{2})?Z?";
         String replaceBy = "yyyy-MM-ddTHH:mm:ss.SSS+HH:mm";
         String line;
         StringBuilder oldText = new StringBuilder();
