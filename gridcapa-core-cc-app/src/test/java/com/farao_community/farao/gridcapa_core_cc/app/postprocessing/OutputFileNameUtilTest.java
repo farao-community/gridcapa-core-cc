@@ -47,9 +47,4 @@ public class OutputFileNameUtilTest {
         assertEquals("20230721_1630_METADATA-02.json", OutputFileNameUtil.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
     }
 
-    @Test
-    void generateCracCreationReportFileName() {
-        assertEquals("20230721_1630_RAO-LOGS-02.txt", OutputFileNameUtil.generateCracCreationReportFileName("2023-07-21T14:03:42Z", internalCoreCCRequest));
-    }
-
 }

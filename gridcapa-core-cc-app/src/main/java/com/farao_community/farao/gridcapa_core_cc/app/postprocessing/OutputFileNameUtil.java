@@ -48,13 +48,8 @@ public final class OutputFileNameUtil {
     }
 
     public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        return NamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant))
+        String output =  NamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant))
                 .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
-    }
-
-    public static String generateCracCreationReportFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output = NamingRules.RAO_LOGS_FILENAME_FORMATTER.format(Instant.parse(instant))
-            .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
         return handle25TimestampCase(output, instant);
     }
 

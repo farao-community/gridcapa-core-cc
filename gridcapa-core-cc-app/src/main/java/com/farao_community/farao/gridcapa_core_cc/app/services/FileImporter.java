@@ -66,8 +66,11 @@ public class FileImporter {
     }
 
     public Network importNetwork(CoreCCFileResource cgmFile) {
-        InputStream networkStream = urlValidationService.openUrlStream(cgmFile.getUrl());
-        return NetworkHandler.loadNetwork(cgmFile.getFilename(), networkStream);
+        try (InputStream networkStream = urlValidationService.openUrlStream(cgmFile.getUrl())) {
+            return NetworkHandler.loadNetwork(cgmFile.getFilename(), networkStream);
+        } catch (IOException e) {
+            throw new CoreCCInvalidDataException(String.format("Cannot download network file from URL '%s'", cgmFile.getUrl()), e);
+        }
     }
 
     public Network importNetworkFromUrl(String cgmUrl) {
@@ -76,10 +79,9 @@ public class FileImporter {
 
     public GlskDocument importGlskFile(CoreCCFileResource glskFileResource) {
         try (InputStream glskStream = urlValidationService.openUrlStream(glskFileResource.getUrl())) {
-            LOGGER.info("Import of Glsk file {} ", glskFileResource.getFilename());
             return GlskDocumentImporters.importGlsk(glskStream);
         } catch (IOException e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download reference program file from URL '%s'", glskFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download GLSK file from URL '%s'", glskFileResource.getUrl()), e);
         }
     }
 
@@ -87,7 +89,7 @@ public class FileImporter {
         try (InputStream refProgStream = urlValidationService.openUrlStream(refProgFile.getUrl())) {
             return RefProgImporter.importRefProg(refProgStream, timestamp);
         } catch (IOException e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download GLSK file from URL '%s'", refProgFile.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download reference program file from URL '%s'", refProgFile.getUrl()), e);
         }
     }
 
@@ -116,13 +118,13 @@ public class FileImporter {
 
     public RequestMessage importRaoRequest(CoreCCFileResource raoRequestFileResource) {
         try (InputStream raoRequestInputStream = urlValidationService.openUrlStream(raoRequestFileResource.getUrl())) {
-            LOGGER.info("Import of rao request from {} file ", raoRequestFileResource.getFilename());
             return JaxbUtil.unmarshalContent(RequestMessage.class, raoRequestInputStream);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, raoRequestFileResource.getUrl()), e);
         }
     }
 
+// TODO :  gridcapa-core-cc-temp-dir ?
     public CgmsAndXmlHeader importCgmsZip(CoreCCFileResource cgmsZimFileResource) {
         try (InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.getUrl())) {
             LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.getFilename());

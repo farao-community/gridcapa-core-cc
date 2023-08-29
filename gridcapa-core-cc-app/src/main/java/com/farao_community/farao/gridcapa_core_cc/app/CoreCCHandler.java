@@ -76,11 +76,13 @@ public class CoreCCHandler {
         if (Objects.nonNull(coreCCRequest.getHourlyRaoResult())) {
             hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         } else {
+            // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
             hourlyRaoResult = new HourlyRaoResult(hourlyRaoRequest.getRaoRequestInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
         }
-        if (Objects.isNull(hourlyRaoRequest)) {
-            LOGGER.info("Skipping RAO - no hourly raoRequest was defined");
+        if (hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
+            saveMetadataWhenPreProcessingFailed(coreCCRequest);
+            LOGGER.info("Skipping RAO");
             return;
         }
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
@@ -96,11 +98,12 @@ public class CoreCCHandler {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
+            // TODO : useless raoresult export. check what's imported in post processing
             fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
             // MetaData
+            hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
             fileExporterHelper.exportMetadataToMinio(coreCCRequest);
         } catch (Exception e) {
             //no throwing exception, just save cause and pass to next timestamp
@@ -109,6 +112,14 @@ public class CoreCCHandler {
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
             hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
             hourlyRaoResult.setErrorMessage(errorMessage);
+        }
+    }
+
+    private void saveMetadataWhenPreProcessingFailed(InternalCoreCCRequest coreCCRequest) {
+        try {
+            fileExporterHelper.exportMetadataToMinioWhenPreProcessingFailed(coreCCRequest);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed");
         }
     }
 

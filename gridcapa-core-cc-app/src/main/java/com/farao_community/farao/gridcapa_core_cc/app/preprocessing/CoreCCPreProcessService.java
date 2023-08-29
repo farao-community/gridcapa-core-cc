@@ -25,7 +25,6 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Reply;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.threeten.extra.Interval;
 
@@ -63,9 +62,6 @@ public class CoreCCPreProcessService {
 
     private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
 
-    @Value("${core-cc-runner.async-time-out}")
-    private long raoTimeOut;
-
     public CoreCCPreProcessService(MinioAdapter minioAdapter, RaoParametersService raoParametersService, FileImporter fileImporter) {
         this.minioAdapter = minioAdapter;
         this.raoParametersService = raoParametersService;
@@ -85,6 +81,7 @@ public class CoreCCPreProcessService {
      */
     private void splitRaoRequest(InternalCoreCCRequest coreCCRequest) {
         String destinationKey = coreCCRequest.getDestinationKey();
+        String destinationPath = generateResultDestinationPath(destinationKey);
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
@@ -110,24 +107,24 @@ public class CoreCCPreProcessService {
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
                     String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
                     String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
-                    String destinationPath = generateResultDestinationPath(destinationKey);
-                    Instant targetEndInstant = Instant.now().plusMillis(raoTimeOut);
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                         coreCCRequest.getRefProg().getUrl(),
                         coreCCRequest.getGlsk().getUrl(),
-                        raoParametersFileUrl, destinationPath, targetEndInstant));
+                        raoParametersFileUrl, destinationPath));
                 } catch (Exception e) {
-                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null));
+                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, destinationPath));
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
                     raoResult.set(new HourlyRaoResult(utcInstant.toString()));
                     raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
                     raoResult.get().setErrorMessage(errorMessage);
+                    raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
                 }
             }
         });
         if (Objects.isNull(raoRequest.get())) {
-            String message = "No raoRequest timestamp matched the coreCCRequest timestamp";
+            String message = "Missing raoRequest";
+            raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, destinationPath));
             LOGGER.warn(message);
             raoResult.set(new HourlyRaoResult(null));
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);

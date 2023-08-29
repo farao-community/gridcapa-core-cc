@@ -24,6 +24,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -66,7 +67,7 @@ public class CoreCCListener implements MessageListener {
             InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             CoreCCResponse coreCCResponse = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
-            sendCoreCCResponse(coreCCResponse, correlationId, internalCoreCCRequest.getHourlyRaoResult().getStatus());
+            sendCoreCCResponse(coreCCResponse, correlationId, internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
         } catch (AbstractCoreCCException e) {
             LOGGER.error("Core CC exception occured", e);
             sendRequestErrorResponse(e, correlationId);
@@ -80,12 +81,13 @@ public class CoreCCListener implements MessageListener {
         amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createErrorResponse(e, correlationId));
     }
 
-    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String correlationId, HourlyRaoResult.Status status) {
-        LOGGER.info("Updating task status to SUCCESS for timestamp {}", coreCCResponse.getId());
+    private void sendCoreCCResponse(CoreCCResponse coreCCResponse, String correlationId, HourlyRaoResult.Status status, OffsetDateTime timestamp) {
         if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.SUCCESS));
+            LOGGER.info("Updating task status to SUCCESS for timestamp {}", timestamp);
         } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCResponse.getId()), TaskStatus.ERROR));
+            LOGGER.info("Updating task status to ERROR for timestamp {}", timestamp);
         }
         amqpTemplate.send(amqpMessagesConfiguration.coreCCResponseExchange().getName(), "", createMessageResponse(coreCCResponse, correlationId));
     }

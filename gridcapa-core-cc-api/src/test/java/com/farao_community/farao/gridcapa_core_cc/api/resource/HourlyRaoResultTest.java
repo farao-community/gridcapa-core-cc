@@ -66,6 +66,7 @@ public class HourlyRaoResultTest {
 
     @Test
     void changeStatus() {
+        assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
         assertEquals(HourlyRaoResult.Status.SUCCESS, hourlyRaoResult.getStatus());
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.RUNNING);
