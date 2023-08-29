@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Baptiste Seguinot {@literal <baptiste.seguinot at rte-france.com}
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class CoreNetworkImporterWrapperTest {
+class CoreNetworkImporterWrapperTest {
 
     @Test
-    public void testCoreNetworkImporterWrapper() {
+    void testCoreNetworkImporterWrapper() {
         String networkFile = "/util/TestCase12NodesHvdc.uct";
         Path pathToNetworkFile = Paths.get(getClass().getResource(networkFile).getPath());
         Network network = CoreNetworkImporterWrapper.loadNetwork(pathToNetworkFile);

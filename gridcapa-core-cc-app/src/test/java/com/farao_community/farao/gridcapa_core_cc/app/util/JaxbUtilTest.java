@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class JaxbUtilTest {
+class JaxbUtilTest {
 
-    private InputStream inputStream = Mockito.mock(InputStream.class);
+    private final InputStream inputStream = Mockito.mock(InputStream.class);
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
