@@ -30,10 +30,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -149,7 +149,9 @@ class CoreCCHandlerTest {
         coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
         assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
         assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
-        assertEquals("Timeout reached, Rao has not finished within allocated time of : 10,00 minutes", hourlyRaoResult.getErrorMessage());
+        // Locale formatting problem: 10,00 v. 10.00
+        String regex = "Timeout reached, Rao has not finished within allocated time of : 10(\\.|,)00 minutes";
+        assertTrue(hourlyRaoResult.getErrorMessage().matches(regex));
     }
 
     private void otherExceptionTypeCauseCase(HourlyRaoResult hourlyRaoResult) {
