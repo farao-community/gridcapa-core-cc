@@ -1,0 +1,33 @@
+{
+  "data": {
+    "type": "core-cc-request",
+    "id": "c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf",
+    "timestamp": "timestamp",
+    "attributes": {
+      "cgm": {
+        "filename": "cgm.txt",
+        "url": "https://cgm/file/url"
+      },
+      "cbcora": {
+        "filename": "cbcora.txt",
+        "url": "https://cbcora/file/url"
+      },
+      "glsk": {
+        "filename": "glsk.txt",
+        "url": "https://glsk/file/url"
+      },
+      "raoRequest": {
+        "filename": "raoRequest.txt",
+        "url": "https://raoRequest/file/url"
+      },
+      "refProg": {
+        "filename": "refProg.txt",
+        "url": "https://refProg/file/url"
+      },
+      "virtualHub": {
+        "filename": "virtualHub.txt",
+        "url": "https://virtualHub/file/url"
+      }
+    }
+  }
+}

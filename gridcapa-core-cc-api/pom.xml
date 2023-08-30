@@ -54,6 +54,21 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>gridcapa-rao-runner-api</artifactId>
+            <version>1.11.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.farao-community.farao</groupId>
+            <artifactId>gridcapa-starter-minio-adapter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

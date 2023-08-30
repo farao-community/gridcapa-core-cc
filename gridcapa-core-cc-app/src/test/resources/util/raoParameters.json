@@ -1,0 +1,146 @@
+{
+  "version" : "2.0",
+  "objective-function" : {
+    "type" : "MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT",
+    "forbid-cost-increase" : true,
+    "curative-min-obj-improvement" : 10.0,
+    "preventive-stop-criterion" : "MIN_OBJECTIVE",
+    "curative-stop-criterion" : "PREVENTIVE_OBJECTIVE_AND_SECURE"
+  },
+  "range-actions-optimization" : {
+    "max-mip-iterations" : 2,
+    "pst-penalty-cost" : 2.0,
+    "pst-sensitivity-threshold" : 0.1,
+    "pst-model" : "APPROXIMATED_INTEGERS",
+    "hvdc-penalty-cost" : 0.001,
+    "hvdc-sensitivity-threshold" : 0.0,
+    "injection-ra-penalty-cost" : 0.001,
+    "injection-ra-sensitivity-threshold" : 0.0,
+    "linear-optimization-solver" : {
+      "solver" : "XPRESS",
+      "relative-mip-gap" : 0.001,
+      "solver-specific-parameters" : "THREADS 1 MAXNODE 100000 MAXTIME 300"
+    }
+  },
+  "topological-actions-optimization" : {
+    "max-search-tree-depth" : 0,
+    "predefined-combinations" : [ ],
+    "relative-minimum-impact-threshold" : 0.0,
+    "absolute-minimum-impact-threshold" : 10.0,
+    "skip-actions-far-from-most-limiting-element" : true,
+    "max-number-of-boundaries-for-skipping-actions" : 1
+  },
+  "multi-threading" : {
+    "contingency-scenarios-in-parallel" : 1,
+    "preventive-leaves-in-parallel" : 1,
+    "curative-leaves-in-parallel" : 1
+  },
+  "second-preventive-rao" : {
+    "execution-condition" : "COST_INCREASE",
+    "re-optimize-curative-range-actions" : false,
+    "hint-from-first-preventive-rao" : false
+  },
+  "ra-usage-limits-per-contingency" : {
+    "max-curative-ra" : 2147483647,
+    "max-curative-tso" : 2147483647,
+    "max-curative-topo-per-tso" : {
+      "AT" : 0,
+      "BE" : 0,
+      "CZ" : 1,
+      "D2" : 0,
+      "D4" : 0,
+      "D7" : 0,
+      "D8" : 0,
+      "FR" : 1,
+      "HR" : 0,
+      "HU" : 1,
+      "NL" : 0,
+      "PL" : 1,
+      "RO" : 0,
+      "SI" : 2,
+      "SK" : 1
+    },
+    "max-curative-pst-per-tso" : {
+      "AT" : 0,
+      "BE" : 0,
+      "CZ" : 2,
+      "D2" : 0,
+      "D4" : 0,
+      "D7" : 0,
+      "D8" : 0,
+      "FR" : 0,
+      "HR" : 0,
+      "HU" : 0,
+      "NL" : 0,
+      "PL" : 2,
+      "RO" : 0,
+      "SI" : 2,
+      "SK" : 0
+    },
+    "max-curative-ra-per-tso" : {
+      "AT" : 0,
+      "BE" : 0,
+      "CZ" : 2,
+      "D2" : 0,
+      "D4" : 0,
+      "D7" : 0,
+      "D8" : 0,
+      "FR" : 1,
+      "HR" : 0,
+      "HU" : 1,
+      "NL" : 0,
+      "PL" : 2,
+      "RO" : 0,
+      "SI" : 3,
+      "SK" : 1
+    }
+  },
+  "not-optimized-cnecs" : {
+    "do-not-optimize-curative-cnecs-for-tsos-without-cras" : true,
+    "do-not-optimize-cnec-secured-by-its-pst" : { }
+  },
+  "load-flow-and-sensitivity-computation" : {
+    "load-flow-provider" : "OpenLoadFlow",
+    "sensitivity-provider" : "OpenLoadFlow",
+    "sensitivity-failure-overcost" : 10000.0,
+    "sensitivity-parameters" : {
+      "version" : "1.0",
+      "load-flow-parameters" : {
+        "version" : "1.9",
+        "voltageInitMode" : "DC_VALUES",
+        "transformerVoltageControlOn" : false,
+        "phaseShifterRegulationOn" : false,
+        "useReactiveLimits" : true,
+        "twtSplitShuntAdmittance" : true,
+        "shuntCompensatorVoltageControlOn" : false,
+        "readSlackBus" : false,
+        "writeSlackBus" : false,
+        "dc" : true,
+        "distributedSlack" : true,
+        "balanceType" : "PROPORTIONAL_TO_LOAD",
+        "dcUseTransformerRatio" : false,
+        "countriesToBalance" : [ "GR", "BE", "SK", "CH", "TR", "RS", "PL", "BG", "UA", "ES", "ME", "CZ", "HR", "RO", "AL", "HU", "AT", "FR", "DE", "PT", "MK", "BA", "SI", "IT", "NL" ],
+        "connectedComponentMode" : "MAIN",
+        "hvdcAcEmulation" : true
+      }
+    }
+  },
+  "extensions" : {
+    "mnec-parameters" : {
+      "acceptable-margin-decrease" : 50.0,
+      "violation-cost" : 100.0,
+      "constraint-adjustment-coefficient" : 5.0
+    },
+    "relative-margins-parameters" : {
+      "ptdf-boundaries" : [ "{FR}-{BE}", "{FR}-{DE}", "{BE}-{NL}", "{NL}-{DE}", "{DE}-{PL}", "{DE}-{CZ}", "{DE}-{AT}", "{PL}-{CZ}", "{PL}-{SK}", "{CZ}-{SK}", "{CZ}-{AT}", "{AT}-{HU}", "{AT}-{SI}", "{SI}-{HR}", "{SK}-{HU}", "{HU}-{RO}", "{HU}-{HR}", "{BE}-{22Y201903144---9}-{DE}+{22Y201903145---4}" ],
+      "ptdf-sum-lower-bound" : 0.01
+    },
+    "loop-flow-parameters" : {
+      "acceptable-increase" : 5.0,
+      "approximation" : "UPDATE_PTDF_WITH_TOPO",
+      "constraint-adjustment-coefficient" : 7.0,
+      "violation-cost" : 100.0,
+      "countries" : [ "AT", "BE", "CZ", "DE", "FR", "HR", "HU", "NL", "PL", "RO", "SI", "SK" ]
+    }
+  }
+}

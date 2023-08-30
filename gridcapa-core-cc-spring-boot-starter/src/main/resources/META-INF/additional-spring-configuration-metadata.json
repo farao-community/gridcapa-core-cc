@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "core-cc-runner.amqp.application-id",
+      "type": "java.lang.String",
+      "description": "Name of the application that call core cc through starter."
+    },
+    {
+      "name": "core-cc-runner.amqp.queue-name",
+      "type": "java.lang.String",
+      "description": "AMQP queue to be used to send core cc requests."
+    },
+    {
+      "name": "core-cc-runner.amqp.exchange",
+      "type": "java.lang.String",
+      "description": "AMQP exchange to be used to send core cc requests."
+    },
+    {
+      "name": "core-cc-runner.amqp.routing-key",
+      "type": "java.lang.String",
+      "description": "AMQP routing key to associate to core cc requests."
+    },
+    {
+      "name": "core-cc-runner.amqp.expiration",
+      "type": "java.lang.String",
+      "description": "Expiration time of core cc requests."
+    }
+  ]
+}
