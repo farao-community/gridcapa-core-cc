@@ -74,7 +74,7 @@ class CoreCCHandlerTest {
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         assertEquals(requestId, response.getId());
-        //should upload 7 artifacts: parameters + ACK + crac + network
+        // should upload 4 artifacts: CNE + network + raoResult + metadata
         Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
     }
 
