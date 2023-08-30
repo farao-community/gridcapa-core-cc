@@ -156,10 +156,7 @@ public class FileExporterHelper {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
-        String raoResultNewFileName = OutputFileNameUtil.generateRaoResultFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
-        // T0DO : only get name raoResult.json from url
-        String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + raoResultNewFileName;
-//        System.out.println(String.format("raoResultNewFileName was %s and raoResultFilePath is %s", raoResultNewFileName, raoResultFilePath));
+        String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + "raoResult.json";
         minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), CORE_CC, "RAO_RESULT", coreCCRequest.getTimestamp());
     }
 

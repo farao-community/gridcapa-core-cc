@@ -38,13 +38,7 @@ class OutputFileNameUtilTest {
     }
 
     @Test
-    void generateRaoResultFileName() {
-        assertEquals("20230721_1530_RAO-RESULT-02.json", OutputFileNameUtil.generateRaoResultFileName("2023-07-21T13:57:18Z", internalCoreCCRequest));
-    }
-
-    @Test
     void generateMetadataFileName() {
         assertEquals("20230721_1630_METADATA-02.json", OutputFileNameUtil.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
     }
-
 }
