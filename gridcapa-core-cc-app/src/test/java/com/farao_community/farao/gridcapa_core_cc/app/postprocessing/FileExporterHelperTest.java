@@ -49,17 +49,17 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FileExporterHelperTest {
 
-    private String newtorkFile = "/util/TestCase12NodesHvdc.uct";
-    private Path networkPath = Paths.get(getClass().getResource(newtorkFile).getPath());
-    private Network network = Network.read(networkPath);
+    private final String networkFile = "/util/TestCase12NodesHvdc.uct";
+    private final Path networkPath = Paths.get(getClass().getResource(networkFile).getPath());
+    private final Network network = Network.read(networkPath);
     private FileImporter fileImporter;
     private MinioAdapter minioAdapter;
     private InternalCoreCCRequest coreCCRequest;
     private HourlyRaoResult hourlyRaoResult;
     private HourlyRaoRequest hourlyRaoRequest;
-    private String instantString = "2023-07-25T16:57:00Z";
-    private Instant instant = Instant.parse(instantString);
-    private OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
+    private final String instantString = "2023-07-25T16:57:00Z";
+    private final Instant instant = Instant.parse(instantString);
+    private final OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
     private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
@@ -72,7 +72,7 @@ class FileExporterHelperTest {
         minioAdapter = Mockito.mock(MinioAdapter.class);
         hourlyRaoResult = Mockito.mock(HourlyRaoResult.class);
         Mockito.when(hourlyRaoResult.getRaoRequestInstant()).thenReturn("2023-07-25T15:02:00Z");
-        Mockito.when(hourlyRaoResult.getNetworkWithPraUrl()).thenReturn(newtorkFile);
+        Mockito.when(hourlyRaoResult.getNetworkWithPraUrl()).thenReturn(networkFile);
         Mockito.when(hourlyRaoResult.getRaoResultFileUrl()).thenReturn("raoResult.json");
         hourlyRaoRequest = Mockito.mock(HourlyRaoRequest.class);
         Mockito.when(hourlyRaoRequest.getResultsDestination()).thenReturn("/path");
@@ -113,7 +113,7 @@ class FileExporterHelperTest {
     void exportRaoResultToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_RAO-RESULT-01.json";
+        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/raoResult.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
     }
 
