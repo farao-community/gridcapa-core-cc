@@ -100,7 +100,6 @@ public class CoreCCHandler {
             hourlyRaoResult.setRaoResponseData(raoResponse);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-            // TODO : useless raoresult export. check what's imported in post processing
             fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
             // MetaData
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
