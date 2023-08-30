@@ -7,16 +7,19 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
+import com.github.jasminb.jsonapi.models.errors.Error;
+import com.github.jasminb.jsonapi.models.errors.Errors;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.amqp.core.AmqpReplyTimeoutException;
+import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,6 +30,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,6 +53,13 @@ class CoreCCHandlerTest {
     @MockBean
     private FileExporterHelper fileExporterHelper;
 
+    private InternalCoreCCRequest internalCoreCCRequest;
+
+    @BeforeEach
+    void setUp() {
+        internalCoreCCRequest = createInternalCoreCCRequest();
+    }
+
     @Test
     void handleCoreCCRequestTest() throws IOException {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
@@ -58,6 +70,21 @@ class CoreCCHandlerTest {
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportRaoResultToMinio(Mockito.any());
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportMetadataToMinio(Mockito.any());
 
+        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
+        assertEquals("Test request", response.getId());
+        // should upload 4 artifacts: CNE + network + raoResult + metadata
+        Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
+    }
+
+    private CoreCCFileResource createFileResource(String filename, URL resource) {
+        try {
+            return new CoreCCFileResource(filename, resource.toURI().toURL().toString());
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private InternalCoreCCRequest createInternalCoreCCRequest() {
         String requestId = "Test request";
         String networkFileName = "20210723-F119-v1-17XTSO-CS------W-to-22XCORESO------S.zip";
         String testDirectory = "/20210723";
@@ -71,18 +98,65 @@ class CoreCCHandlerTest {
         CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
         CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raoRequestFile, virtualHubFile, true);
-        InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
-        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
-        assertEquals(requestId, response.getId());
-        // should upload 4 artifacts: CNE + network + raoResult + metadata
-        Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
+        return new InternalCoreCCRequest(request);
     }
 
-    private CoreCCFileResource createFileResource(String filename, URL resource) {
-        try {
-            return new CoreCCFileResource(filename, resource.toURI().toURL().toString());
-        } catch (MalformedURLException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    @Test
+    void handleRaoRunnerException() {
+        HourlyRaoResult hourlyRaoResult = new HourlyRaoResult("2021-07-22T22:30Z");
+        resourceParseExceptionCase(hourlyRaoResult);
+        exceptionCausedByResourceParseExceptionCase(hourlyRaoResult);
+        exceptionCausedByAmqpReplyTimeoutExceptionCase(hourlyRaoResult);
+        otherExceptionTypeCauseCase(hourlyRaoResult);
+    }
+
+    private void resourceParseExceptionCase(HourlyRaoResult hourlyRaoResult) {
+        Error error = new Error();
+        error.setDetail("Error message");
+        Errors errors = new Errors();
+        errors.setErrors(List.of(error));
+        ResourceParseException resourceParseException = new ResourceParseException(errors);
+
+        coreCCHandler.handleRaoRunnerException(hourlyRaoResult, resourceParseException);
+        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals("Error message", hourlyRaoResult.getErrorMessage());
+    }
+
+    private void exceptionCausedByResourceParseExceptionCase(HourlyRaoResult hourlyRaoResult) {
+        Error error = new Error();
+        error.setDetail("Exception caused by ResourceParseException");
+        Errors errors = new Errors();
+        errors.setErrors(List.of(error));
+        ResourceParseException resourceParseException = new ResourceParseException(errors);
+
+        RuntimeException exception = Mockito.mock(RuntimeException.class);
+        Mockito.doReturn(resourceParseException).when(exception).getCause();
+
+        coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
+        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals("Exception caused by ResourceParseException", hourlyRaoResult.getErrorMessage());
+    }
+
+    private void exceptionCausedByAmqpReplyTimeoutExceptionCase(HourlyRaoResult hourlyRaoResult) {
+        Message message = new Message("AmqpReplyTimeoutException".getBytes());
+        AmqpReplyTimeoutException amqpReplyTimeoutException = new AmqpReplyTimeoutException("Timeout exception", message);
+
+        RuntimeException exception = Mockito.mock(RuntimeException.class);
+        Mockito.doReturn(amqpReplyTimeoutException).when(exception).getCause();
+
+        coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
+        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals("Timeout reached, Rao has not finished within allocated time of : 10,00 minutes", hourlyRaoResult.getErrorMessage());
+    }
+
+    private void otherExceptionTypeCauseCase(HourlyRaoResult hourlyRaoResult) {
+        RuntimeException exception = new RuntimeException("Other exception");
+        coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
+        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals("Other exception", hourlyRaoResult.getErrorMessage());
     }
 }
