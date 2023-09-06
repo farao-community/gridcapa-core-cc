@@ -122,7 +122,7 @@ public class CoreCCHandler {
         }
     }
 
-    private void handleRaoRunnerException(HourlyRaoResult hourlyRaoResult, Throwable exception) {
+    void handleRaoRunnerException(HourlyRaoResult hourlyRaoResult, Throwable exception) {
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
         hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
         if (exception instanceof ResourceParseException) {

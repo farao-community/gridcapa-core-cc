@@ -25,9 +25,6 @@
       <MNEC>false</MNEC>
       <direction>DIRECT</direction>
       <tsoOrigin>BE</tsoOrigin>
-      <outage id="CO_HVDC" location="BE-DE" name="n-1 ALEGRO HVDC">
-        <hvdcVH eic="22T201903146---W" from="XLI_OB1B" to="XLI_OB1A"/>
-      </outage>
     </criticalBranch>
   </criticalBranches>
 </FlowBasedConstraintDocument>

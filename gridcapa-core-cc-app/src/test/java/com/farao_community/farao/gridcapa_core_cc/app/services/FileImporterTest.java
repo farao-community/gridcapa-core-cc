@@ -7,6 +7,7 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
+import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.data.crac_api.Crac;
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
@@ -60,7 +61,7 @@ class FileImporterTest {
     void importCrac() {
         InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
-        CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
         FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
         Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
@@ -82,6 +83,21 @@ class FileImporterTest {
         Network network = fileImporter.importNetworkFromUrl(cgmUrl);
         assertNotNull(network);
         assertEquals("20210723_0030_2D5_CGM", network.getNameOrId());
+    }
+
+    @Test
+    void importRaoResult() {
+        String raoResultFileName = "raoResult.json";
+        String raoResultUrl = getClass().getResource(testDirectory + "/" + raoResultFileName).toExternalForm();
+
+        InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
+        Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
+        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
+        Crac crac = fbConstraintCreationContext.getCrac();
+
+        RaoResult raoResult = fileImporter.importRaoResult(raoResultUrl, crac);
+        assertNotNull(raoResult);
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {
