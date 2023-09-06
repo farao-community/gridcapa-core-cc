@@ -78,6 +78,9 @@ public final class ZipUtil {
         } catch (Exception e) {
             throw new CoreCCInternalException("Zip file could not be extracted", e);
         }
+        catch (Exception e) {
+            throw new CoreCCInternalException("Zip file could not be extracted", e);
+        }
     }
 }
 
