@@ -124,13 +124,13 @@ public class FileImporter {
         }
     }
 
-// TODO :  gridcapa-core-cc-temp-dir ?
     public CgmsAndXmlHeader importCgmsZip(CoreCCFileResource cgmsZimFileResource) {
         try (InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.getUrl())) {
             LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.getFilename());
 
             FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            Path tmpCgmInputsPath = Files.createDirectories(Paths.get("/tmp/gridcapa-core-cc-temp-dir" + File.separator + "cgm"), attr);
+            String tempDir = System.getProperty("java.io.tmpdir");
+            Path tmpCgmInputsPath = Files.createDirectories(Paths.get(tempDir + "/gridcapa-core-cc-temp-dir" + File.separator + "cgm"), attr);
             List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
             Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_XML_HEADER_NAME))
                 .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
