@@ -152,6 +152,8 @@ public class CoreCCPreProcessService {
         String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION));
         try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("IIDM network could not be uploaded to minio", e);
         }
         return iidmNetworkDestinationPath;
     }
@@ -169,13 +171,18 @@ public class CoreCCPreProcessService {
         try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             CracExporters.exportCrac(cracCreationContext.getCrac(), JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
-
-            try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
-                minioAdapter.uploadArtifact(jsonCracFilePath, is);
-            }
+            uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;
         } catch (Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", coreCCRequest.getCbcora().getFilename(), e.getMessage()));
+        }
+    }
+
+    private void uploadCracJsonToMinio(ByteArrayOutputStream cracByteArrayOutputStream, String jsonCracFilePath) {
+        try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
+            minioAdapter.uploadArtifact(jsonCracFilePath, is);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Crac JSON file could not be uploaded to minio", e);
         }
     }
 

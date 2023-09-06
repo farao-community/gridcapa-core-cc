@@ -71,6 +71,8 @@ public class FileExporterHelper {
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
             minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, CORE_CC, "CGM_OUT", coreCCRequest.getTimestamp());
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Network with PRA could not be uploaded to minio", e);
         }
     }
 
@@ -119,6 +121,8 @@ public class FileExporterHelper {
         Network network;
         try (InputStream networkInputStream = minioAdapter.getFile(networkFileUrl)) {
             network = Network.read(Path.of(networkFileUrl).getFileName().toString(), networkInputStream);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Network file could not be read", e);
         }
 
         //import input crac xml file and get FbConstraintCreationContext
@@ -138,6 +142,8 @@ public class FileExporterHelper {
         RaoParameters raoParameters;
         try (InputStream raoParametersInputStream = minioAdapter.getFile(hourlyRaoRequest.getRaoParametersFileUrl())) {
             raoParameters = JsonRaoParameters.read(raoParametersInputStream);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Rao parameters file could not be read", e);
         }
 
         //export CNE
@@ -199,6 +205,8 @@ public class FileExporterHelper {
                 coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
             minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), CORE_CC, "METADATA", coreCCRequest.getTimestamp());
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Metadata could not be uploaded to minio", e);
         }
     }
 
@@ -223,6 +231,8 @@ public class FileExporterHelper {
                 coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
             minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), CORE_CC, "METADATA", coreCCRequest.getTimestamp());
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Metadata could not be uploaded to minio", e);
         }
     }
 }
