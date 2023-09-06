@@ -22,7 +22,7 @@ import java.time.OffsetDateTime;
  */
 public class MinioFileWriter extends MinioAdapter {
 
-    private final static String tempDir = System.getProperty("java.io.tmpdir");
+    private final String tempDir = System.getProperty("java.io.tmpdir");
 
     public MinioFileWriter(MinioAdapterProperties properties, MinioClient minioClient) {
         super(properties, minioClient);
