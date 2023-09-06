@@ -75,6 +75,8 @@ public final class ZipUtil {
                     throw new IOException("Ratio between compressed and uncompressed data suspiciously large.");
                 }
             }
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Zip file could not be extracted", e);
         }
     }
 }

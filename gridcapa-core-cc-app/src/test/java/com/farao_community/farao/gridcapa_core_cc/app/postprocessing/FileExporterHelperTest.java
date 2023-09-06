@@ -14,6 +14,7 @@ import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_c
 import com.farao_community.farao.data.crac_io_api.CracImporters;
 import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
@@ -105,8 +106,8 @@ class FileExporterHelperTest {
     void errorWhenUploadingNetworkToMinio() {
         Mockito.when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> fileExporterHelper.exportNetworkToMinio(coreCCRequest));
-        assertEquals("Timestamp could not be retrieved.", exception.getMessage());
+        CoreCCInternalException exception = assertThrows(CoreCCInternalException.class, () -> fileExporterHelper.exportNetworkToMinio(coreCCRequest));
+        assertEquals("Network with PRA could not be uploaded to minio", exception.getMessage());
     }
 
     @Test
@@ -147,7 +148,7 @@ class FileExporterHelperTest {
     @Test
     void errorWhenUploadingMetadataToMinio() {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        assertThrows(NullPointerException.class, () -> fileExporterHelper.exportMetadataToMinio(coreCCRequest));
+        assertThrows(CoreCCInternalException.class, () -> fileExporterHelper.exportMetadataToMinio(coreCCRequest));
     }
 
     @Test
