@@ -22,15 +22,17 @@ import java.time.OffsetDateTime;
  */
 public class MinioFileWriter extends MinioAdapter {
 
+    private final String tempDir = System.getProperty("java.io.tmpdir");
+
     public MinioFileWriter(MinioAdapterProperties properties, MinioClient minioClient) {
         super(properties, minioClient);
     }
 
     @Override
     public void uploadOutput(String path, InputStream inputStream) {
-        File tmpDir = new File("/tmp/outputs/");
-        if (!tmpDir.exists()) {
-            boolean created = tmpDir.mkdir();
+        File outputDir = new File(tempDir + "/outputs/");
+        if (!outputDir.exists()) {
+            boolean created = outputDir.mkdir();
         }
         File targetFile = new File(path);
         try {
@@ -42,13 +44,13 @@ public class MinioFileWriter extends MinioAdapter {
 
     @Override
     public void uploadOutputForTimestamp(String path, InputStream inputStream, @Nullable String targetProcess, @Nullable String type, OffsetDateTime timestamp) {
-        String tmpDirPath = "/tmp/gridcapa-core-cc/";
+        String outputDir = tempDir + "/gridcapa-core-cc/";
         String additionalPathName = targetProcess + "/" + type + "/" + timestamp + "/" + timestamp.plusHours(1L) + "/";
-        File tmpDir = new File(tmpDirPath + additionalPathName);
+        File tmpDir = new File(outputDir + additionalPathName);
         if (!tmpDir.exists()) {
             boolean created = tmpDir.mkdir();
         }
-        String fullPath = tmpDirPath + additionalPathName + path;
+        String fullPath = outputDir + additionalPathName + path;
         File targetFile = new File(fullPath);
         try {
             FileUtils.copyInputStreamToFile(inputStream, targetFile);
