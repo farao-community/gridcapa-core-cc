@@ -7,6 +7,7 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
+import com.farao_community.farao.gridcapa_core_cc.api.util.IntervalUtil;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

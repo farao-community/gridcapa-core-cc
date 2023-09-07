@@ -12,17 +12,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
  * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
  */
 public class InternalCoreCCRequest {
-    public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
     private CoreCCRequest coreCCRequest;
     private HourlyRaoRequest hourlyRaoRequest;
     private HourlyRaoResult hourlyRaoResult;
@@ -97,26 +92,6 @@ public class InternalCoreCCRequest {
 
     public void setRequestReceivedInstant(Instant inputsReceivedInstant) {
         this.requestReceivedInstant = inputsReceivedInstant;
-    }
-
-    public String getDestinationKey() {
-        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZONE_ID));
-        return "RAO_WORKING_DIR" + "/" + handle25TimestampCase(hourlyFolderName, getTimestamp().toInstant().toString());
-    }
-
-    private static String handle25TimestampCase(String filename, String instant) {
-        ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instant).minus(1, ChronoUnit.HOURS).atZone(ZONE_ID)).getOffset();
-        ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instant).atZone(ZONE_ID)).getOffset();
-        if (previousOffset == ZoneOffset.ofHours(2) && currentOffset == ZoneOffset.ofHours(1)) {
-            return filename.replace("_0", "_B");
-        } else {
-            return filename;
-        }
-    }
-
-    public String getAckDestinationKey() {
-        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZONE_ID));
-        return "RAO_OUTPUTS_DIR" + "/" + handle25TimestampCase(hourlyFolderName, getTimestamp().toInstant().toString());
     }
 
     public String getTimeInterval() {
