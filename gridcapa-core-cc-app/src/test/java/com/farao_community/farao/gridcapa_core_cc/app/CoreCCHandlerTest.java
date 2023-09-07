@@ -76,6 +76,7 @@ class CoreCCHandlerTest {
         assertEquals(requestId, response.getId());
         //should upload 7 artifacts: parameters + ACK + crac + network
         Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
+        // TODO : delete generated tmp dir
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {

@@ -64,6 +64,7 @@ class FileExporterHelperTest {
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
     private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
+    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
 
     @BeforeEach
     void setUp() {
@@ -90,7 +91,7 @@ class FileExporterHelperTest {
     void exportNetworkToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_2D2_UX1.uct";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_2D2_UX1.uct";
         removeCreationDateFromUct(new File(generatedFilePath));
         assertFilesContentEqual("/fileExporterHelper/uploadedNetwork.uct", generatedFilePath);
 
@@ -114,7 +115,7 @@ class FileExporterHelperTest {
     void exportRaoResultToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/raoResult.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/raoResult.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
     }
 
@@ -141,7 +142,7 @@ class FileExporterHelperTest {
         Mockito.when(hourlyRaoResult.getErrorMessage()).thenReturn("Error message.");
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportMetadataToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1830_METADATA-01.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1830_METADATA-01.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedMetadata.json", generatedFilePath);
     }
 
@@ -184,7 +185,7 @@ class FileExporterHelperTest {
 
         fileExporterHelper.exportCneToMinio(coreCCRequest);
 
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
         removeCreationDateInCne(new File(generatedFilePath));
         assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
 
@@ -245,7 +246,7 @@ class FileExporterHelperTest {
 
     @AfterAll
     public static void deleteTemporaryDirectory() throws IOException {
-        FileUtils.deleteDirectory(new File("/tmp/gridcapa-core-cc"));
+        FileUtils.deleteDirectory(new File(TEMP_DIR + "/gridcapa-core-cc"));
     }
 
 }
