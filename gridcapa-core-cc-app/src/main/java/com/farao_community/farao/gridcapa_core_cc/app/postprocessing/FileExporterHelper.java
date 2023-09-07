@@ -12,9 +12,9 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCMetadata;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
-import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
-import com.farao_community.farao.gridcapa_core_cc.app.util.IntervalUtil;
+import com.farao_community.farao.gridcapa_core_cc.api.util.IntervalUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.rao_api.json.JsonRaoParameters;
 import com.farao_community.farao.rao_api.parameters.RaoParameters;
@@ -66,7 +66,7 @@ public class FileExporterHelper {
         removeFictitiousGeneratorsFromNetwork(network);
         removeFictitiousLoadsFromNetwork(network);
         network.write("UCTE", new Properties(), memDataSource);
-        String networkNewFileName = OutputFileNameUtil.generateUctFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest.getVersion());
+        String networkNewFileName = NamingRules.generateUctFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest.getVersion());
 
         try (InputStream is = memDataSource.newInputStream("", "uct")) {
             String networkWithPraFilePath = coreCCRequest.getHourlyRaoRequest().getResultsDestination() + "/" + networkNewFileName;
@@ -147,7 +147,7 @@ public class FileExporterHelper {
         }
 
         //export CNE
-        String cneNewFileName = OutputFileNameUtil.generateCneFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
+        String cneNewFileName = NamingRules.generateCneFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamCne = new ByteArrayOutputStream()) {
             String cneFilePath = hourlyRaoRequest.getResultsDestination() + "/" + cneNewFileName;
@@ -188,7 +188,7 @@ public class FileExporterHelper {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         LOGGER.info("Core CC task: '{}', creating Metadata result for timestamp: '{}'", coreCCRequest.getId(), hourlyRaoResult.getRaoRequestInstant());
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        String metaDataFileName = OutputFileNameUtil.generateMetadataFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
+        String metaDataFileName = NamingRules.generateMetadataFileName(hourlyRaoResult.getRaoRequestInstant(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;
@@ -214,7 +214,7 @@ public class FileExporterHelper {
         LOGGER.info("Core CC task: '{}', creating Metadata result when preProcessing failed (for coreCCRequest with timestamp: '{}')", coreCCRequest.getId(), coreCCRequest.getTimestamp());
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
 
-        String metaDataFileName = OutputFileNameUtil.generateMetadataFileName(coreCCRequest.getTimestamp().toInstant().toString(), coreCCRequest);
+        String metaDataFileName = NamingRules.generateMetadataFileName(coreCCRequest.getTimestamp().toInstant().toString(), coreCCRequest);
 
         try (ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             String metaDataFilePath = hourlyRaoRequest.getResultsDestination() + "/" + metaDataFileName;

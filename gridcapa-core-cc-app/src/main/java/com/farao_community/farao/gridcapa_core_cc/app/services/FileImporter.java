@@ -19,7 +19,7 @@ import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_c
 import com.farao_community.farao.data.crac_creation.creator.fb_constraint.importer.FbConstraintImporter;
 import com.farao_community.farao.data.refprog.reference_program.ReferenceProgram;
 import com.farao_community.farao.data.refprog.refprog_xml_importer.RefProgImporter;
-import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;

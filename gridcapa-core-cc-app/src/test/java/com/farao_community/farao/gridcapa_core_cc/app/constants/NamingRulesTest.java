@@ -6,19 +6,32 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.constants;
 
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
 
-import static com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules.*;
+import static com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
+ * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
  */
 class NamingRulesTest {
 
     private final LocalDateTime dateTime = LocalDateTime.of(2023, 7, 12, 15, 17, 41);
+    private InternalCoreCCRequest internalCoreCCRequest;
+
+    @BeforeEach
+    void setUp() {
+        internalCoreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
+        Mockito.when(internalCoreCCRequest.getVersion()).thenReturn(2);
+    }
 
     @Test
     void testCgmXmlHeaderName() {
@@ -69,5 +82,20 @@ class NamingRulesTest {
         assertEquals("20230712_1530_RAO-RESULT-0V.json", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("2023-07-12_1530_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
         assertNotEquals("20230101_0030_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
+    }
+
+    @Test
+    void generateCgmFileNameTest() {
+        assertEquals("20200330_0130_2D1_UX1.uct", NamingRules.generateUctFileName("2020-03-29T23:00:00Z", 1));
+    }
+
+    @Test
+    void generateCneFileName() {
+        assertEquals("20230721_1530_20230721-F299-v2-22XCORESO------S_to_17XTSO-CS------W.xml", NamingRules.generateCneFileName("2023-07-21T13:51:33Z", internalCoreCCRequest));
+    }
+
+    @Test
+    void generateMetadataFileName() {
+        assertEquals("20230721_1630_METADATA-02.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
     }
 }
