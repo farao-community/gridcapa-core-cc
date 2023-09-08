@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.farao-community.farao</groupId>
             <artifactId>gridcapa-rao-runner-api</artifactId>
-            <version>1.11.0</version>
+            <version>1.16.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
