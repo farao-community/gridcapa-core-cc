@@ -248,10 +248,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>gridcapa-starter-minio-adapter</artifactId>
-        </dependency>
     </dependencies>
 
 </project>
