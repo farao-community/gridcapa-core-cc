@@ -67,7 +67,7 @@
         <logstash.version>7.2</logstash.version>
         <maven.jaxb2.version>0.14.0</maven.jaxb2.version>
         <maven.jvnet.jaxb2-basics.version>1.11.1</maven.jvnet.jaxb2-basics.version>
-        <minio.adapter.version>1.0.0</minio.adapter.version>
+        <minio.adapter.version>1.1.1</minio.adapter.version>
         <opencsv.version>5.6</opencsv.version>
         <task-manager.version>1.20.0</task-manager.version>
         <mockito-core.version>4.0.0</mockito-core.version>
