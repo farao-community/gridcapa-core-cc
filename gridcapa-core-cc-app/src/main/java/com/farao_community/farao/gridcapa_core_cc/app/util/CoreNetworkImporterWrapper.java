@@ -6,7 +6,6 @@ package com.farao_community.farao.gridcapa_core_cc.app.util;
 import com.powsybl.iidm.network.*;
 
 import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  * @author Baptiste Seguinot {@literal <baptiste.seguinot at rte-france.com}
@@ -48,22 +47,6 @@ public final class CoreNetworkImporterWrapper {
         createMissingGeneratorsAndLoads(network);
 
         /*
-        When importing an UCTE network file, powsybl merges its X-nodes into dangling lines.
-
-        It can cause an error if a GLSK file associated to this network includes some factors on
-        xNodes. The GLSK importers looks for a Generator (GSK) or Load (LSK) associated to this
-        xNode. If the Generator/Load does not exist, the GLSK cannot be created.
-
-        This problem has been observed on CORE CC data, on the two Alegro nodes :
-           - XLI_OB1B (AL-BE)
-           - XLI_OB1A (AL-DE)
-
-        This post processor fix this problem, by creating for these two nodes a fictitious generator (P, Q = 0),
-        connected to the voltage level on which the dangling lines are linked.
-        */
-        createGeneratorOnAlegroNodes(network);
-
-        /*
         Temporary patch to make OLF work
          */
         alignDisconnectionOfTieLines(network);
@@ -86,11 +69,6 @@ public final class CoreNetworkImporterWrapper {
             voltageLevel.getBusBreakerView().getBuses().forEach(bus -> createMissingGenerator(network, voltageLevel, bus.getId()));
             voltageLevel.getBusBreakerView().getBuses().forEach(bus -> createMissingLoad(network, voltageLevel, bus.getId()));
         });
-    }
-
-    private static void createGeneratorOnAlegroNodes(Network network) {
-        createGeneratorOnXnode(network, "XLI_OB1B");
-        createGeneratorOnXnode(network, "XLI_OB1A");
     }
 
     private static void createMissingGenerator(Network network, VoltageLevel voltageLevel, String busId) {
@@ -130,27 +108,6 @@ public final class CoreNetworkImporterWrapper {
             } catch (Exception e) {
                 // Can't create load
             }
-        }
-    }
-
-    private static void createGeneratorOnXnode(Network network, String xNodeId) {
-        Optional<DanglingLine> danglingLine = network.getDanglingLineStream()
-                .filter(dl -> dl.getUcteXnodeCode().equals(xNodeId)).findAny();
-
-        if (danglingLine.isPresent() && danglingLine.get().getTerminal().isConnected()) {
-            Bus xNodeBus = danglingLine.get().getTerminal().getBusBreakerView().getConnectableBus();
-            xNodeBus.getVoltageLevel().newGenerator()
-                    .setBus(xNodeBus.getId())
-                    .setEnsureIdUnicity(true)
-                    .setId(xNodeId + "_generator")
-                    .setMaxP(9999)
-                    .setMinP(0)
-                    .setTargetP(0)
-                    .setTargetQ(0)
-                    .setTargetV(xNodeBus.getVoltageLevel().getNominalV())
-                    .setVoltageRegulatorOn(false)
-                    .add()
-                    .newMinMaxReactiveLimits().setMaxQ(99999).setMinQ(99999).add();
         }
     }
 

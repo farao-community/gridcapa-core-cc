@@ -49,13 +49,5 @@ class CoreNetworkImporterWrapperTest {
         assertEquals(0, load.get().getP0(), 1e-3);
         assertEquals(0, load.get().getQ0(), 1e-3);
         assertEquals(LoadType.FICTITIOUS, load.get().getLoadType());
-
-        //check generators for Alegro
-        assertNotNull(network.getGenerator("XLI_OB1A_generator"));
-        assertNotNull(network.getGenerator("XLI_OB1B_generator"));
-        assertEquals("DDE3AA1 ", network.getGenerator("XLI_OB1A_generator").getTerminal().getBusBreakerView().getBus().getId());
-        assertEquals("BBE2AA1 ", network.getGenerator("XLI_OB1B_generator").getTerminal().getBusBreakerView().getBus().getId());
-        assertEquals(0, network.getGenerator("XLI_OB1B_generator").getTargetP(), 1e-3);
-        assertEquals(0, network.getGenerator("XLI_OB1B_generator").getTargetQ(), 1e-3);
     }
 }
