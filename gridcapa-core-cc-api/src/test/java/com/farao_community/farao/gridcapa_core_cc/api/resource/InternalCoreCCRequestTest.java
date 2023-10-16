@@ -69,8 +69,6 @@ public class InternalCoreCCRequestTest {
         assertNull(internalCoreCCRequest.getHourlyRaoResult());
         assertEquals(1, internalCoreCCRequest.getVersion());
         assertNull(internalCoreCCRequest.getRequestReceivedInstant());
-        assertEquals("RAO_WORKING_DIR/20230718_1349", internalCoreCCRequest.getDestinationKey());
-        assertEquals("RAO_OUTPUTS_DIR/2023-07-18", internalCoreCCRequest.getAckDestinationKey());
         assertNull(internalCoreCCRequest.getTimeInterval());
         assertNull(internalCoreCCRequest.getCorrelationId());
     }

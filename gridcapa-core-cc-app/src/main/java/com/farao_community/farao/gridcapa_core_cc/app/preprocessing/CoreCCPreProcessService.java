@@ -1,5 +1,8 @@
 /*
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
+ *  This Source Code Form is subject to the terms of the Mozilla Public
+ *  License, v. 2.0. If a copy of the MPL was not distributed with this
+ *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package com.farao_community.farao.gridcapa_core_cc.app.preprocessing;
 
@@ -9,10 +12,9 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
-import com.farao_community.farao.gridcapa_core_cc.app.constants.NamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
-import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.OutputFileNameUtil;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
@@ -38,7 +40,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,8 +59,6 @@ public class CoreCCPreProcessService {
     private final MinioAdapter minioAdapter;
     private final RaoParametersService raoParametersService;
     private final FileImporter fileImporter;
-    private static final DateTimeFormatter HOURLY_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("UTC"));
-
     private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
 
     public CoreCCPreProcessService(MinioAdapter minioAdapter, RaoParametersService raoParametersService, FileImporter fileImporter) {
@@ -80,7 +79,7 @@ public class CoreCCPreProcessService {
      * - specific RAO parameters to be overloaded.
      */
     private void splitRaoRequest(InternalCoreCCRequest coreCCRequest) {
-        String destinationKey = coreCCRequest.getDestinationKey();
+        String destinationKey = NamingRules.getDestinationKey(coreCCRequest.getTimestamp());
         String destinationPath = generateResultDestinationPath(destinationKey);
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
@@ -101,7 +100,7 @@ public class CoreCCPreProcessService {
             Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
             if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
                 LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
-                sendRaoRequestAcknowledgment(coreCCRequest, coreCCRequest.getAckDestinationKey(), raoRequestMessage);
+                sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(coreCCRequest.getTimestamp()), raoRequestMessage);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
                     Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
@@ -149,9 +148,11 @@ public class CoreCCPreProcessService {
         String iidmFileName = cgmFileName.replaceAll("(?i)" + UCT_EXTENSION, XIIDM_EXTENSION);
         Path iidmTmpPath = Paths.get(cgmPath.toString().replace(cgmFileName, iidmFileName)); //NOSONAR
         network.write(XIIDM_EXPORT_FORMAT, null, iidmTmpPath);
-        String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION));
+        String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION));
         try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("IIDM network could not be uploaded to minio", e);
         }
         return iidmNetworkDestinationPath;
     }
@@ -168,14 +169,19 @@ public class CoreCCPreProcessService {
 
         try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             CracExporters.exportCrac(cracCreationContext.getCrac(), JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
-            String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
-
-            try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
-                minioAdapter.uploadArtifact(jsonCracFilePath, is);
-            }
+            String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
+            uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;
         } catch (Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", coreCCRequest.getCbcora().getFilename(), e.getMessage()));
+        }
+    }
+
+    private void uploadCracJsonToMinio(ByteArrayOutputStream cracByteArrayOutputStream, String jsonCracFilePath) {
+        try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
+            minioAdapter.uploadArtifact(jsonCracFilePath, is);
+        } catch (Exception e) {
+            throw new CoreCCInternalException("Crac JSON file could not be uploaded to minio", e);
         }
     }
 
@@ -204,8 +210,8 @@ public class CoreCCPreProcessService {
     private void exportRaoRequestAcknowledgment(ResponseMessage responseMessage, InternalCoreCCRequest coreCCRequest, String destinationKey) {
         byte[] xml = marshallMessageAndSetJaxbProperties(responseMessage);
 
-        String raoRequestAckFileName = OutputFileNameUtil.generateRaoRequestAckFileName(coreCCRequest);
-        String destinationPath = OutputFileNameUtil.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
+        String raoRequestAckFileName = NamingRules.generateRaoRequestAckFileName(coreCCRequest);
+        String destinationPath = NamingRules.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
         // Only upload ACK if no ACK has been uploaded
         if (minioAdapter.fileExists(destinationPath)) {
             LOGGER.info("ACK has already been uploaded !");

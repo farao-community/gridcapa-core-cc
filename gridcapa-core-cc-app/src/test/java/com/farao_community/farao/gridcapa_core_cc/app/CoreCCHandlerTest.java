@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
  *  This Source Code Form is subject to the terms of the Mozilla Public
  *  License, v. 2.0. If a copy of the MPL was not distributed with this
  *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -76,6 +76,7 @@ class CoreCCHandlerTest {
         assertEquals(requestId, response.getId());
         //should upload 7 artifacts: parameters + ACK + crac + network
         Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
+        // TODO : delete generated tmp dir
     }
 
     private CoreCCFileResource createFileResource(String filename, URL resource) {
