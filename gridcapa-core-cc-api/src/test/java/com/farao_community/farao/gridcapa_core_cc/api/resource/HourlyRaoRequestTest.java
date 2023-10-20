@@ -28,7 +28,7 @@ class HourlyRaoRequestTest {
     void setUp() {
         minioAdapter = Mockito.mock(MinioAdapter.class);
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/virtualHub", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
     }
 
     @Test
@@ -42,8 +42,8 @@ class HourlyRaoRequestTest {
 
     @Test
     void testEquals() {
-        HourlyRaoRequest sameInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
-        HourlyRaoRequest differentInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T15:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        HourlyRaoRequest sameInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T14:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/virtualHub", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        HourlyRaoRequest differentInstantHourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "2023-07-25T15:13:00Z", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/virtualHub", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         assertEquals(hourlyRaoRequest, hourlyRaoRequest);
         assertEquals(hourlyRaoRequest, sameInstantHourlyRaoRequest);
         assertNotEquals(differentInstantHourlyRaoRequest, hourlyRaoRequest);
