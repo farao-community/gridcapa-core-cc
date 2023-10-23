@@ -45,7 +45,7 @@ public class InternalCoreCCRequestTest {
         internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
         minioAdapter = Mockito.mock(MinioAdapter.class);
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "instant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
+        hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "instant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/virtualHub", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         hourlyRaoResult = new HourlyRaoResult("instant");
     }
 

@@ -23,6 +23,7 @@ public class HourlyRaoRequest {
     private String networkFileUrl;
     private String cracFileUrl;
     private String refprogFileUrl;
+    private String virtualHubsConfigurationFileUrl;
     private String realGlskFileUrl;
     private String raoParametersFileUrl;
     private String resultsDestination;
@@ -35,6 +36,7 @@ public class HourlyRaoRequest {
                             String networkFileUrl,
                             String cbFileUrl,
                             String refprogFileUrl,
+                            String virtualHubsConfigurationFileUrl,
                             String realGlskFileUrl,
                             String raoParametersFileUrl,
                             String resultsDestination) {
@@ -44,6 +46,7 @@ public class HourlyRaoRequest {
         this.cracFileUrl = cbFileUrl;
         this.refprogFileUrl = refprogFileUrl;
         this.realGlskFileUrl = realGlskFileUrl;
+        this.virtualHubsConfigurationFileUrl = virtualHubsConfigurationFileUrl;
         this.raoParametersFileUrl = raoParametersFileUrl;
         this.resultsDestination = resultsDestination;
     }
@@ -69,7 +72,7 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(String id) {
-        return new RaoRequest(id, this.raoRequestInstant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), resultsDestinationUrl + this.resultsDestination, Instant.now().plusMillis(raoTimeOut));
+        return new RaoRequest(id, this.raoRequestInstant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.virtualHubsConfigurationFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), resultsDestinationUrl + this.resultsDestination, Instant.now().plusMillis(raoTimeOut));
     }
 
     @Override

@@ -18,8 +18,6 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
-import com.farao_community.farao.virtual_hubs.VirtualHubsConfiguration;
-import com.farao_community.farao.virtual_hubs.network_extension_builder.VirtualHubAssigner;
 import com.powsybl.iidm.network.Network;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Header;
@@ -91,8 +89,6 @@ public class CoreCCPreProcessService {
             throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
         }
 
-        VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
-
         AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
         AtomicReference<HourlyRaoResult> raoResult = new AtomicReference<>();
         // Looping through all raoRequest items. Only item matching coreCCRequest's timestamp will set raoRequest
@@ -103,15 +99,16 @@ public class CoreCCPreProcessService {
                 sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(coreCCRequest.getTimestamp()), raoRequestMessage);
                 try {
                     Path cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
-                    Network network = convertNetworkToIidm(cgmPath, virtualHubsConfiguration);
+                    Network network = convertNetworkToIidm(cgmPath);
                     String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
                     String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                         coreCCRequest.getRefProg().getUrl(),
+                        coreCCRequest.getVirtualHub().getUrl(),
                         coreCCRequest.getGlsk().getUrl(),
                         raoParametersFileUrl, destinationPath));
                 } catch (Exception e) {
-                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, destinationPath));
+                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null, destinationPath));
                     String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
                     LOGGER.error(errorMessage);
                     raoResult.set(new HourlyRaoResult(utcInstant.toString()));
@@ -123,7 +120,7 @@ public class CoreCCPreProcessService {
         });
         if (Objects.isNull(raoRequest.get())) {
             String message = "Missing raoRequest";
-            raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, destinationPath));
+            raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, null, destinationPath));
             LOGGER.warn(message);
             raoResult.set(new HourlyRaoResult(null));
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
@@ -138,9 +135,8 @@ public class CoreCCPreProcessService {
         return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey);
     }
 
-    private Network convertNetworkToIidm(Path cgmPath, VirtualHubsConfiguration virtualHubsConfiguration) {
+    private Network convertNetworkToIidm(Path cgmPath) {
         Network network = CoreNetworkImporterWrapper.loadNetwork(cgmPath);
-        addVirtualHubsExtensionToNetwork(network, virtualHubsConfiguration);
         return network;
     }
 
@@ -155,12 +151,6 @@ public class CoreCCPreProcessService {
             throw new CoreCCInternalException("IIDM network could not be uploaded to minio", e);
         }
         return iidmNetworkDestinationPath;
-    }
-
-    private void addVirtualHubsExtensionToNetwork(Network network, VirtualHubsConfiguration virtualHubsConfiguration) {
-        VirtualHubAssigner virtualHubAssigner = new VirtualHubAssigner(virtualHubsConfiguration.getVirtualHubs());
-        virtualHubAssigner.addVirtualLoads(network);
-        LOGGER.info("Virtual hubs configuration found. Virtual loads are added to network '{}'", network.getNameOrId());
     }
 
     private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
