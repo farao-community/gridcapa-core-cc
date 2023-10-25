@@ -72,7 +72,16 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(String id) {
-        return new RaoRequest(id, this.raoRequestInstant, minioAdapter.generatePreSignedUrl(this.networkFileUrl),  minioAdapter.generatePreSignedUrl(this.cracFileUrl), this.refprogFileUrl, this.virtualHubsConfigurationFileUrl, this.realGlskFileUrl,  minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl), resultsDestinationUrl + this.resultsDestination, Instant.now().plusMillis(raoTimeOut));
+        return new RaoRequest(id,
+                              this.raoRequestInstant,
+                              minioAdapter.generatePreSignedUrl(this.networkFileUrl),
+                              minioAdapter.generatePreSignedUrl(this.cracFileUrl),
+                              this.refprogFileUrl,
+                              this.realGlskFileUrl,
+                              minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl),
+                              this.virtualHubsConfigurationFileUrl,
+                              resultsDestinationUrl + this.resultsDestination,
+                              Instant.now().plusMillis(raoTimeOut));
     }
 
     @Override
