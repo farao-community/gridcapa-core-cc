@@ -17,16 +17,15 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoRequest {
-    private String resultsDestinationUrl = "CORE/CC/";
-    private MinioAdapter minioAdapter;
-    private String raoRequestInstant;
-    private String networkFileUrl;
-    private String cracFileUrl;
-    private String refprogFileUrl;
-    private String virtualHubsConfigurationFileUrl;
-    private String realGlskFileUrl;
-    private String raoParametersFileUrl;
-    private String resultsDestination;
+    private final MinioAdapter minioAdapter;
+    private final String raoRequestInstant;
+    private final String networkFileUrl;
+    private final String cracFileUrl;
+    private final String refprogFileUrl;
+    private final String virtualHubsConfigurationFileUrl;
+    private final String realGlskFileUrl;
+    private final String raoParametersFileUrl;
+    private final String resultsDestination;
 
     @Value("${core-cc-runner.async-time-out}")
     private long raoTimeOut;
@@ -72,16 +71,19 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(String id) {
-        return new RaoRequest(id,
-                              this.raoRequestInstant,
-                              minioAdapter.generatePreSignedUrl(this.networkFileUrl),
-                              minioAdapter.generatePreSignedUrl(this.cracFileUrl),
-                              this.refprogFileUrl,
-                              this.realGlskFileUrl,
-                              minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl),
-                              this.virtualHubsConfigurationFileUrl,
-                              resultsDestinationUrl + this.resultsDestination,
-                              Instant.now().plusMillis(raoTimeOut));
+        String resultsDestinationUrl = "CORE/CC/";
+        return new RaoRequest.RaoRequestBuilder()
+                .withId(id)
+                .withInstant(this.raoRequestInstant)
+                .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
+                .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))
+                .withRefprogFileUrl(this.refprogFileUrl)
+                .withRealGlskFileUrl(this.realGlskFileUrl)
+                .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
+                .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
+                .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
+                .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
+                .build();
     }
 
     @Override

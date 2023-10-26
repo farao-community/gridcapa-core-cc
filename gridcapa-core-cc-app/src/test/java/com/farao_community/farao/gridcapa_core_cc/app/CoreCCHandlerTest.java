@@ -51,7 +51,15 @@ class CoreCCHandlerTest {
     @Test
     void handleCoreCCRequestTest() throws IOException {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        RaoResponse raoResponse = new RaoResponse("id", "instant", "praUrl", "cracUrl", "raoUrl", Instant.now(), Instant.now());
+        RaoResponse raoResponse = new RaoResponse.RaoResponseBuilder()
+                .withId("id")
+                .withInstant("instant")
+                .withNetworkWithPraFileUrl("praUrl")
+                .withCracFileUrl("cracUrl")
+                .withRaoResultFileUrl("raoUrl")
+                .withComputationStartInstant(Instant.now())
+                .withComputationEndInstant(Instant.now())
+                .build();
         Mockito.when(raoRunnerService.run(Mockito.any())).thenReturn(raoResponse);
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportCneToMinio(Mockito.any());
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportNetworkToMinio(Mockito.any());
@@ -68,9 +76,9 @@ class CoreCCHandlerTest {
         CoreCCFileResource raoRequestFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F302-v3.xml"));
         CoreCCFileResource virtualHubFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F327-fake.xml"));
         CoreCCFileResource glskFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
-        CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
-        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raoRequestFile, virtualHubFile, true);
+        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true);
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         assertEquals(requestId, response.getId());
