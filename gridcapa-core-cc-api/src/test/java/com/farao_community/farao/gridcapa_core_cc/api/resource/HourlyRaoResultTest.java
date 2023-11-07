@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class HourlyRaoResultTest {
+class HourlyRaoResultTest {
 
     private HourlyRaoResult hourlyRaoResult;
     private Instant initialInstant;
