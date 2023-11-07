@@ -42,6 +42,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,21 +52,48 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FileExporterHelperTest {
 
+    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     private final String networkFile = "/util/TestCase12NodesHvdc.uct";
     private final Path networkPath = Paths.get(getClass().getResource(networkFile).getPath());
     private final Network network = Network.read(networkPath);
-    private FileImporter fileImporter;
-    private MinioAdapter minioAdapter;
-    private InternalCoreCCRequest coreCCRequest;
-    private HourlyRaoResult hourlyRaoResult;
-    private HourlyRaoRequest hourlyRaoRequest;
     private final String instantString = "2023-07-25T16:57:00Z";
     private final Instant instant = Instant.parse(instantString);
     private final OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
     private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
-    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
+    private FileImporter fileImporter;
+    private MinioAdapter minioAdapter;
+    private InternalCoreCCRequest coreCCRequest;
+    private HourlyRaoResult hourlyRaoResult;
+    private HourlyRaoRequest hourlyRaoRequest;
+
+    public static void removeCreationDateInCne(File file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String pattern = "<createdDateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z</createdDateTime>";
+        String replaceBy = "<createdDateTime>yyyy-MM-ddTHH:mm:ssZ</createdDateTime>";
+        String line;
+        StringBuilder oldText = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            oldText.append(line).append("\r\n");
+        }
+        reader.close();
+        String newText = oldText.toString().replaceAll(pattern, replaceBy);
+        FileWriter writer = new FileWriter(file.getAbsolutePath());
+        writer.write(newText);
+        writer.close();
+    }
+
+    private static void assertFilesContentEqual(String resource, String generatedFile) throws IOException {
+        String expectedFileContents = new String(FileExporterHelperTest.class.getResourceAsStream(resource).readAllBytes()).replace("\r", "");
+        String actualFileContents = new String(Files.newInputStream(Paths.get(generatedFile)).readAllBytes()).replace("\r", "");
+        assertEquals(expectedFileContents, actualFileContents);
+    }
+
+    @AfterAll
+    public static void deleteTemporaryDirectory() throws IOException {
+        FileUtils.deleteDirectory(new File(TEMP_DIR + "/gridcapa-core-cc"));
+    }
 
     @BeforeEach
     void setUp() {
@@ -91,7 +120,7 @@ class FileExporterHelperTest {
     void exportNetworkToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_2D2_UX1.uct";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_2D2_UX1.uct";
         removeCreationDateFromUct(new File(generatedFilePath));
         assertFilesContentEqual("/fileExporterHelper/uploadedNetwork.uct", generatedFilePath);
 
@@ -115,7 +144,7 @@ class FileExporterHelperTest {
     void exportRaoResultToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/raoResult.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/raoResult.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
     }
 
@@ -142,7 +171,7 @@ class FileExporterHelperTest {
         Mockito.when(hourlyRaoResult.getErrorMessage()).thenReturn("Error message.");
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportMetadataToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1830_METADATA-01.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1830_METADATA-01.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedMetadata.json", generatedFilePath);
     }
 
@@ -185,9 +214,10 @@ class FileExporterHelperTest {
 
         fileExporterHelper.exportCneToMinio(coreCCRequest);
 
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
         removeCreationDateInCne(new File(generatedFilePath));
-        assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
+        String uploadedCne = isTodayDaylightSaving() ? "/fileExporterHelper/uploadedCne.xml" : "/fileExporterHelper/uploadedCne_daylight_saving.xml";
+        assertFilesContentEqual(uploadedCne, generatedFilePath);
 
         try (FileInputStream inputStreamCne = new FileInputStream(generatedFilePath)) {
             CriticalNetworkElementMarketDocument cneFile = JaxbUtil.unmarshalContent(CriticalNetworkElementMarketDocument.class, inputStreamCne);
@@ -222,31 +252,16 @@ class FileExporterHelperTest {
         writer.close();
     }
 
-    public static void removeCreationDateInCne(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String pattern = "<createdDateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z</createdDateTime>";
-        String replaceBy = "<createdDateTime>yyyy-MM-ddTHH:mm:ssZ</createdDateTime>";
-        String line;
-        StringBuilder oldText = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            oldText.append(line).append("\r\n");
+    private boolean isTodayDaylightSaving() {
+        return TimeZone.getDefault().inDaylightTime(new Date());
+    }
+
+    private String setUtcOffset() {
+        if (isTodayDaylightSaving()) {
+            return "+02:00";
+        } else {
+            return "+01:00";
         }
-        reader.close();
-        String newText = oldText.toString().replaceAll(pattern, replaceBy);
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        writer.write(newText);
-        writer.close();
-    }
-
-    private static void assertFilesContentEqual(String resource, String generatedFile) throws IOException {
-        String expectedFileContents = new String(FileExporterHelperTest.class.getResourceAsStream(resource).readAllBytes()).replace("\r", "");
-        String actualFileContents = new String(Files.newInputStream(Paths.get(generatedFile)).readAllBytes()).replace("\r", "");
-        assertEquals(expectedFileContents, actualFileContents);
-    }
-
-    @AfterAll
-    public static void deleteTemporaryDirectory() throws IOException {
-        FileUtils.deleteDirectory(new File(TEMP_DIR + "/gridcapa-core-cc"));
     }
 
 }
