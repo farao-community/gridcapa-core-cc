@@ -7,6 +7,8 @@
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
 import com.powsybl.iidm.network.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
@@ -14,6 +16,8 @@ import java.nio.file.Path;
  * @author Baptiste Seguinot {@literal <baptiste.seguinot at rte-france.com}
  */
 public final class CoreNetworkImporterWrapper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreNetworkImporterWrapper.class);
 
     private CoreNetworkImporterWrapper() {
         // do nothing, sonar
@@ -91,7 +95,7 @@ public final class CoreNetworkImporterWrapper {
                         .add()
                         .newMinMaxReactiveLimits().setMaxQ(99999).setMinQ(99999).add();
             } catch (Exception e) {
-                // Can't create generator
+                LOGGER.warn("Can't create generator {}", generatorId);
             }
         }
     }
@@ -109,7 +113,7 @@ public final class CoreNetworkImporterWrapper {
                         .setLoadType(LoadType.FICTITIOUS)
                         .add();
             } catch (Exception e) {
-                // Can't create load
+                LOGGER.warn("Can't create load {}", loadId);
             }
         }
     }
