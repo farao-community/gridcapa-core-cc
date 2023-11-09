@@ -52,6 +52,6 @@ class RaoRunnerServiceTest {
     void errorWhileRunningRao() {
         raoRunnerService = new RaoRunnerService(badRaoRunnerClient);
         CoreCCRaoException coreCCRaoException = assertThrows(CoreCCRaoException.class, () -> raoRunnerService.run(raoRequest));
-        assertEquals("RAO run failed. Nested exception: error", coreCCRaoException.getMessage());
+        assertEquals("RAO run failed", coreCCRaoException.getMessage());
     }
 }
