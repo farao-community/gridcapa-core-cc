@@ -118,7 +118,7 @@ public class CoreCCHandler {
         try {
             fileExporterHelper.exportMetadataToMinioWhenPreProcessingFailed(coreCCRequest);
         } catch (Exception e) {
-            throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed");
+            throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed", e);
         }
     }
 

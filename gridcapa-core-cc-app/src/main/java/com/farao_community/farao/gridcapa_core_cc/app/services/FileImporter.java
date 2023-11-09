@@ -156,7 +156,7 @@ public class FileImporter {
         try {
             return FilenameUtils.getName(new URL(url).getPath());
         } catch (MalformedURLException e) {
-            throw new CoreCCInvalidDataException(String.format("URL is invalid: %s", url));
+            throw new CoreCCInvalidDataException(String.format("URL is invalid: %s", url), e);
         }
     }
 }

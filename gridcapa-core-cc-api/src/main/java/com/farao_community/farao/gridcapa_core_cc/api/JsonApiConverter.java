@@ -43,7 +43,7 @@ public class JsonApiConverter {
         try {
             aaa = converter.readDocument(jsonMessage, tClass).get();
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(e.getMessage());
+            throw new CoreCCInvalidDataException("Exception occurred during object conversion", e);
         }
         return aaa;
     }
