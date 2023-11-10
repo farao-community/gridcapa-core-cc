@@ -106,7 +106,7 @@ public class FileExporterHelper {
         try (InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
             return CracImporters.importCrac(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream);
         } catch (Exception e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", Path.of(cracFileUrl).getFileName().toString(), e.getMessage()));
+            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", Path.of(cracFileUrl).getFileName().toString()), e);
         }
     }
 

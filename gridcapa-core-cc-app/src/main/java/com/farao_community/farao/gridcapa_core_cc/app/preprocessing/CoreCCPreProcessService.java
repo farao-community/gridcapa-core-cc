@@ -163,7 +163,7 @@ public class CoreCCPreProcessService {
             uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;
         } catch (Exception e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s. Cause: %s", coreCCRequest.getCbcora().getFilename(), e.getMessage()));
+            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", coreCCRequest.getCbcora().getFilename()), e);
         }
     }
 
@@ -210,7 +210,7 @@ public class CoreCCPreProcessService {
                 LOGGER.info("Uploading ACK !");
                 minioAdapter.uploadArtifact(destinationPath, xmlIs);
             } catch (IOException e) {
-                throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()));
+                throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()), e);
             }
         }
     }
