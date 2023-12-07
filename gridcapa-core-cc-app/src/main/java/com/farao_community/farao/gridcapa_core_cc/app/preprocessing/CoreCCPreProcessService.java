@@ -53,8 +53,8 @@ public class CoreCCPreProcessService {
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
     private static final String JSON_CRAC_PROVIDER = "Json";
-    private final Logger businessLogger;
 
+    private final Logger businessLogger;
     private final MinioAdapter minioAdapter;
     private final RaoParametersService raoParametersService;
     private final FileImporter fileImporter;
