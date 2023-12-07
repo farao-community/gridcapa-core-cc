@@ -53,13 +53,15 @@ public class CoreCCPreProcessService {
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
     private static final String JSON_CRAC_PROVIDER = "Json";
+    private final Logger businessLogger;
 
     private final MinioAdapter minioAdapter;
     private final RaoParametersService raoParametersService;
     private final FileImporter fileImporter;
     private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
 
-    public CoreCCPreProcessService(MinioAdapter minioAdapter, RaoParametersService raoParametersService, FileImporter fileImporter) {
+    public CoreCCPreProcessService(Logger businessLogger, MinioAdapter minioAdapter, RaoParametersService raoParametersService, FileImporter fileImporter) {
+        this.businessLogger = businessLogger;
         this.minioAdapter = minioAdapter;
         this.raoParametersService = raoParametersService;
         this.fileImporter = fileImporter;
@@ -119,9 +121,10 @@ public class CoreCCPreProcessService {
             }
         });
         if (Objects.isNull(raoRequest.get())) {
-            String message = "Missing raoRequest";
+            String message = "Timestamp not included in RAO request for this business date.";
             raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, null, destinationPath));
-            LOGGER.warn(message);
+            LOGGER.error(message);
+            businessLogger.error(message);
             raoResult.set(new HourlyRaoResult(null));
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
             raoResult.get().setErrorMessage(message);
