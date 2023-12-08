@@ -121,10 +121,10 @@ public class CoreCCPreProcessService {
             }
         });
         if (Objects.isNull(raoRequest.get())) {
-            String message = "Timestamp not included in RAO request for this business date.";
+            String message = "Missing raoRequest";
             raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, null, destinationPath));
             LOGGER.error(message);
-            businessLogger.error(message);
+            businessLogger.error("Timestamp not included in RAO request for this business date.");
             raoResult.set(new HourlyRaoResult(null));
             raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
             raoResult.get().setErrorMessage(message);
