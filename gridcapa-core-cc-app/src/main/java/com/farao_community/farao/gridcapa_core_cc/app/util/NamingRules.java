@@ -40,7 +40,7 @@ public final class NamingRules {
     // DateTimeFormatter are systematically rezoned even applied on offsetDateTimes as a security measure
     public static final DateTimeFormatter UTC_HOURLY_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("UTC"));
 
-    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_'yyyyMMdd'-F302-0V.xml'").withZone(IntervalUtil.ZONE_ID);
+    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_'yyyyMMdd'-F302-0V.xml'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter UCT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_2D0_UXV.uct'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-0V.json'").withZone(IntervalUtil.ZONE_ID);
