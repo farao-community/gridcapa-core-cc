@@ -1,5 +1,5 @@
 {
-  "version" : "2.0",
+  "version" : "2.1",
   "objective-function" : {
     "type" : "MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT",
     "forbid-cost-increase" : true,
@@ -137,7 +137,7 @@
     },
     "loop-flow-parameters" : {
       "acceptable-increase" : 5.0,
-      "approximation" : "UPDATE_PTDF_WITH_TOPO",
+      "ptdf-approximation" : "UPDATE_PTDF_WITH_TOPO",
       "constraint-adjustment-coefficient" : 7.0,
       "violation-cost" : 100.0,
       "countries" : [ "AT", "BE", "CZ", "DE", "FR", "HR", "HU", "NL", "PL", "RO", "SI", "SK" ]
