@@ -9,12 +9,12 @@ import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCMetadata;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
-import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
-import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.util.IntervalUtil;
+import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
@@ -27,7 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -181,7 +184,7 @@ public class FileExporterHelper {
     }
 
     private String generateCneMRID(InternalCoreCCRequest coreCCRequest) {
-        return String.format("%s-%s-F299v%s", NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID, IntervalUtil.getFormattedBusinessDay(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
+        return String.format("%s-%s-F299v%s", NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID, IntervalUtil.getBrusselsFormattedBusinessDayFromUtc(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
     public void exportMetadataToMinio(InternalCoreCCRequest coreCCRequest) throws IOException {
