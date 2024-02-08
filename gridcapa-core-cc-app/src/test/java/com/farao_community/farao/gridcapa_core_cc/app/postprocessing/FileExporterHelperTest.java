@@ -8,12 +8,12 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.farao_community.farao.data.core_cne_exporter.xsd.CriticalNetworkElementMarketDocument;
-import com.farao_community.farao.data.crac_api.Crac;
-import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
-import com.farao_community.farao.data.crac_io_api.CracImporters;
-import com.farao_community.farao.data.rao_result_api.RaoResult;
-import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
+import com.powsybl.openrao.data.corecneexporter.xsd.CriticalNetworkElementMarketDocument;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
+import com.powsybl.openrao.data.cracioapi.CracImporters;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
+import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
@@ -43,7 +43,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.TimeZone;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,8 +123,13 @@ class FileExporterHelperTest {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportNetworkToMinio(coreCCRequest);
         String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_2D2_UX1.uct";
-        removeCreationDateFromUct(new File(generatedFilePath));
-        assertFilesContentEqual("/fileExporterHelper/uploadedNetwork.uct", generatedFilePath);
+
+        // to compare the content of the expected and the generated network we will skip the first three lines
+        // because the creation date changes each time the test is launched
+        Stream<String> generatedLines = new BufferedReader(new FileReader(generatedFilePath)).lines().skip(3);
+        Path expectedNetworkPath = Paths.get(getClass().getResource("/fileExporterHelper/uploadedNetwork.uct").getPath());
+        Stream<String> expectedLines = new BufferedReader(new FileReader(expectedNetworkPath.toString())).lines().skip(3);
+        assertStreamEquals(expectedLines, generatedLines);
 
         Network networkAfterPostTreatment = CoreNetworkImporterWrapper.loadNetwork(Path.of(generatedFilePath));
 
@@ -130,6 +137,15 @@ class FileExporterHelperTest {
         assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(Identifiable::isFictitious));
         assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1A"));
         assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1B"));
+    }
+
+    static void assertStreamEquals(Stream<String> s1, Stream<String> s2) {
+        Iterator<String> iter1 = s1.iterator();
+        Iterator<String> iter2 = s2.iterator();
+        while (iter1.hasNext() && iter2.hasNext()) {
+            assertEquals(iter1.next(), iter2.next());
+        }
+        assert !iter1.hasNext() && !iter2.hasNext();
     }
 
     @Test
@@ -234,22 +250,6 @@ class FileExporterHelperTest {
         } catch (Exception e) {
             fail("Failed to read generated CNE file");
         }
-    }
-
-    private void removeCreationDateFromUct(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}(?:\\+\\d{2}:\\d{2})?Z?";
-        String replaceBy = "yyyy-MM-ddTHH:mm:ss.SSS+HH:mm";
-        String line;
-        StringBuilder oldText = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            oldText.append(line).append("\r\n");
-        }
-        reader.close();
-        String newText = oldText.toString().replaceAll(pattern, replaceBy);
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        writer.write(newText);
-        writer.close();
     }
 
     private boolean isTodayDaylightSaving() {

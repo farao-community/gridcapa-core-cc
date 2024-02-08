@@ -28,10 +28,7 @@ class JaxbUtilTest {
     private final InputStream inputStream = Mockito.mock(InputStream.class);
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-            "zipCode",
-            "name"
-    })
+    @XmlType(name = "", propOrder = {"zipCode", "name"})
     @XmlRootElement(name = "BasicCity")
     private static class BasicCity {
         @XmlElement(name = "zipCode", required = true)

@@ -8,9 +8,9 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
-import com.farao_community.farao.data.crac_api.Crac;
-import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
-import com.farao_community.farao.data.refprog.reference_program.ReferenceProgram;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
+import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.ucte.UcteGlskDocument;
 import com.powsybl.iidm.network.Network;
