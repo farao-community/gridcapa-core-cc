@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import static com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,10 +51,10 @@ class NamingRulesTest {
     }
 
     @Test
-    void testRaoRequestAckFileName() {
-        assertEquals("22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_20230712-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
-        assertNotEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_2023-07-12-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
-        assertNotEquals("CASTOR-RAO_22VCOR0CORE0PRDI_RTE-F302-ACK_20230101-F302-0V.xml", dateTime.format(RAO_REQUEST_ACK_FILENAME_FORMATTER));
+    void generateRaoRequestAckFileNameTest() {
+        Mockito.when(internalCoreCCRequest.getTimestamp()).thenReturn(OffsetDateTime.parse("2021-01-01T00:30Z"));
+        assertEquals("22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_20210101-F302-02.xml", generateRaoRequestAckFileName(internalCoreCCRequest));
+
     }
 
     @Test
@@ -72,16 +73,9 @@ class NamingRulesTest {
 
     @Test
     void testIntermediateMetadataFileName() {
-        assertEquals("20230712_1530_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
-        assertNotEquals("2023-07-12_1530_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
-        assertNotEquals("20230101_0030_METADATA-0V.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
-    }
-
-    @Test
-    void testRaoResultFileName() {
-        assertEquals("20230712_1530_RAO-RESULT-0V.json", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
-        assertNotEquals("2023-07-12_1530_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
-        assertNotEquals("20230101_0030_RAO-RESULT-0V.txt", dateTime.format(RAO_RESULT_FILENAME_FORMATTER));
+        assertEquals("20230712_1530_METADATA-<version>.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
+        assertNotEquals("2023-07-12_1530_METADATA-<version>.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
+        assertNotEquals("20230101_0030_METADATA-<version>.json", dateTime.format(INTERMEDIATE_METADATA_FILENAME_FORMATTER));
     }
 
     @Test
@@ -97,5 +91,6 @@ class NamingRulesTest {
     @Test
     void generateMetadataFileName() {
         assertEquals("20230721_1630_METADATA-02.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
+        assertNotEquals("20230721_1630_METADATA-0V.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
     }
 }

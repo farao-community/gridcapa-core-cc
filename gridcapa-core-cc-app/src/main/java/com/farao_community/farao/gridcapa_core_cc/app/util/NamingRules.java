@@ -40,19 +40,17 @@ public final class NamingRules {
     // DateTimeFormatter are systematically rezoned even applied on offsetDateTimes as a security measure
     public static final DateTimeFormatter UTC_HOURLY_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("UTC"));
 
-    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_'yyyyMMdd'-F302-0V.xml'").withZone(IntervalUtil.ZONE_ID);
+    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_'yyyyMMdd'-F302-<version>.xml'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter UCT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_2D0_UXV.uct'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-0V.json'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_RAO-RESULT-0V.json'").withZone(IntervalUtil.ZONE_ID);
+    public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-<version>.json'").withZone(IntervalUtil.ZONE_ID);
 
     // -- Xml Response Generator constants
     public static final String XML_RESPONSE_GENERATOR_SENDER_ID = "22XCORESO------S";
     public static final String XML_RESPONSE_GENERATOR_RECEIVER_ID = "17XTSO-CS------W";
 
     public static String generateRaoRequestAckFileName(InternalCoreCCRequest coreCCRequest) {
-        return NamingRules.RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp())
-            .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
+        return formatVersion(NamingRules.RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
     public static String generateUctFileName(String instant, int version) {
@@ -73,8 +71,7 @@ public final class NamingRules {
     }
 
     public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output =  NamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant))
-            .replace("0V", String.format("%02d", coreCCRequest.getVersion()));
+        String output =  formatVersion(NamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
         return IntervalUtil.handle25TimestampCase(output, instant);
     }
 
@@ -87,5 +84,9 @@ public final class NamingRules {
     public static String getAckDestinationKey(OffsetDateTime offsetDateTime) {
         String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(IntervalUtil.ZONE_ID));
         return "RAO_OUTPUTS_DIR" + "/" + IntervalUtil.handle25TimestampCase(hourlyFolderName, offsetDateTime.toInstant().toString());
+    }
+
+    private static String formatVersion(String filename, int v) {
+        return filename.replace("<version>", String.format("%02d", v));
     }
 }
