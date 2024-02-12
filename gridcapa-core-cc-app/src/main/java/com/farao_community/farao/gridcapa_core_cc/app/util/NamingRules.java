@@ -50,28 +50,28 @@ public final class NamingRules {
     public static final String XML_RESPONSE_GENERATOR_RECEIVER_ID = "17XTSO-CS------W";
 
     public static String generateRaoRequestAckFileName(InternalCoreCCRequest coreCCRequest) {
-        return formatVersion(NamingRules.RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
+        return formatVersion(RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
     public static String generateUctFileName(String instant, int version) {
-        String output = NamingRules.UCT_FILENAME_FORMATTER.format(Instant.parse(instant));
+        String output = UCT_FILENAME_FORMATTER.format(Instant.parse(instant));
         output = output.replace("2D0", "2D" + Instant.parse(instant).atZone(IntervalUtil.ZONE_ID).getDayOfWeek().getValue())
             .replace("_UXV", "_UX" + version);
         return IntervalUtil.handle25TimestampCase(output, instant);
     }
 
     public static String generateCneFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output = NamingRules.CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
+        String output = CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
             .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
         return IntervalUtil.handle25TimestampCase(output, instant);
     }
 
     public static String generateOutputsDestinationPath(String destinationPrefix, String fileName) {
-        return String.format(NamingRules.OUTPUTS, destinationPrefix, fileName);
+        return String.format(OUTPUTS, destinationPrefix, fileName);
     }
 
     public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output =  formatVersion(NamingRules.INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
+        String output =  formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
         return IntervalUtil.handle25TimestampCase(output, instant);
     }
 
