@@ -160,7 +160,7 @@ class FileExporterHelperTest {
     void exportRaoResultToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/CASTOR-INTERNAL-RESULTS_20230725_1702.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/CASTOR-INTERNAL-RESULTS_20230725_1730.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
     }
 
