@@ -44,7 +44,7 @@ public final class NamingRules {
     public static final DateTimeFormatter UCT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_2D0_UXV.uct'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(IntervalUtil.ZONE_ID);
     public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-<version>.json'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-INTERNAL-RESULTS_'yyyyMMdd'_'HHmm'.json'").withZone(IntervalUtil.ZONE_ID);
+    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-INTERNAL-RESULTS_'yyyyMMdd'_'HH'30.json'").withZone(IntervalUtil.ZONE_ID);
 
     // -- Xml Response Generator constants
     public static final String XML_RESPONSE_GENERATOR_SENDER_ID = "22XCORESO------S";

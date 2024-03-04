@@ -97,9 +97,9 @@ class NamingRulesTest {
     @Test
     void generateRaoResultFileName() {
         // Summertime
-        assertEquals("CASTOR-INTERNAL-RESULTS_20230721_1551.json", NamingRules.generateRaoResultFileName("2023-07-21T13:51:33Z"));
+        assertEquals("CASTOR-INTERNAL-RESULTS_20230721_1530.json", NamingRules.generateRaoResultFileName("2023-07-21T13:51:33Z"));
         // Wintertime
-        assertEquals("CASTOR-INTERNAL-RESULTS_20231231_1529.json", NamingRules.generateRaoResultFileName("2023-12-31T14:29:33Z"));
+        assertEquals("CASTOR-INTERNAL-RESULTS_20231231_1530.json", NamingRules.generateRaoResultFileName("2023-12-31T14:29:33Z"));
         //time change
         assertEquals("CASTOR-INTERNAL-RESULTS_20221030_0030.json", NamingRules.generateRaoResultFileName("2022-10-29T22:30:33Z"));
         assertEquals("CASTOR-INTERNAL-RESULTS_20221030_0230.json", NamingRules.generateRaoResultFileName("2022-10-30T00:30:33Z"));
