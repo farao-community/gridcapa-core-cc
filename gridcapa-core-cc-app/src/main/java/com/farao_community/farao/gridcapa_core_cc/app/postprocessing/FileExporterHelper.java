@@ -164,9 +164,9 @@ public class FileExporterHelper {
     public void exportRaoResultToMinio(InternalCoreCCRequest coreCCRequest) {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-
-        String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + "raoResult.json";
-        minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), CORE_CC, "RAO_RESULT", coreCCRequest.getTimestamp());
+        final OffsetDateTime coreCCRequestTimestamp = coreCCRequest.getTimestamp();
+        String raoResultFilePath = hourlyRaoRequest.getResultsDestination() + "/" + NamingRules.generateRaoResultFileName(hourlyRaoResult.getRaoRequestInstant());
+        minioAdapter.uploadOutputForTimestamp(raoResultFilePath, fileImporter.importFileUrlAsInputStream(hourlyRaoResult.getRaoResultFileUrl()), CORE_CC, "RAO_RESULT", coreCCRequestTimestamp);
     }
 
     private CneExporterParameters getCneExporterParameters(InternalCoreCCRequest coreCCRequest) {
