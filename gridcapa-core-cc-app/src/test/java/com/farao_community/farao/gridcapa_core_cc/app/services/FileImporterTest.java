@@ -8,14 +8,14 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.ucte.UcteGlskDocument;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.craccreation.creator.api.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
+import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +24,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.time.OffsetDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -60,11 +61,18 @@ class FileImporterTest {
     void importCrac() {
         InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
-        CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
         FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
         Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
         assertEquals("17XTSO-CS------W-20190108-F301v1", crac.getId());
+    }
+
+    @Test
+    void cracCreationParameters() {
+        CracCreationParameters parameters = fileImporter.getCimCracCreationParameters();
+        Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxRa());
+        Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxTso());
     }
 
     @Test

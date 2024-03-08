@@ -1,5 +1,5 @@
 {
-  "version" : "2.1",
+  "version" : "2.2",
   "objective-function" : {
     "type" : "MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT",
     "forbid-cost-increase" : true,
@@ -39,61 +39,6 @@
     "execution-condition" : "COST_INCREASE",
     "re-optimize-curative-range-actions" : false,
     "hint-from-first-preventive-rao" : false
-  },
-  "ra-usage-limits-per-contingency" : {
-    "max-curative-ra" : 2147483647,
-    "max-curative-tso" : 2147483647,
-    "max-curative-topo-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 1,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 1,
-      "HR" : 0,
-      "HU" : 1,
-      "NL" : 0,
-      "PL" : 1,
-      "RO" : 0,
-      "SI" : 2,
-      "SK" : 1
-    },
-    "max-curative-pst-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 2,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 0,
-      "HR" : 0,
-      "HU" : 0,
-      "NL" : 0,
-      "PL" : 2,
-      "RO" : 0,
-      "SI" : 2,
-      "SK" : 0
-    },
-    "max-curative-ra-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 2,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 1,
-      "HR" : 0,
-      "HU" : 1,
-      "NL" : 0,
-      "PL" : 2,
-      "RO" : 0,
-      "SI" : 3,
-      "SK" : 1
-    }
   },
   "not-optimized-cnecs" : {
     "do-not-optimize-curative-cnecs-for-tsos-without-cras" : true,
