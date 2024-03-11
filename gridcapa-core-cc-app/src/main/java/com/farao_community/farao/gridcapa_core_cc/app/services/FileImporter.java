@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 @Service
 public class FileImporter {
 
-    public static final String CRAC_CREATION_PARAMETERS_JSON = "/crac/CracCreationParameters.json";
+    public static final String CRAC_CREATION_PARAMETERS_JSON = "/crac/cracCreationParameters.json";
     public static final String CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL = "Cannot download rao request file from URL '%s'";
     private final UrlValidationService urlValidationService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileImporter.class);
