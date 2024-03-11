@@ -105,7 +105,6 @@ public class FileImporter {
 
     public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
         CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
-        cracCreationParameters.setDefaultMonitoredLineSide(CracCreationParameters.MonitoredLineSide.MONITOR_LINES_ON_LEFT_SIDE);
         try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
             FbConstraint nativeCrac = new FbConstraintImporter().importNativeCrac(cracInputStream);
             return new FbConstraintCracCreator().createCrac(nativeCrac, network, targetProcessDateTime, cracCreationParameters);
