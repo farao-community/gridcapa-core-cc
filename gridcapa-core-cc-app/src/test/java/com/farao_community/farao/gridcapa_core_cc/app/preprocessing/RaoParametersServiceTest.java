@@ -8,9 +8,9 @@ package com.farao_community.farao.gridcapa_core_cc.app.preprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
+import com.powsybl.iidm.network.Country;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 import com.powsybl.openrao.raoapi.parameters.extensions.LoopFlowParametersExtension;
-import com.powsybl.iidm.network.Country;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,8 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,26 +48,5 @@ class RaoParametersServiceTest {
                 && actualLoopFlowConstraintCountries.containsAll(expectedLoopFlowConstraintCountries));
 
         assertEquals(10.0, raoParameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
-
-        Map<String, Integer> maxCurativeRaPerTsoExpected = new TreeMap<>();
-        maxCurativeRaPerTsoExpected.put("AT", 10);
-        maxCurativeRaPerTsoExpected.put("BE", 10);
-        assertEquals(maxCurativeRaPerTsoExpected.get("AT"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeRaPerTso().get("AT"));
-        assertEquals(maxCurativeRaPerTsoExpected.get("BE"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeRaPerTso().get("BE"));
-        assertEquals(maxCurativeRaPerTsoExpected.size(), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeRaPerTso().size());
-
-        Map<String, Integer> maxCurativeTopoPerTsoExpected = new TreeMap<>();
-        maxCurativeTopoPerTsoExpected.put("AT", 10);
-        maxCurativeTopoPerTsoExpected.put("BE", 10);
-        maxCurativeTopoPerTsoExpected.put("CZ", 10);
-        assertEquals(maxCurativeTopoPerTsoExpected.get("AT"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeTopoPerTso().get("AT"));
-        assertEquals(maxCurativeTopoPerTsoExpected.get("BE"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeTopoPerTso().get("BE"));
-        assertEquals(maxCurativeTopoPerTsoExpected.get("CZ"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeTopoPerTso().get("CZ"));
-        assertEquals(maxCurativeTopoPerTsoExpected.size(), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativeTopoPerTso().size());
-
-        Map<String, Integer> maxCurativePstPerTsoExpected = new TreeMap<>();
-        maxCurativePstPerTsoExpected.put("AT", 10);
-        assertEquals(maxCurativePstPerTsoExpected.get("AT"), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativePstPerTso().get("AT"));
-        assertEquals(maxCurativePstPerTsoExpected.size(), raoParameters.getRaUsageLimitsPerContingencyParameters().getMaxCurativePstPerTso().size());
     }
 }

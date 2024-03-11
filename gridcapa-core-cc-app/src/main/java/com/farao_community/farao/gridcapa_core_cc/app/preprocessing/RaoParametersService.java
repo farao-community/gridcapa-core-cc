@@ -54,31 +54,7 @@ public class RaoParametersService {
         setLoopFlowCountries(requestMessage, raoParameters);
         setPstPenaltyCost(requestMessage, raoParameters);
         setAbsoluteMinimumImpactThreshold(requestMessage, raoParameters);
-        setMaxCurativeRaPerTso(requestMessage, raoParameters);
-        setMaxCurativeTopoPerTso(requestMessage, raoParameters);
-        setMaxCurativePstPerTso(requestMessage, raoParameters);
         return raoParameters;
-    }
-
-    private void setMaxCurativePstPerTso(RequestMessage requestMessage, RaoParameters raoParameters) {
-        Map<String, Integer> maxNbrCurativePstByTso = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().toUpperCase().startsWith(MAX_PST_CRA.toUpperCase()))
-                .collect(Collectors.toMap(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1), property -> Integer.parseInt(property.getValue())));
-        raoParameters.getRaUsageLimitsPerContingencyParameters().setMaxCurativePstPerTso(maxNbrCurativePstByTso);
-    }
-
-    private void setMaxCurativeTopoPerTso(RequestMessage requestMessage, RaoParameters raoParameters) {
-        Map<String, Integer> maxNbrTopoCurRaByTso = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().toUpperCase().startsWith(MAX_TOPO_CRA.toUpperCase()))
-                .collect(Collectors.toMap(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1), property -> Integer.parseInt(property.getValue())));
-        raoParameters.getRaUsageLimitsPerContingencyParameters().setMaxCurativeTopoPerTso(maxNbrTopoCurRaByTso);
-    }
-
-    private void setMaxCurativeRaPerTso(RequestMessage requestMessage, RaoParameters raoParameters) {
-        Map<String, Integer> maxNbrCurRaByTso = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().toUpperCase().startsWith(MAX_CRA.toUpperCase()))
-                .collect(Collectors.toMap(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1), property -> Integer.parseInt(property.getValue())));
-        raoParameters.getRaUsageLimitsPerContingencyParameters().setMaxCurativeRaPerTso(maxNbrCurRaByTso);
     }
 
     private void setPstPenaltyCost(RequestMessage requestMessage, RaoParameters raoParameters) {

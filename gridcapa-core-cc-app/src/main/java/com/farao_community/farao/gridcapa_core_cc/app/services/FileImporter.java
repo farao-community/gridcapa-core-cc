@@ -7,29 +7,30 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
-import com.powsybl.openrao.data.craccreation.creator.api.parameters.CracCreationParameters;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraint;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCracCreator;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.importer.FbConstraintImporter;
-import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
-import com.powsybl.openrao.data.refprog.refprogxmlimporter.RefProgImporter;
-import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.util.ZipUtil;
-import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
-import com.powsybl.openrao.virtualhubs.xml.XmlVirtualHubsConfiguration;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.craccreation.creator.api.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.craccreation.creator.api.parameters.JsonCracCreationParameters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraint;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCracCreator;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.importer.FbConstraintImporter;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
+import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
+import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
+import com.powsybl.openrao.data.refprog.refprogxmlimporter.RefProgImporter;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
+import com.powsybl.openrao.virtualhubs.xml.XmlVirtualHubsConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ import java.util.stream.Collectors;
 @Service
 public class FileImporter {
 
+    public static final String CRAC_CREATION_PARAMETERS_JSON = "/crac/cracCreationParameters.json";
     public static final String CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL = "Cannot download rao request file from URL '%s'";
     private final UrlValidationService urlValidationService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileImporter.class);
@@ -102,8 +104,7 @@ public class FileImporter {
     }
 
     public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
-        CracCreationParameters cracCreationParameters = new CracCreationParameters();
-        cracCreationParameters.setDefaultMonitoredLineSide(CracCreationParameters.MonitoredLineSide.MONITOR_LINES_ON_LEFT_SIDE);
+        CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
         try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
             FbConstraint nativeCrac = new FbConstraintImporter().importNativeCrac(cracInputStream);
             return new FbConstraintCracCreator().createCrac(nativeCrac, network, targetProcessDateTime, cracCreationParameters);
@@ -134,13 +135,18 @@ public class FileImporter {
             Path tmpCgmInputsPath = Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"), attr);
             List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
             Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_XML_HEADER_NAME))
-                .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
+                    .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
             ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
             List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, cgmsZimFileResource.getUrl()), e);
         }
+    }
+
+    CracCreationParameters getCimCracCreationParameters() {
+        LOGGER.info("Importing Crac Creation Parameters file: {}", CRAC_CREATION_PARAMETERS_JSON);
+        return JsonCracCreationParameters.read(getClass().getResourceAsStream(CRAC_CREATION_PARAMETERS_JSON));
     }
 
     public VirtualHubsConfiguration importVirtualHubs(CoreCCFileResource virtualHubsFileResource) {
