@@ -31,9 +31,6 @@ public class RaoParametersService {
     private static final String TOPO_RA_MIN_IMPACT = "Topo_RA_Min_impact";
     private static final String PST_RA_MIN_IMPACT = "PST_RA_Min_impact";
     private static final String LOOP_FLOW_COUNTRIES = "LF_Constraint_";
-    private static final String MAX_CRA = "Max_cRA_";
-    private static final String MAX_TOPO_CRA = "Max_Topo_cRA_";
-    private static final String MAX_PST_CRA = "Max_PST_cRA_";
 
     public RaoParametersService(MinioAdapter minioAdapter) {
         this.minioAdapter = minioAdapter;
@@ -54,12 +51,13 @@ public class RaoParametersService {
         setLoopFlowCountries(requestMessage, raoParameters);
         setPstPenaltyCost(requestMessage, raoParameters);
         setAbsoluteMinimumImpactThreshold(requestMessage, raoParameters);
+
         return raoParameters;
     }
 
-    private void setPstPenaltyCost(RequestMessage requestMessage, RaoParameters raoParameters) {
+    private static void setPstPenaltyCost(RequestMessage requestMessage, RaoParameters raoParameters) {
         Optional<Property> pstRaMinImpactOptional = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().equalsIgnoreCase(PST_RA_MIN_IMPACT)).findFirst();
+            .filter(property -> property.getName().equalsIgnoreCase(PST_RA_MIN_IMPACT)).findFirst();
         double pstRaMinImpact = 0.0D;
         if (pstRaMinImpactOptional.isPresent()) {
             pstRaMinImpact += Double.parseDouble(pstRaMinImpactOptional.get().getValue());
@@ -67,9 +65,9 @@ public class RaoParametersService {
         raoParameters.getRangeActionsOptimizationParameters().setPstPenaltyCost(pstRaMinImpact);
     }
 
-    private void setAbsoluteMinimumImpactThreshold(RequestMessage requestMessage, RaoParameters raoParameters) {
+    private static void setAbsoluteMinimumImpactThreshold(RequestMessage requestMessage, RaoParameters raoParameters) {
         Optional<Property> topoRaMinImpactOptional = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().equalsIgnoreCase(TOPO_RA_MIN_IMPACT)).findFirst();
+            .filter(property -> property.getName().equalsIgnoreCase(TOPO_RA_MIN_IMPACT)).findFirst();
         double topoRaMinImpact = 0.0D;
         if (topoRaMinImpactOptional.isPresent()) {
             topoRaMinImpact += Double.parseDouble(topoRaMinImpactOptional.get().getValue());
@@ -77,11 +75,14 @@ public class RaoParametersService {
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(topoRaMinImpact);
     }
 
-    private void setLoopFlowCountries(RequestMessage requestMessage, RaoParameters raoParameters) {
-        List<String> loopFlowZones = requestMessage.getHeader().getProperty().stream()
-                .filter(property -> property.getName().toUpperCase().startsWith(LOOP_FLOW_COUNTRIES.toUpperCase()) && property.getValue().equalsIgnoreCase(Boolean.TRUE.toString()))
-                .map(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1)).collect(Collectors.toList());
-        Set<Country> loopFlowCountries = loopFlowZones.stream().map(this::convertGermanyZones).map(Country::valueOf).collect(Collectors.toSet());
+    private static void setLoopFlowCountries(RequestMessage requestMessage, RaoParameters raoParameters) {
+        Set<Country> loopFlowCountries = requestMessage.getHeader().getProperty().stream()
+            .filter(property -> property.getName().toUpperCase().startsWith(LOOP_FLOW_COUNTRIES.toUpperCase()) && property.getValue().equalsIgnoreCase(Boolean.TRUE.toString()))
+            .map(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1))
+            .map(RaoParametersService::convertGermanyZones)
+            .map(Country::valueOf)
+            .collect(Collectors.toSet());
+
         LoopFlowParametersExtension loopFlowParameters;
         if (raoParameters.hasExtension(LoopFlowParametersExtension.class)) {
             loopFlowParameters = raoParameters.getExtension(LoopFlowParametersExtension.class);
@@ -92,7 +93,7 @@ public class RaoParametersService {
         loopFlowParameters.setCountries(loopFlowCountries);
     }
 
-    private String convertGermanyZones(String zone) {
+    private static String convertGermanyZones(String zone) {
         if (GERMAN_ZONES.contains(zone)) {
             return Country.DE.toString();
         } else {
