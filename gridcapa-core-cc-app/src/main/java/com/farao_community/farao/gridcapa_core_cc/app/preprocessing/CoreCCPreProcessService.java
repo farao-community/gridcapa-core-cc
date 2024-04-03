@@ -23,6 +23,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.Request
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Header;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Reply;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,8 @@ public class CoreCCPreProcessService {
         RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
-        String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, destinationKey);
+        VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
+        String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, virtualHubsConfiguration, destinationKey);
         CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
 
         if (!Interval.parse(raoRequestMessage.getPayload().getRequestItems().getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader.getXmlHeader().getPayload().getResponseItems().getTimeInterval()))) {
