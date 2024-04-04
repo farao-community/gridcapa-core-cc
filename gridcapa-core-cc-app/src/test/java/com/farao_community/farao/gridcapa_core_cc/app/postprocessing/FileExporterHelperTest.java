@@ -8,12 +8,6 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.powsybl.openrao.data.corecneexporter.xsd.CriticalNetworkElementMarketDocument;
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
-import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
@@ -27,6 +21,12 @@ import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.openrao.data.corecneexporter.xsd.CriticalNetworkElementMarketDocument;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
+import com.powsybl.openrao.data.cracioapi.CracImporters;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
+import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -34,7 +34,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,12 +47,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.TimeZone;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
@@ -122,7 +129,7 @@ class FileExporterHelperTest {
     void exportNetworkToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_2D2_UX1.uct";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1730_2D2_UX1.uct";
 
         // to compare the content of the expected and the generated network we will skip the first three lines
         // because the creation date changes each time the test is launched
@@ -160,7 +167,7 @@ class FileExporterHelperTest {
     void exportRaoResultToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/CASTOR-INTERNAL-RESULTS_20230725_1730.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T08:47:51/2023-07-27T09:47:51/path/CASTOR-INTERNAL-RESULTS_20230725_1730.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
     }
 
@@ -187,7 +194,7 @@ class FileExporterHelperTest {
         Mockito.when(hourlyRaoResult.getErrorMessage()).thenReturn("Error message.");
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
         fileExporterHelper.exportMetadataToMinio(coreCCRequest);
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1830_METADATA-01.json";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1830_METADATA-01.json";
         assertFilesContentEqual("/fileExporterHelper/uploadedMetadata.json", generatedFilePath);
     }
 
@@ -230,10 +237,9 @@ class FileExporterHelperTest {
 
         fileExporterHelper.exportCneToMinio(coreCCRequest);
 
-        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
         removeCreationDateInCne(new File(generatedFilePath));
-        String uploadedCne = isTodayDaylightSaving() ? "/fileExporterHelper/uploadedCne.xml" : "/fileExporterHelper/uploadedCne_daylight_saving.xml";
-        assertFilesContentEqual(uploadedCne, generatedFilePath);
+        assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
 
         try (FileInputStream inputStreamCne = new FileInputStream(generatedFilePath)) {
             CriticalNetworkElementMarketDocument cneFile = JaxbUtil.unmarshalContent(CriticalNetworkElementMarketDocument.class, inputStreamCne);
@@ -251,17 +257,4 @@ class FileExporterHelperTest {
             fail("Failed to read generated CNE file");
         }
     }
-
-    private boolean isTodayDaylightSaving() {
-        return TimeZone.getDefault().inDaylightTime(new Date());
-    }
-
-    private String setUtcOffset() {
-        if (isTodayDaylightSaving()) {
-            return "+02:00";
-        } else {
-            return "+01:00";
-        }
-    }
-
 }
