@@ -206,7 +206,6 @@ class FileExporterHelperTest {
     }
 
     @Test
-    @Disabled("Unit test failing since summer DST, TO FIX")
     void exportCneToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
 
