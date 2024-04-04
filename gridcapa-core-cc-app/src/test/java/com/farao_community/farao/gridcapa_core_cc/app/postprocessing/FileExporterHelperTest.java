@@ -232,6 +232,7 @@ class FileExporterHelperTest {
 
         String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51" + setUtcOffset() + "/2023-07-27T11:47:51" + setUtcOffset() + "/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
         removeCreationDateInCne(new File(generatedFilePath));
+        System.out.println("time zone default : " + TimeZone.getDefault());
         String uploadedCne = isTodayDaylightSaving() ? "/fileExporterHelper/uploadedCne.xml" : "/fileExporterHelper/uploadedCne_daylight_saving.xml";
         assertFilesContentEqual(uploadedCne, generatedFilePath);
 
