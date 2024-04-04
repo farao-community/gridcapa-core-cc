@@ -15,7 +15,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
@@ -45,7 +47,8 @@ public class MinioFileWriter extends MinioAdapter {
     @Override
     public void uploadOutputForTimestamp(String path, InputStream inputStream, @Nullable String targetProcess, @Nullable String type, OffsetDateTime timestamp) {
         String outputDir = tempDir + "/gridcapa-core-cc/";
-        String additionalPathName = targetProcess + "/" + type + "/" + timestamp + "/" + timestamp.plusHours(1L) + "/";
+        LocalDateTime utcLocalDateTime = timestamp.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        String additionalPathName = targetProcess + "/" + type + "/" + utcLocalDateTime + "/" + utcLocalDateTime.plusHours(1L) + "/";
         File tmpDir = new File(outputDir + additionalPathName);
         if (!tmpDir.exists()) {
             boolean created = tmpDir.mkdir();
