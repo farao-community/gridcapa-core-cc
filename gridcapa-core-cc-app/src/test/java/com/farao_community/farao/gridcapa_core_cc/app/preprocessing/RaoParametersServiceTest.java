@@ -41,6 +41,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class RaoParametersServiceTest {
 
+    private static final String FR = "FR";
+    private static final String BE = "BE";
+    private static final String ES = "ES";
+    private static final String SK = "SK";
+    private static final String EIC_FR = "10YFR-RTE------C";
+    private static final String EIC_BE = "10YBE----------2";
+    private static final String EIC_ES = "10YES-REE------0";
+    private static final String EIC_SK = "10YSK-SEPS-----K";
+    private static final String NODE_NAME_FR = "nodeNameFr";
+    private static final String NODE_NAME_SK = "nodeNameSk";
+
     @Autowired
     private RaoParametersService raoParametersService;
 
@@ -262,14 +273,14 @@ class RaoParametersServiceTest {
     @Test
     void ptdfBoundariesFromBorderDirectionsTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        virtualHubsConfiguration.addMarketArea(new MarketArea("FR", "10YFR-RTE------C", true, false));
-        virtualHubsConfiguration.addMarketArea(new MarketArea("BE", "10YBE----------2", true, false));
-        virtualHubsConfiguration.addMarketArea(new MarketArea("ES", "10YES-REE------0", false, false));
-        virtualHubsConfiguration.addMarketArea(new MarketArea("SK", "10YSK-SEPS-----K", true, false));
-        virtualHubsConfiguration.addBorderDirection(new BorderDirection("FR", "ES", false));
-        virtualHubsConfiguration.addBorderDirection(new BorderDirection("FR", "SK", false));
-        virtualHubsConfiguration.addBorderDirection(new BorderDirection("BE", "SK", false));
-        virtualHubsConfiguration.addBorderDirection(new BorderDirection("SK", "BE", false));
+        virtualHubsConfiguration.addMarketArea(new MarketArea(FR, EIC_FR, true, false));
+        virtualHubsConfiguration.addMarketArea(new MarketArea(BE, EIC_BE, true, false));
+        virtualHubsConfiguration.addMarketArea(new MarketArea(ES, EIC_ES, false, false));
+        virtualHubsConfiguration.addMarketArea(new MarketArea(SK, EIC_SK, true, false));
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, ES, false));
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, SK, false));
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection(BE, SK, false));
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection(SK, BE, false));
         RaoParameters raoParameters = new RaoParameters();
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
@@ -285,19 +296,19 @@ class RaoParametersServiceTest {
     @Test
     void ptdfBoundariesFromVirtualHubsTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        MarketArea marketAreaFr = new MarketArea("FR", "10YFR-RTE------C", true, false);
-        MarketArea marketAreaBe = new MarketArea("BE", "10YBE----------2", true, false);
-        MarketArea marketAreaEs = new MarketArea("ES", "10YES-REE------0", false, false);
-        MarketArea marketAreaSk = new MarketArea("SK", "10YSK-SEPS-----K", true, false);
+        MarketArea marketAreaFr = new MarketArea(FR, EIC_FR, true, false);
+        MarketArea marketAreaBe = new MarketArea(BE, EIC_BE, true, false);
+        MarketArea marketAreaEs = new MarketArea(ES, EIC_ES, false, false);
+        MarketArea marketAreaSk = new MarketArea(SK, EIC_SK, true, false);
         virtualHubsConfiguration.addMarketArea(marketAreaFr);
         virtualHubsConfiguration.addMarketArea(marketAreaBe);
         virtualHubsConfiguration.addMarketArea(marketAreaEs);
         virtualHubsConfiguration.addMarketArea(marketAreaSk);
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, "nodeNameFr", marketAreaFr, "BE1"));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", true, false, "nodeNameSk", marketAreaBe, "FR1"));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE2", "BE2-XXXXXXXXXXXX", true, false, "nodeNameSk", marketAreaBe, null));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("ES1", "ES1-XXXXXXXXXXXX", true, false, "nodeNameSk", marketAreaEs, null));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("SK1", "SK1-XXXXXXXXXXXX", false, false, "nodeNameSk", marketAreaSk, null));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, NODE_NAME_FR, marketAreaFr, "BE1"));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaBe, "FR1"));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE2", "BE2-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaBe, null));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("ES1", "ES1-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaEs, null));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("SK1", "SK1-XXXXXXXXXXXX", false, false, NODE_NAME_SK, marketAreaSk, null));
         RaoParameters raoParameters = new RaoParameters();
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
@@ -314,15 +325,15 @@ class RaoParametersServiceTest {
     @Test
     void ptdfBoundariesConcatTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        MarketArea marketAreaFr = new MarketArea("FR", "10YFR-RTE------C", true, false);
-        MarketArea marketAreaBe = new MarketArea("BE", "10YBE----------2", true, false);
-        MarketArea marketAreaSk = new MarketArea("SK", "10YSK-SEPS-----K", true, false);
+        MarketArea marketAreaFr = new MarketArea(FR, EIC_FR, true, false);
+        MarketArea marketAreaBe = new MarketArea(BE, EIC_BE, true, false);
+        MarketArea marketAreaSk = new MarketArea(SK, EIC_SK, true, false);
         virtualHubsConfiguration.addMarketArea(marketAreaFr);
         virtualHubsConfiguration.addMarketArea(marketAreaBe);
         virtualHubsConfiguration.addMarketArea(marketAreaSk);
-        virtualHubsConfiguration.addBorderDirection(new BorderDirection("FR", "SK", false));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, "nodeNameFr", marketAreaFr, "BE1"));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", true, false, "nodeNameSk", marketAreaBe, "FR1"));
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, SK, false));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, NODE_NAME_FR, marketAreaFr, "BE1"));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaBe, "FR1"));
         RaoParameters raoParameters = new RaoParameters();
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
