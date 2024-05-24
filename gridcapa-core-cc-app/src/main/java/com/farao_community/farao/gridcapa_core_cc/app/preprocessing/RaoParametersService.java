@@ -132,7 +132,7 @@ public class RaoParametersService {
 
     private static Stream<String> getPtdfBoundariesFromBorderDirections(VirtualHubsConfiguration virtualHubsConfiguration) {
         List<String> marketParticipantsCodes = virtualHubsConfiguration.getMarketAreas().stream()
-            .filter(MarketArea::isMcParticipant)
+            .filter(ma -> ma.isMcParticipant() || ma.isAhc())
             .map(MarketArea::code)
             .toList();
 
@@ -144,7 +144,7 @@ public class RaoParametersService {
 
     private static Stream<String> getPtdfBoundariesFromVirtualHubs(VirtualHubsConfiguration virtualHubsConfiguration) {
         List<VirtualHub> marketParticipants = virtualHubsConfiguration.getVirtualHubs().stream()
-            .filter(VirtualHub::isMcParticipant)
+            .filter(vh -> vh.isMcParticipant() || vh.isAhc())
             .toList();
 
         Map<String, Pair<VirtualHub, VirtualHub>> pairedVirtualHubs = new HashMap<>();

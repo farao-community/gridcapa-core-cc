@@ -222,8 +222,8 @@ class RaoParametersServiceTest {
         RaoParameters raoParameters = new RaoParameters();
 
         assertThrows(
-            IllegalArgumentException.class,
-            () -> RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters)
+                IllegalArgumentException.class,
+                () -> RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters)
         );
     }
 
@@ -326,14 +326,14 @@ class RaoParametersServiceTest {
     void ptdfBoundariesConcatTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
         MarketArea marketAreaFr = new MarketArea(FR, EIC_FR, true, false);
-        MarketArea marketAreaBe = new MarketArea(BE, EIC_BE, true, false);
+        MarketArea marketAreaBe = new MarketArea(BE, EIC_BE, false, true);
         MarketArea marketAreaSk = new MarketArea(SK, EIC_SK, true, false);
         virtualHubsConfiguration.addMarketArea(marketAreaFr);
         virtualHubsConfiguration.addMarketArea(marketAreaBe);
         virtualHubsConfiguration.addMarketArea(marketAreaSk);
         virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, SK, false));
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, NODE_NAME_FR, marketAreaFr, "BE1"));
-        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaBe, "FR1"));
+        virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", false, true, NODE_NAME_SK, marketAreaBe, "FR1"));
         RaoParameters raoParameters = new RaoParameters();
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
