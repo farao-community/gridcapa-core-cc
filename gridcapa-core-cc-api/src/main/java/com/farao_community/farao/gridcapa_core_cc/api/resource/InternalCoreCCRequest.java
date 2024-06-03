@@ -8,10 +8,12 @@
 
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -40,6 +42,14 @@ public class InternalCoreCCRequest {
 
     public CoreCCFileResource getCgm() {
         return coreCCRequest.getCgm();
+    }
+
+    public CoreCCFileResource getDcCgm() {
+        return coreCCRequest.getDcCgm();
+    }
+
+    public List<TaskParameterDto> getParameters() {
+        return coreCCRequest.getTaskParameterList();
     }
 
     public CoreCCFileResource getCbcora() {
