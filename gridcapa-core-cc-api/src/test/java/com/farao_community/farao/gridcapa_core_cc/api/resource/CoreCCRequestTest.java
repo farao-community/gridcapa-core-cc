@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,13 +42,12 @@ class CoreCCRequestTest {
         raoRequest = new CoreCCFileResource("raoRequest.txt", "http://path/to/raoRequest/file");
         virtualHub = new CoreCCFileResource("virtualHub.txt", "http://path/to/virtualHub/file");
         dateTime = OffsetDateTime.parse("2021-10-03T00:30Z");
-        taskParameterList = new ArrayList<>();
-        taskParameterList.add(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "TRUE", "FALSE"));
+        taskParameterList = List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "TRUE", "FALSE"));
     }
 
     @Test
     void checkManualCoreCCRequest() {
-        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, cbcora, glsk, refProg, raoRequest, virtualHub, dcCgm, taskParameterList);
+        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, taskParameterList);
         assertNotNull(coreCCRequest);
         assertEquals("id", coreCCRequest.getId());
         assertEquals("2021-10-03T00:30Z", coreCCRequest.getTimestamp().toString());

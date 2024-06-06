@@ -100,9 +100,9 @@ class CoreCCPreProcessServiceTest {
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", OffsetDateTime.now(), dummyFileResource, dummyFileResource,
+                "id", OffsetDateTime.now(), dummyFileResource, dummyFileResource, dummyFileResource,
                 dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, dummyFileResource, List.of(taskParameterDto));
+                dummyFileResource, List.of(taskParameterDto));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
 
         prepareAndMockRaoRequest(dummyFileResource);
@@ -123,9 +123,9 @@ class CoreCCPreProcessServiceTest {
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", REQUEST_TIMESTAMP, dummyFileResource, dummyFileResource,
+                "id", REQUEST_TIMESTAMP, dummyFileResource, null, dummyFileResource,
                 dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, null, List.of(taskParameterDto));
+                dummyFileResource, List.of(taskParameterDto));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         //
         prepareAndMockRaoRequest(dummyFileResource);
@@ -151,9 +151,9 @@ class CoreCCPreProcessServiceTest {
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", REQUEST_TIMESTAMP, dummyFileResource, dummyFileResource,
+                "id", REQUEST_TIMESTAMP, dummyFileResource, dummyDCCgmFileResource, dummyFileResource,
                 dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, dummyDCCgmFileResource, createTaskParametersList(true));
+                dummyFileResource, createTaskParametersList(true));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         prepareAndMockRaoRequest(dummyFileResource);
         // mock imports
@@ -176,9 +176,9 @@ class CoreCCPreProcessServiceTest {
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", REQUEST_TIMESTAMP, dummyFileResource, dummyFileResource,
+                "id", REQUEST_TIMESTAMP, dummyFileResource, dummyFileResource, dummyFileResource,
                 dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, dummyFileResource, createTaskParametersList(true));
+                dummyFileResource, createTaskParametersList(true));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         prepareAndMockRaoRequest(dummyFileResource);
         // mock imports

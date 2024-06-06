@@ -74,12 +74,12 @@ public class CoreCCRequest {
     public CoreCCRequest(String id,
                          OffsetDateTime timestamp,
                          CoreCCFileResource cgm,
+                         CoreCCFileResource dcCgm,
                          CoreCCFileResource cbcora,
                          CoreCCFileResource glsk,
                          CoreCCFileResource refProg,
                          CoreCCFileResource raoRequest,
                          CoreCCFileResource virtualHub,
-                         CoreCCFileResource dcCgm,
                          List<TaskParameterDto> taskParameterList) {
         this(id, timestamp, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, false, taskParameterList);
     }

@@ -23,13 +23,13 @@ public class CoreCCTaskParameters {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCTaskParameters.class);
     private static final String USE_DC_CGM_INPUT = "USE_DC_CGM_INPUT";
     private static final String KEY_VALUE_FORMAT = "%n\t\"%s\": %s";
-    private boolean useDcCGmInput;
+    private boolean useDcCgmInput;
 
     public CoreCCTaskParameters(final List<TaskParameterDto> parameters) {
         final List<String> errors = new ArrayList<>();
         for (final TaskParameterDto parameter : parameters) {
             if (USE_DC_CGM_INPUT.equals(parameter.getId())) {
-                useDcCGmInput = validateIsBooleanAndGet(parameter, errors);
+                useDcCgmInput = validateIsBooleanAndGet(parameter, errors);
             } else {
                 LOGGER.warn("Unknown parameter {} (value: {}) will be ignored", parameter.getId(), parameter.getValue());
             }
@@ -52,12 +52,12 @@ public class CoreCCTaskParameters {
     }
 
     public boolean isUseDcCGmInput() {
-        return useDcCGmInput;
+        return useDcCgmInput;
     }
 
     public String toJsonString() {
         final List<String> appender = new ArrayList<>();
-        appender.add(String.format(KEY_VALUE_FORMAT, USE_DC_CGM_INPUT, useDcCGmInput));
+        appender.add(String.format(KEY_VALUE_FORMAT, USE_DC_CGM_INPUT, useDcCgmInput));
         return String.format("{%s%n}", String.join(", ", appender));
     }
 }

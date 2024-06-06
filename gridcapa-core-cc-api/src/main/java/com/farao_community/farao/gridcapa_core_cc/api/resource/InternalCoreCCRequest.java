@@ -48,10 +48,6 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getDcCgm();
     }
 
-    public List<TaskParameterDto> getParameters() {
-        return coreCCRequest.getTaskParameterList();
-    }
-
     public CoreCCFileResource getCbcora() {
         return coreCCRequest.getCbcora();
     }
@@ -70,6 +66,10 @@ public class InternalCoreCCRequest {
 
     public CoreCCFileResource getVirtualHub() {
         return coreCCRequest.getVirtualHub();
+    }
+
+    public List<TaskParameterDto> getParameters() {
+        return coreCCRequest.getTaskParameterList();
     }
 
     public HourlyRaoRequest getHourlyRaoRequest() {
