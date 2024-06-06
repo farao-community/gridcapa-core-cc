@@ -7,6 +7,7 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
@@ -27,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -78,7 +80,7 @@ class CoreCCHandlerTest {
         CoreCCFileResource glskFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
         CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
-        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true);
+        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, null, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true, List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
         CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         assertEquals(requestId, response.getId());
