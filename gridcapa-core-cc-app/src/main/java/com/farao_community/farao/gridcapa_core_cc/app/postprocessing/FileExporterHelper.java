@@ -68,7 +68,7 @@ public class FileExporterHelper {
 
         //get input network
         final CoreCCTaskParameters parameters = new CoreCCTaskParameters(coreCCRequest.getParameters());
-        final Network network = regularOrDcCgmNetworkResolver.resolve(parameters.isUseDcCGmInput(), coreCCRequest);
+        final Network network = regularOrDcCgmNetworkResolver.resolve(parameters.isUseDcCgmInput(), coreCCRequest);
         MemDataSource memDataSource = new MemDataSource();
 
         // work around until the problem of "Too many loads connected to this bus" is corrected

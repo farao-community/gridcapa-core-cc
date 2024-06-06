@@ -33,7 +33,7 @@ class CoreCCTaskParametersTest {
         Mockito.when(parameter.getValue()).thenReturn("true");
 
         final CoreCCTaskParameters taskParameters = new CoreCCTaskParameters(Collections.singletonList(parameter));
-        assertTrue(taskParameters.isUseDcCGmInput());
+        assertTrue(taskParameters.isUseDcCgmInput());
     }
 
     @Test
@@ -55,7 +55,7 @@ class CoreCCTaskParametersTest {
         Mockito.when(parameter.getValue()).thenReturn("true");
 
         final CoreCCTaskParameters taskParameters = new CoreCCTaskParameters(Collections.singletonList(parameter));
-        assertFalse(taskParameters.isUseDcCGmInput());
+        assertFalse(taskParameters.isUseDcCgmInput());
     }
 
     @Test

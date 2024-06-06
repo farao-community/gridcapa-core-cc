@@ -51,7 +51,7 @@ public class CoreCCTaskParameters {
         }
     }
 
-    public boolean isUseDcCGmInput() {
+    public boolean isUseDcCgmInput() {
         return useDcCgmInput;
     }
 

@@ -159,7 +159,7 @@ public class CoreCCPreProcessService {
                         final CgmsAndXmlHeader cgmsAndXmlHeader,
                         final CoreCCTaskParameters parameters) {
         final Path cgmPath;
-        if (parameters.isUseDcCGmInput()) {
+        if (parameters.isUseDcCgmInput()) {
             if (dcCgmsPaths != null && dcCgmsPaths.getNetworkPath(utcInstant) != null) {
                 cgmPath = dcCgmsPaths.getNetworkPath(utcInstant);
             } else {
