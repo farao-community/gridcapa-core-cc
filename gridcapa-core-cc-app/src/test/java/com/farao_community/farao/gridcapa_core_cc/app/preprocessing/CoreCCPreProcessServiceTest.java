@@ -56,7 +56,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -218,6 +220,9 @@ class CoreCCPreProcessServiceTest {
         final Path resolvedPath = coreCCPreProcessService.resolveCgmPath(dcCgmsHeader, null, cgmHeader, parameters);
         //DC CGM path is used only if parameter is true and path actually exists
         assertEquals(useDcCgmInput && !dcCgmPathIsNull ? dcCgmPath : cgmPath, resolvedPath);
+        //Log if DC CGM is required but absent
+        final int nbOfTimesBusinessLogsCalled = useDcCgmInput && dcCgmPathIsNull ? 1 : 0;
+        verify(businessLogger, times(nbOfTimesBusinessLogsCalled)).warn(anyString());
     }
 
     private List<TaskParameterDto> createTaskParametersList(final boolean parameter) {
