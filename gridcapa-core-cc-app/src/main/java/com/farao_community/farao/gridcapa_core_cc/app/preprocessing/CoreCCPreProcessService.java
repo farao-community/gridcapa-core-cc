@@ -163,7 +163,7 @@ public class CoreCCPreProcessService {
             if (dcCgmsPaths != null && dcCgmsPaths.getNetworkPath(utcInstant) != null) {
                 cgmPath = dcCgmsPaths.getNetworkPath(utcInstant);
             } else {
-                LOGGER.warn("DC_CGM not available, using CGM input instead.");
+                businessLogger.warn("DC_CGM not available, using CGM input instead.");
                 cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
             }
         } else {
