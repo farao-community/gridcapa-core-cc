@@ -23,8 +23,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
 import com.unicorn.request.request_payload.RequestItem;
 import com.unicorn.request.request_payload.RequestItems;
 import com.unicorn.response.response_payload.File;
@@ -253,7 +252,7 @@ class CoreCCPreProcessServiceTest {
 
     private void mockCrac() throws IOException {
         final Path cracJsonFilePath = Paths.get(getClass().getResource("/util/crac.json").getPath());
-        final Crac crac = CracImporters.importCrac(cracJsonFilePath.getFileName().toString(), java.nio.file.Files.newInputStream(cracJsonFilePath), network);
+        final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), java.nio.file.Files.newInputStream(cracJsonFilePath), network);
         final FbConstraintCreationContext cracCreationContext = Mockito.mock(FbConstraintCreationContext.class);
         when(fileImporter.importCrac(any(), any(), any())).thenReturn(cracCreationContext);
         when(cracCreationContext.getCrac()).thenReturn(crac);

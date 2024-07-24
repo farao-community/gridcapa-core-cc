@@ -19,14 +19,10 @@ import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.api.parameters.CracCreationParameters;
-import com.powsybl.openrao.data.craccreation.creator.api.parameters.JsonCracCreationParameters;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraint;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCracCreator;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.importer.FbConstraintImporter;
+import com.powsybl.openrao.data.cracapi.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.cracapi.parameters.JsonCracCreationParameters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.openrao.data.refprog.refprogxmlimporter.RefProgImporter;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
@@ -97,7 +93,7 @@ public class FileImporter {
 
     public RaoResult importRaoResult(String raoResultUrl, Crac crac) {
         try (InputStream raoResultStream = urlValidationService.openUrlStream(raoResultUrl)) {
-            return (new RaoResultImporter()).importRaoResult(raoResultStream, crac);
+            return RaoResult.read(raoResultStream, crac);
         } catch (IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download RaoResult file from URL '%s'", raoResultUrl), e);
         }
@@ -106,8 +102,7 @@ public class FileImporter {
     public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
         CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
         try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
-            FbConstraint nativeCrac = new FbConstraintImporter().importNativeCrac(cracInputStream);
-            return new FbConstraintCracCreator().createCrac(nativeCrac, network, targetProcessDateTime, cracCreationParameters);
+            return (FbConstraintCreationContext) Crac.readWithContext(getFilenameFromUrl(cbcoraUrl), cracInputStream, network, targetProcessDateTime, cracCreationParameters);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download cbcora file from URL '%s'", cbcoraUrl), e);
         }
