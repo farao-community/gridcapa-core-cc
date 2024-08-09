@@ -18,7 +18,6 @@ import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
 import com.powsybl.openrao.data.cracapi.State;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +70,7 @@ public class RegularOrDcCgmNetworkResolver {
         final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
-            return CracImporters.importCrac(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);
+            return Crac.read(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);
         } catch (final Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", Path.of(cracFileUrl).getFileName().toString()), e);
         }

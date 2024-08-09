@@ -19,8 +19,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cneexportercommons.CneExporterParameters;
 import com.powsybl.openrao.data.corecneexporter.CoreCneExporter;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
@@ -117,7 +116,7 @@ public class FileExporterHelper {
         HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         try (InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
-            return CracImporters.importCrac(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);
+            return Crac.read(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);
         } catch (Exception e) {
             throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", Path.of(cracFileUrl).getFileName().toString()), e);
         }

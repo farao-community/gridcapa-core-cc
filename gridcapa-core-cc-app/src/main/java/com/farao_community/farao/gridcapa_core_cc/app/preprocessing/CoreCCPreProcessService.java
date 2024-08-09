@@ -22,8 +22,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWr
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.data.craccreation.creator.api.CracCreationContext;
-import com.powsybl.openrao.data.cracioapi.CracExporters;
+import com.powsybl.openrao.data.cracapi.CracCreationContext;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +58,7 @@ public class CoreCCPreProcessService {
     private static final String XIIDM_EXPORT_FORMAT = "XIIDM";
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
-    private static final String JSON_CRAC_PROVIDER = "Json";
+    private static final String JSON_CRAC_PROVIDER = "JSON";
 
     private final Logger businessLogger;
     private final MinioAdapter minioAdapter;
@@ -194,11 +193,9 @@ public class CoreCCPreProcessService {
     }
 
     private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
-        CracCreationContext cracCreationContext = fileImporter
-                .importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
-
+        CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
         try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
-            CracExporters.exportCrac(cracCreationContext.getCrac(), JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
+            cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
             uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;

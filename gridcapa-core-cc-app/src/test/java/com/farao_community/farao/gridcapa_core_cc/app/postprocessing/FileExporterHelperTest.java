@@ -24,10 +24,8 @@ import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.corecneexporter.xsd.CriticalNetworkElementMarketDocument;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.craccreator.FbConstraintCreationContext;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -230,14 +228,14 @@ class FileExporterHelperTest {
         when(coreCCRequest.getCbcora()).thenReturn(cbcora);
         when(coreCCRequest.getRequestReceivedInstant()).thenReturn(instant);
 
-        Crac crac = CracImporters.importCrac(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
+        Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
         final FbConstraintCreationContext fbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
         when(fbConstraintCreationContext.getCrac()).thenReturn(crac);
         when(fbConstraintCreationContext.isCreationSuccessful()).thenReturn(true);
         when(fbConstraintCreationContext.getTimeStamp()).thenReturn(timestamp);
         when(fileImporter.importCrac(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(fbConstraintCreationContext);
 
-        RaoResult raoResult = (new RaoResultImporter()).importRaoResult(Files.newInputStream(raoResultFilePath), crac);
+        RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
         when(fileImporter.importRaoResult(Mockito.any(), Mockito.any())).thenReturn(raoResult);
 
         when(hourlyRaoRequest.getCracFileUrl()).thenReturn(cracJsonFileName);

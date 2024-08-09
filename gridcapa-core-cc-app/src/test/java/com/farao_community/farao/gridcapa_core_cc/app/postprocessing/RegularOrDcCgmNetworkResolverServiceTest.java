@@ -15,9 +15,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.cracioapi.CracImporters;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultImporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,8 +80,8 @@ class RegularOrDcCgmNetworkResolverServiceTest {
         final Path cracJsonFilePath = Paths.get(getClass().getResource(cracJsonFileName).getPath());
         final String raoResultFileName = "/util/raoResult.json";
         final Path raoResultFilePath = Paths.get(getClass().getResource(raoResultFileName).getPath());
-        final Crac crac = CracImporters.importCrac(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
-        final RaoResult raoResult = (new RaoResultImporter()).importRaoResult(Files.newInputStream(raoResultFilePath), crac);
+        final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
+        final RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
         //mock cgms
         when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
         when(fileImporter.importCgmsZip(any())).thenReturn(cgmsAndXmlHeader);
@@ -95,8 +93,8 @@ class RegularOrDcCgmNetworkResolverServiceTest {
 
         //
         when(fileImporter.importRaoResult(null, crac)).thenReturn(raoResult);
-        try (final MockedStatic<CracImporters> mockedStatic = mockStatic(CracImporters.class)) {
-            mockedStatic.when(() -> CracImporters.importCrac(any(), any(), any())).thenReturn(crac);
+        try (final MockedStatic<Crac> mockedStatic = mockStatic(Crac.class)) {
+            mockedStatic.when(() -> Crac.read(any(), any(), any())).thenReturn(crac);
             final Network result = regularOrDcCgmNetworkResolver.resolve(true, coreCCRequest);
 
             assertNotNull(result);
