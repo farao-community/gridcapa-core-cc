@@ -20,7 +20,6 @@ import com.github.jasminb.jsonapi.exceptions.DocumentSerializationException;
 import com.github.jasminb.jsonapi.models.errors.Error;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 
 /**
  * JSON API conversion component
@@ -69,7 +68,7 @@ public class JsonApiConverter {
     }
 
     private ResourceConverter createConverter() {
-        ResourceConverter converter = new ResourceConverter(objectMapper, CoreCCRequest.class, CoreCCResponse.class);
+        ResourceConverter converter = new ResourceConverter(objectMapper, CoreCCRequest.class);
         converter.disableSerializationOption(SerializationFeature.INCLUDE_META);
         return converter;
     }

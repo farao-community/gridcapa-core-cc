@@ -11,7 +11,6 @@ package com.farao_community.farao.gridcapa_core_cc.api;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -45,16 +44,6 @@ class JsonApiConverterTest {
         AbstractCoreCCException exception = new CoreCCInternalException("Something really bad happened");
         String expectedMessage = Files.readString(Paths.get(getClass().getResource("/coreCCInternalError.json").toURI()));
         assertEquals(expectedMessage, new String(jsonApiConverter.toJsonMessage(exception)));
-    }
-
-    @Test
-    void checkCoreCCResponseJsonConversion() throws IOException {
-        JsonApiConverter jsonApiConverter = new JsonApiConverter();
-        byte[] responseBytes = getClass().getResourceAsStream("/coreCCResponse.json").readAllBytes();
-        CoreCCResponse response = jsonApiConverter.fromJsonMessage(responseBytes, CoreCCResponse.class);
-
-        assertEquals("test", response.getId());
-
     }
 
 }
