@@ -22,6 +22,7 @@ import com.powsybl.openrao.data.cracapi.Crac;
 import com.powsybl.openrao.data.cracapi.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.cracapi.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintImporter;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.openrao.data.refprog.refprogxmlimporter.RefProgImporter;
@@ -49,6 +50,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * @author Amira Kahya {@literal <amira.kahya at rte-france.com>}
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  */
 @Service
@@ -102,7 +104,7 @@ public class FileImporter {
     public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
         CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
         try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
-            return (FbConstraintCreationContext) Crac.readWithContext(getFilenameFromUrl(cbcoraUrl), cracInputStream, network, targetProcessDateTime, cracCreationParameters);
+            return (FbConstraintCreationContext) new FbConstraintImporter().importData(cracInputStream, cracCreationParameters, network, targetProcessDateTime);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download cbcora file from URL '%s'", cbcoraUrl), e);
         }
