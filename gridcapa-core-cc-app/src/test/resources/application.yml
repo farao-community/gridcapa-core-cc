@@ -27,9 +27,6 @@ core-cc-runner:
     request:
       destination: core-cc-requests
       routing-key: "#"
-    response:
-      destination: core-cc-response
-      expiration: 600000
   whitelist:
     - file:/
     - http://minio:9000/

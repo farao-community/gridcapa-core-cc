@@ -8,7 +8,6 @@
 package com.farao_community.farao.gridcapa_core_cc.app.configuration;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,16 +25,10 @@ class AmqpMessagesConfigurationTest {
     @Autowired
     private Queue requestQueue;
 
-    @Autowired
-    private FanoutExchange responseExchange;
-
     @Test
     void checkAmqpMessageConfiguration() {
         assertNotNull(amqpConfiguration);
         assertNotNull(requestQueue);
         assertEquals("core-cc-requests", requestQueue.getName());
-        assertNotNull(responseExchange);
-        assertEquals("core-cc-response", responseExchange.getName());
-        assertEquals("600000", amqpConfiguration.coreCCResponseExpiration());
     }
 }

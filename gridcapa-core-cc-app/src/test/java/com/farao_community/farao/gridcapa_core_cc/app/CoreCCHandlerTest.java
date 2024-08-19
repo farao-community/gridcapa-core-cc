@@ -10,7 +10,6 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
@@ -30,7 +29,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -82,8 +80,7 @@ class CoreCCHandlerTest {
 
         CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, null, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true, List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
-        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
-        assertEquals(requestId, response.getId());
+        coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         //should upload 7 artifacts: parameters + ACK + crac + network
         Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
         // TODO : delete generated tmp dir
