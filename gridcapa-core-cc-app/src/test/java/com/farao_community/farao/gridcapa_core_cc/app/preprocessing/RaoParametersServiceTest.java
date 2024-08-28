@@ -19,15 +19,10 @@ import com.powsybl.openrao.virtualhubs.BorderDirection;
 import com.powsybl.openrao.virtualhubs.MarketArea;
 import com.powsybl.openrao.virtualhubs.VirtualHub;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
-import com.powsybl.openrao.virtualhubs.xml.XmlVirtualHubsConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;

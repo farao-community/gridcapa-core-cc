@@ -178,7 +178,7 @@ public class RaoParametersService {
         Optional<MarketArea> optionalMA = virtualHubsConfiguration.getMarketAreas().stream()
             .filter(ma -> ma.code().equals(code))
             .findAny();
-        return optionalMA.isPresent()? optionalMA.get().eic() : code;
+        return optionalMA.isPresent() ? optionalMA.get().eic() : code;
     }
 
     private static String getPtdfBoundaryFromVirtualHub(Pair<VirtualHub, VirtualHub> pair) {
