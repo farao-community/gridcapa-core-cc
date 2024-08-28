@@ -138,7 +138,7 @@ public class RaoParametersService {
 
         return virtualHubsConfiguration.getBorderDirections().stream()
             .filter(borderDirection -> bothBordersAreMarketParticipant(marketParticipantsCodes, borderDirection))
-            .map(RaoParametersService::getOrderedPtdfBoundaryFromBorderDirection)
+            .map(borderDirection -> RaoParametersService.getOrderedPtdfBoundaryFromBorderDirection(borderDirection, virtualHubsConfiguration))
             .distinct();
     }
 
@@ -166,12 +166,19 @@ public class RaoParametersService {
             && marketParticipants.contains(borderDirection.to());
     }
 
-    private static String getOrderedPtdfBoundaryFromBorderDirection(BorderDirection bd) {
+    private static String getOrderedPtdfBoundaryFromBorderDirection(BorderDirection bd, VirtualHubsConfiguration virtualHubsConfiguration) {
         if (bd.from().compareTo(bd.to()) < 0) {
-            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, bd.from(), bd.to());
+            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, getEicIfAvailable(bd.from(), virtualHubsConfiguration), getEicIfAvailable(bd.to(), virtualHubsConfiguration));
         } else {
-            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, bd.to(), bd.from());
+            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, getEicIfAvailable(bd.to(), virtualHubsConfiguration), getEicIfAvailable(bd.from(), virtualHubsConfiguration));
         }
+    }
+
+    private static String getEicIfAvailable(String code, VirtualHubsConfiguration virtualHubsConfiguration) {
+        Optional<MarketArea> optionalMA = virtualHubsConfiguration.getMarketAreas().stream()
+            .filter(ma -> ma.code().equals(code))
+            .findAny();
+        return optionalMA.isPresent()? optionalMA.get().eic() : code;
     }
 
     private static String getPtdfBoundaryFromVirtualHub(Pair<VirtualHub, VirtualHub> pair) {
@@ -180,11 +187,11 @@ public class RaoParametersService {
 
         if (secondVirtualHub == null) {
             return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT,
-                firstVirtualHub.relatedMa().code(), firstVirtualHub.eic());
+                firstVirtualHub.relatedMa().eic(), firstVirtualHub.eic());
         } else {
             return String.format(COMPLEX_PTDF_BOUNDARIES_FORMAT,
-                firstVirtualHub.relatedMa().code(), firstVirtualHub.eic(),
-                secondVirtualHub.relatedMa().code(), secondVirtualHub.eic());
+                firstVirtualHub.relatedMa().eic(), firstVirtualHub.eic(),
+                secondVirtualHub.relatedMa().eic(), secondVirtualHub.eic());
         }
     }
 
