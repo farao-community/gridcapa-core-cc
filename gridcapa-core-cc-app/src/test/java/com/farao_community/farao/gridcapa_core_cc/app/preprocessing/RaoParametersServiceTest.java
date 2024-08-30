@@ -289,8 +289,8 @@ class RaoParametersServiceTest {
         assertNotNull(extension.getPtdfBoundaries());
         assertEquals(2, extension.getPtdfBoundaries().size());
         List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
-        assertTrue(ptdfBoundariesStrings.contains("{FR}-{SK}"));
-        assertTrue(ptdfBoundariesStrings.contains("{BE}-{SK}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{10YSK-SEPS-----K}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YBE----------2}-{10YSK-SEPS-----K}"));
     }
 
     @Test
@@ -317,9 +317,9 @@ class RaoParametersServiceTest {
         assertNotNull(extension.getPtdfBoundaries());
         assertEquals(3, extension.getPtdfBoundaries().size());
         List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
-        assertTrue(ptdfBoundariesStrings.contains("{BE}-{BE2-XXXXXXXXXXXX}"));
-        assertTrue(ptdfBoundariesStrings.contains("{ES}-{ES1-XXXXXXXXXXXX}"));
-        assertTrue(ptdfBoundariesStrings.contains("{FR}-{FR1-XXXXXXXXXXXX}-{BE}+{BE1-XXXXXXXXXXXX}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YBE----------2}-{BE2-XXXXXXXXXXXX}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YES-REE------0}-{ES1-XXXXXXXXXXXX}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{FR1-XXXXXXXXXXXX}-{10YBE----------2}+{BE1-XXXXXXXXXXXX}"));
     }
 
     @Test
@@ -342,7 +342,26 @@ class RaoParametersServiceTest {
         assertNotNull(extension.getPtdfBoundaries());
         assertEquals(2, extension.getPtdfBoundaries().size());
         List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
-        assertTrue(ptdfBoundariesStrings.contains("{FR}-{SK}"));
-        assertTrue(ptdfBoundariesStrings.contains("{FR}-{FR1-XXXXXXXXXXXX}-{BE}+{BE1-XXXXXXXXXXXX}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{10YSK-SEPS-----K}"));
+        assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{FR1-XXXXXXXXXXXX}-{10YBE----------2}+{BE1-XXXXXXXXXXXX}"));
+    }
+
+    @Test
+    void testEiCode() {
+        VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
+        MarketArea marketAreaDk = new MarketArea("DK1", "DK1-XXXXXXXXXXXX", false, true);
+        MarketArea marketAreaDe = new MarketArea("DE", "DE-XXXXXXXXXXXXX", true, false);
+        virtualHubsConfiguration.addMarketArea(marketAreaDk);
+        virtualHubsConfiguration.addMarketArea(marketAreaDe);
+        virtualHubsConfiguration.addBorderDirection(new BorderDirection("DK1", "DE", true));
+        RaoParameters raoParameters = new RaoParameters();
+
+        RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
+
+        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
+        assertNotNull(extension.getPtdfBoundaries());
+        assertEquals(1, extension.getPtdfBoundaries().size());
+        List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
+        assertTrue(ptdfBoundariesStrings.contains("{DE-XXXXXXXXXXXXX}-{DK1-XXXXXXXXXXXX}"));
     }
 }
