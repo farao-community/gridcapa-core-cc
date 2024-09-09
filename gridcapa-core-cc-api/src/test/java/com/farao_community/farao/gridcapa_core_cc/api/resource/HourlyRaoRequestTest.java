@@ -35,8 +35,8 @@ class HourlyRaoRequestTest {
     void checkHourlyRaoRequest() {
         assertEquals("2023-07-25T14:13:00Z", hourlyRaoRequest.getRaoRequestInstant());
         assertEquals("file/path/network", hourlyRaoRequest.getNetworkFileUrl());
-        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getCracFileUrl());
-        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id").getNetworkFileUrl());
+        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id", "runId").getCracFileUrl());
+        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id", "runId").getNetworkFileUrl());
         assertEquals(-2130351041, hourlyRaoRequest.hashCode());
     }
 

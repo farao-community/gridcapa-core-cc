@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +32,7 @@ class CoreCCRequestTest {
     private CoreCCFileResource virtualHub;
     private List<TaskParameterDto> taskParameterList;
     private OffsetDateTime dateTime;
+    private String currentRunId;
 
     @BeforeEach
     void setUp() {
@@ -43,13 +45,15 @@ class CoreCCRequestTest {
         virtualHub = new CoreCCFileResource("virtualHub.txt", "http://path/to/virtualHub/file");
         dateTime = OffsetDateTime.parse("2021-10-03T00:30Z");
         taskParameterList = List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "TRUE", "FALSE"));
+        currentRunId = UUID.randomUUID().toString();
     }
 
     @Test
     void checkManualCoreCCRequest() {
-        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, taskParameterList);
+        CoreCCRequest coreCCRequest = new CoreCCRequest("id", currentRunId, dateTime, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, taskParameterList);
         assertNotNull(coreCCRequest);
         assertEquals("id", coreCCRequest.getId());
+        assertEquals(currentRunId, coreCCRequest.getCurrentRunId());
         assertEquals("2021-10-03T00:30Z", coreCCRequest.getTimestamp().toString());
         assertEquals("network.txt", coreCCRequest.getCgm().getFilename());
         assertEquals("dcnetwork.txt", coreCCRequest.getDcCgm().getFilename());
@@ -65,7 +69,7 @@ class CoreCCRequestTest {
 
     @Test
     void checkAutoCoreCCRequest() {
-        CoreCCRequest coreCCRequest = new CoreCCRequest("id", dateTime, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, true, taskParameterList);
+        CoreCCRequest coreCCRequest = new CoreCCRequest("id", currentRunId, dateTime, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, true, taskParameterList);
         assertTrue(coreCCRequest.getLaunchedAutomatically());
     }
 

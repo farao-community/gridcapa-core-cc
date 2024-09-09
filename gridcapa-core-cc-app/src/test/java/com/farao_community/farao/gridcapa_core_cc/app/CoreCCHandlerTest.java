@@ -78,7 +78,7 @@ class CoreCCHandlerTest {
         CoreCCFileResource glskFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
         CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
-        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, null, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true, List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
+        CoreCCRequest request = new CoreCCRequest(requestId, "current RunID", dateTime, networkFile, null, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true, List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
         InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
         coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
         //should upload 7 artifacts: parameters + ACK + crac + network

@@ -32,6 +32,7 @@ public class CoreCCRequest {
     @Id
     private final String id;
 
+    private final String currentRunId;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @JsonSerialize(using = OffsetDateTimeSerializer.class)
     @JsonDeserialize(using = OffsetDateTimeDeserializer.class)
@@ -48,6 +49,7 @@ public class CoreCCRequest {
 
     @JsonCreator
     public CoreCCRequest(@JsonProperty("id") String id,
+                         @JsonProperty("currentRunId") String currentRunId,
                          @JsonProperty("timestamp") OffsetDateTime timestamp,
                          @JsonProperty("cgm") CoreCCFileResource cgm,
                          @JsonProperty("dcgm") CoreCCFileResource dcCgm,
@@ -59,6 +61,7 @@ public class CoreCCRequest {
                          @JsonProperty("launchedAutomatically") boolean launchedAutomatically,
                          @JsonProperty("taskParameterList") final List<TaskParameterDto> taskParameterList) {
         this.id = id;
+        this.currentRunId = currentRunId;
         this.timestamp = timestamp;
         this.cgm = cgm;
         this.dcCgm = dcCgm;
@@ -72,6 +75,7 @@ public class CoreCCRequest {
     }
 
     public CoreCCRequest(String id,
+                         String currentRunId,
                          OffsetDateTime timestamp,
                          CoreCCFileResource cgm,
                          CoreCCFileResource dcCgm,
@@ -81,11 +85,15 @@ public class CoreCCRequest {
                          CoreCCFileResource raoRequest,
                          CoreCCFileResource virtualHub,
                          List<TaskParameterDto> taskParameterList) {
-        this(id, timestamp, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, false, taskParameterList);
+        this(id, currentRunId, timestamp, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, false, taskParameterList);
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getCurrentRunId() {
+        return currentRunId;
     }
 
     public OffsetDateTime getTimestamp() {
