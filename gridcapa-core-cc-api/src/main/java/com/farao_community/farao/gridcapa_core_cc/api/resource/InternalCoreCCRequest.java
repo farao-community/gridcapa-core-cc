@@ -36,6 +36,10 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getId();
     }
 
+    public String getRunId() {
+        return coreCCRequest.getCurrentRunId();
+    }
+
     public OffsetDateTime getTimestamp() {
         return coreCCRequest.getTimestamp();
     }

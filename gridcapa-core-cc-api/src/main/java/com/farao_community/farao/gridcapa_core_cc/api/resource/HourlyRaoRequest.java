@@ -70,10 +70,11 @@ public class HourlyRaoRequest {
         return resultsDestination;
     }
 
-    public RaoRequest toRaoRequest(String id) {
+    public RaoRequest toRaoRequest(String id, String runId) {
         String resultsDestinationUrl = "CORE/CC/";
         return new RaoRequest.RaoRequestBuilder()
                 .withId(id)
+                .withRunId(runId)
                 .withInstant(this.raoRequestInstant)
                 .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
                 .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))

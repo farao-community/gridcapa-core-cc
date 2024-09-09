@@ -86,7 +86,7 @@ public class CoreCCHandler {
         }
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
         try {
-            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
+            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
         } catch (CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
