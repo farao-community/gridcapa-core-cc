@@ -9,12 +9,14 @@ package com.farao_community.farao.gridcapa_core_cc.app;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,14 +88,14 @@ public class CoreCCHandler {
         }
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
         try {
-            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
+            RaoSuccessResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
         } catch (CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
         }
     }
 
-    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, RaoResponse raoResponse) {
+    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, RaoSuccessResponse raoResponse) {
         HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         try {
             hourlyRaoResult.setRaoResponseData(raoResponse);

@@ -8,8 +8,10 @@ package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
+import com.farao_community.farao.rao_runner.api.resource.AbstractRaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoFailureResponse;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import com.farao_community.farao.rao_runner.starter.RaoRunnerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +29,18 @@ public class RaoRunnerService {
         this.raoRunnerClient = raoRunnerClient;
     }
 
-    public RaoResponse run(RaoRequest raoRequest) throws CoreCCInternalException {
+    public RaoSuccessResponse run(RaoRequest raoRequest) throws CoreCCInternalException {
         try {
             LOGGER.info("RAO request sent: {}", raoRequest);
-            RaoResponse raoResponse = raoRunnerClient.runRao(raoRequest);
+            AbstractRaoResponse raoResponse = raoRunnerClient.runRao(raoRequest);
             LOGGER.info("RAO response received: {}", raoResponse);
-            return raoResponse;
+            if (raoResponse.isRaoFailed()) {
+                final RaoFailureResponse failureResponse = (RaoFailureResponse) raoResponse;
+                throw new CoreCCRaoException("RAO run failed: " + failureResponse.getErrorMessage());
+            }
+            return (RaoSuccessResponse) raoResponse;
+        } catch (CoreCCRaoException e) {
+            throw e;
         } catch (Exception e) {
             throw new CoreCCRaoException("RAO run failed", e);
         }

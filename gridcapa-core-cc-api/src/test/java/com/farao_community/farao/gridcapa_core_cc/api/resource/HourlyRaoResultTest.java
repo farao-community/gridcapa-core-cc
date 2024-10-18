@@ -8,14 +8,16 @@
 
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.Instant;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
@@ -25,14 +27,14 @@ class HourlyRaoResultTest {
     private HourlyRaoResult hourlyRaoResult;
     private Instant initialInstant;
     private Instant oneSecondInstant;
-    private RaoResponse raoResponse;
+    private RaoSuccessResponse raoResponse;
 
     @BeforeEach
     void setUp() {
         hourlyRaoResult = new HourlyRaoResult("2023-07-25T14:09:00Z");
         initialInstant = Instant.ofEpochSecond(0);
         oneSecondInstant = Instant.ofEpochSecond(1);
-        raoResponse = Mockito.mock(RaoResponse.class);
+        raoResponse = Mockito.mock(RaoSuccessResponse.class);
         Mockito.when(raoResponse.getNetworkWithPraFileUrl()).thenReturn("network");
         Mockito.when(raoResponse.getRaoResultFileUrl()).thenReturn("raoResult");
         Mockito.when(raoResponse.getComputationStartInstant()).thenReturn(initialInstant);
