@@ -6,7 +6,7 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -120,7 +120,7 @@ public class HourlyRaoResult {
         return computationEndInstant;
     }
 
-    public void setRaoResponseData(RaoResponse raoResponse) {
+    public void setRaoResponseData(RaoSuccessResponse raoResponse) {
         this.networkWithPraUrl = raoResponse.getNetworkWithPraFileUrl();
         this.raoResultFileUrl = raoResponse.getRaoResultFileUrl();
         this.computationStartInstant = raoResponse.getComputationStartInstant();

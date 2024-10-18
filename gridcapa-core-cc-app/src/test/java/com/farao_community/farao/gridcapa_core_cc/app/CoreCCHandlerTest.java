@@ -15,7 +15,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCReq
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
 import com.github.jasminb.jsonapi.models.errors.Error;
 import com.github.jasminb.jsonapi.models.errors.Errors;
@@ -56,7 +56,7 @@ class CoreCCHandlerTest {
     @Test
     void handleCoreCCRequestTest() throws IOException {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        final RaoResponse raoResponse = new RaoResponse.RaoResponseBuilder()
+        RaoSuccessResponse raoResponse = new RaoSuccessResponse.Builder()
                 .withId("id")
                 .withInstant("instant")
                 .withNetworkWithPraFileUrl("praUrl")
