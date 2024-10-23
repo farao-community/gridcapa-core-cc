@@ -19,7 +19,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cneexportercommons.CneExporterParameters;
 import com.powsybl.openrao.data.corecneexporter.CoreCneExporter;
 import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.craccreation.creator.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.cracio.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
@@ -165,7 +165,7 @@ public class FileExporterHelper {
             String cneFilePath = hourlyRaoRequest.getResultsDestination() + "/" + cneNewFileName;
             CoreCneExporter cneExporter = new CoreCneExporter();
             CneExporterParameters cneExporterParameters = getCneExporterParameters(coreCCRequest);
-            cneExporter.exportCne(cracJson, network, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
+            cneExporter.exportCne(cracJson, fbConstraintCreationContext, raoResult, raoParameters, cneExporterParameters, outputStreamCne);
             minioAdapter.uploadOutputForTimestamp(cneFilePath, new ByteArrayInputStream(outputStreamCne.toByteArray()), CORE_CC, "CNE", coreCCRequest.getTimestamp());
         }
     }
