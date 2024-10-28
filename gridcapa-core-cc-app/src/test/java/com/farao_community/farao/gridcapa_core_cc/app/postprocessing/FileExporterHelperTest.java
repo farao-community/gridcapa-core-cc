@@ -30,7 +30,6 @@ import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -72,7 +71,7 @@ class FileExporterHelperTest {
     private final Network network = Network.read(networkPath);
     private final String instantString = "2023-07-25T16:57:00Z";
     private final Instant instant = Instant.parse(instantString);
-    private final OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
+    private final OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.of(2023, 7, 27, 10, 47, 51)));
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
     private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
@@ -216,7 +215,6 @@ class FileExporterHelperTest {
     }
 
     @Test
-    @Disabled
     void exportCneToMinio() throws IOException {
         FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter, regularOrDcCgmNetworkResolver);
 
