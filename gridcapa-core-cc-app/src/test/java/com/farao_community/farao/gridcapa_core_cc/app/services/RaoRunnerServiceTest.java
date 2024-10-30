@@ -8,10 +8,10 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
+import com.farao_community.farao.rao_runner.api.resource.RaoFailureResponse;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
-import com.farao_community.farao.rao_runner.api.resource.RaoResponse;
+import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import com.farao_community.farao.rao_runner.starter.RaoRunnerClient;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,34 +24,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class RaoRunnerServiceTest {
 
     private RaoRequest raoRequest;
-    private RaoRunnerClient raoRunnerClient;
-    private RaoRunnerClient badRaoRunnerClient;
     private RaoRunnerService raoRunnerService;
-
-    @BeforeEach
-    void setUp() {
-        raoRequest = Mockito.mock(RaoRequest.class);
-        Mockito.when(raoRequest.toString()).thenReturn("raoRequest");
-        RaoResponse raoResponse = Mockito.mock(RaoResponse.class);
-        Mockito.when(raoResponse.toString()).thenReturn("raoResponse");
-        Mockito.when(raoResponse.getId()).thenReturn("id");
-        raoRunnerClient = Mockito.mock(RaoRunnerClient.class);
-        Mockito.when(raoRunnerClient.runRao(Mockito.any())).thenReturn(raoResponse);
-        badRaoRunnerClient = Mockito.mock(RaoRunnerClient.class);
-        Mockito.when(badRaoRunnerClient.runRao(Mockito.any())).thenThrow(new CoreCCRaoException("error"));
-    }
 
     @Test
     void runRao() {
+        raoRequest = Mockito.mock(RaoRequest.class);
+        Mockito.when(raoRequest.toString()).thenReturn("raoRequest");
+        RaoSuccessResponse raoResponse = Mockito.mock(RaoSuccessResponse.class);
+        Mockito.when(raoResponse.toString()).thenReturn("raoResponse");
+        Mockito.when(raoResponse.getId()).thenReturn("id");
+        RaoRunnerClient raoRunnerClient = Mockito.mock(RaoRunnerClient.class);
+        Mockito.when(raoRunnerClient.runRao(Mockito.any())).thenReturn(raoResponse);
         raoRunnerService = new RaoRunnerService(raoRunnerClient);
-        RaoResponse retrievedRaoResponse = raoRunnerService.run(raoRequest);
+
+        RaoSuccessResponse retrievedRaoResponse = raoRunnerService.run(raoRequest);
+
         assertEquals("id", retrievedRaoResponse.getId());
     }
 
     @Test
     void errorWhileRunningRao() {
+        RaoRunnerClient badRaoRunnerClient = Mockito.mock(RaoRunnerClient.class);
+        final RaoFailureResponse failureResponse = new RaoFailureResponse.Builder().withErrorMessage("error").build();
+        Mockito.when(badRaoRunnerClient.runRao(Mockito.any())).thenReturn(failureResponse);
         raoRunnerService = new RaoRunnerService(badRaoRunnerClient);
         CoreCCRaoException coreCCRaoException = assertThrows(CoreCCRaoException.class, () -> raoRunnerService.run(raoRequest));
-        assertEquals("RAO run failed", coreCCRaoException.getMessage());
+        assertEquals("RAO run failed: error", coreCCRaoException.getMessage());
     }
 }
