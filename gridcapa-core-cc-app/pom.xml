@@ -5,7 +5,7 @@
     <parent>
         <artifactId>gridcapa-core-cc</artifactId>
         <groupId>com.farao-community.farao</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.11.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +13,7 @@
     <name>GridCapa Core capacity calculation runner application</name>
     <description>Core capacity calculation runner application in GridCapa environment</description>
     <packaging>jar</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.11.0-SNAPSHOT</version>
 
     <build>
         <plugins>
@@ -121,55 +121,64 @@
             <artifactId>spring-amqp</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-core-cne-exporter</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-core-cne-exporter</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-crac-creator-api</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-api</artifactId>
+         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-xml</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-crac-creator-fb-constraint</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-network-assigner</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-rao-api</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-rao-result-json</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-fb-constraint</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-reference-program</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-rao-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-refprog-xml-importer</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-rao-result-json</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-search-tree-rao</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-reference-program</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-refprog-xml-importer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-search-tree-rao</artifactId>
         </dependency>
         <dependency>
             <groupId>com.farao-community.farao</groupId>
             <artifactId>gridcapa-starter-minio-adapter</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-virtual-hubs-api</artifactId>
-            <version>0.0.9</version>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-virtual-hubs-xml</artifactId>
-            <version>0.0.9</version>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-xml</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-virtual-hubs-network-assigner</artifactId>
-            <version>0.0.9</version>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-virtual-hubs-network-assigner</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -226,15 +235,10 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>farao-crac-impl</artifactId>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-impl</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.rte-france.powsybl</groupId>
-            <artifactId>powsybl-hades2-integration</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
+         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
             <scope>runtime</scope>
@@ -250,11 +254,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.farao-community.farao</groupId>
-            <artifactId>gridcapa-starter-minio-adapter</artifactId>
-            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

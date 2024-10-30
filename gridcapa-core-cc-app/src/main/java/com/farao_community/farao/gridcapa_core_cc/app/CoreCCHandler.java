@@ -53,7 +53,7 @@ public class CoreCCHandler {
         this.raoRunnerService = raoRunnerService;
     }
 
-    public CoreCCResponse handleCoreCCRequest(InternalCoreCCRequest internalCoreCCRequest) {
+    public void handleCoreCCRequest(InternalCoreCCRequest internalCoreCCRequest) {
         internalCoreCCRequest.setRequestReceivedInstant(Instant.now());
         setUpEventLogging(internalCoreCCRequest);
         try {
@@ -62,7 +62,6 @@ public class CoreCCHandler {
         } catch (Exception e) {
             throw new CoreCCInternalException("Exception occurred:", e);
         }
-        return buildCoreCCResponse(internalCoreCCRequest);
     }
 
     private static String setUpEventLogging(InternalCoreCCRequest coreCCRequest) {
@@ -87,7 +86,7 @@ public class CoreCCHandler {
         }
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
         try {
-            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId()));
+            RaoResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
             convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
         } catch (CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
@@ -118,7 +117,7 @@ public class CoreCCHandler {
         try {
             fileExporterHelper.exportMetadataToMinioWhenPreProcessingFailed(coreCCRequest);
         } catch (Exception e) {
-            throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed");
+            throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed", e);
         }
     }
 
@@ -147,10 +146,6 @@ public class CoreCCHandler {
             hourlyRaoResult.setErrorMessage(originCause);
             LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
         }
-    }
-
-    private CoreCCResponse buildCoreCCResponse(InternalCoreCCRequest coreCCRequest) {
-        return new CoreCCResponse(coreCCRequest.getId());
     }
 
 }

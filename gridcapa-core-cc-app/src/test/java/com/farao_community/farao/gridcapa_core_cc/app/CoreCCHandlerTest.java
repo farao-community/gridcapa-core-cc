@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
  *  This Source Code Form is subject to the terms of the Mozilla Public
  *  License, v. 2.0. If a copy of the MPL was not distributed with this
  *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,7 +7,11 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
-import com.farao_community.farao.gridcapa_core_cc.api.resource.*;
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
@@ -63,28 +67,21 @@ class CoreCCHandlerTest {
     @Test
     void handleCoreCCRequestTest() throws IOException {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
-        RaoResponse raoResponse = new RaoResponse("id", "instant", "praUrl", "cracUrl", "raoUrl", Instant.now(), Instant.now());
+        RaoResponse raoResponse = new RaoResponse.RaoResponseBuilder()
+                .withId("id")
+                .withInstant("instant")
+                .withNetworkWithPraFileUrl("praUrl")
+                .withCracFileUrl("cracUrl")
+                .withRaoResultFileUrl("raoUrl")
+                .withComputationStartInstant(Instant.now())
+                .withComputationEndInstant(Instant.now())
+                .build();
         Mockito.when(raoRunnerService.run(Mockito.any())).thenReturn(raoResponse);
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportCneToMinio(Mockito.any());
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportNetworkToMinio(Mockito.any());
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportRaoResultToMinio(Mockito.any());
         Mockito.doNothing().when(Mockito.mock(FileExporterHelper.class)).exportMetadataToMinio(Mockito.any());
 
-        CoreCCResponse response = coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
-        assertEquals("Test request", response.getId());
-        // should upload 4 artifacts: CNE + network + raoResult + metadata
-        Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
-    }
-
-    private CoreCCFileResource createFileResource(String filename, URL resource) {
-        try {
-            return new CoreCCFileResource(filename, resource.toURI().toURL().toString());
-        } catch (MalformedURLException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private InternalCoreCCRequest createInternalCoreCCRequest() {
         String requestId = "Test request";
         String networkFileName = "20210723-F119-v1-17XTSO-CS------W-to-22XCORESO------S.zip";
         String testDirectory = "/20210723";
@@ -95,11 +92,24 @@ class CoreCCHandlerTest {
         CoreCCFileResource raoRequestFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F302-v3.xml"));
         CoreCCFileResource virtualHubFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F327-fake.xml"));
         CoreCCFileResource glskFile = createFileResource("", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
-        CoreCCFileResource cbcoraFile = createFileResource("cbcora",  getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
 
-        CoreCCRequest request = new CoreCCRequest(requestId, dateTime, networkFile, cbcoraFile, glskFile,  refProgFile, raoRequestFile, virtualHubFile, true);
-        return new InternalCoreCCRequest(request);
+        CoreCCRequest request = new CoreCCRequest(requestId, "current RunID", dateTime, networkFile, null, cbcoraFile, glskFile, refProgFile, raoRequestFile, virtualHubFile, true, List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
+        InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(request);
+        coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
+        //should upload 7 artifacts: parameters + ACK + crac + network
+        Mockito.verify(minioAdapter, Mockito.times(4)).uploadArtifact(Mockito.any(), Mockito.any());
+        // TODO : delete generated tmp dir
     }
+
+    private CoreCCFileResource createFileResource(String filename, URL resource) {
+        try {
+            return new CoreCCFileResource(filename, resource.toURI().toURL().toString());
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Test
     void handleRaoRunnerException() {

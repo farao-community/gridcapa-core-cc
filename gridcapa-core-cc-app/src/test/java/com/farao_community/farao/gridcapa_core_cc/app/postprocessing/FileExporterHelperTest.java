@@ -8,12 +8,8 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.farao_community.farao.data.core_cne_exporter.xsd.CriticalNetworkElementMarketDocument;
-import com.farao_community.farao.data.crac_api.Crac;
-import com.farao_community.farao.data.crac_creation.creator.fb_constraint.crac_creator.FbConstraintCreationContext;
-import com.farao_community.farao.data.crac_io_api.CracImporters;
-import com.farao_community.farao.data.rao_result_api.RaoResult;
-import com.farao_community.farao.data.rao_result_json.RaoResultImporter;
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
@@ -26,6 +22,10 @@ import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.openrao.data.corecneexporter.xsd.CriticalNetworkElementMarketDocument;
+import com.powsybl.openrao.data.cracapi.Crac;
+import com.powsybl.openrao.data.cracio.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -33,7 +33,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,184 +46,40 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
 class FileExporterHelperTest {
 
+    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     private final String networkFile = "/util/TestCase12NodesHvdc.uct";
     private final Path networkPath = Paths.get(getClass().getResource(networkFile).getPath());
     private final Network network = Network.read(networkPath);
-    private FileImporter fileImporter;
-    private MinioAdapter minioAdapter;
-    private InternalCoreCCRequest coreCCRequest;
-    private HourlyRaoResult hourlyRaoResult;
-    private HourlyRaoRequest hourlyRaoRequest;
     private final String instantString = "2023-07-25T16:57:00Z";
     private final Instant instant = Instant.parse(instantString);
     private final OffsetDateTime timestamp = OffsetDateTime.of(2023, 7, 27, 10, 47, 51, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now()));
     private final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
     private final MinioClient minioClient = Mockito.mock(MinioClient.class);
     private final MinioFileWriter minioFileWriter = new MinioFileWriter(properties, minioClient);
-
-    @BeforeEach
-    void setUp() {
-        fileImporter = Mockito.mock(FileImporter.class);
-        Mockito.when(fileImporter.importNetworkFromUrl(Mockito.any())).thenReturn(network);
-        Mockito.doReturn(FileExporterHelperTest.class.getResourceAsStream("/fileExporterHelper/raoResult.json")).when(fileImporter).importFileUrlAsInputStream("raoResult.json");
-        minioAdapter = Mockito.mock(MinioAdapter.class);
-        hourlyRaoResult = Mockito.mock(HourlyRaoResult.class);
-        Mockito.when(hourlyRaoResult.getRaoRequestInstant()).thenReturn("2023-07-25T15:02:00Z");
-        Mockito.when(hourlyRaoResult.getNetworkWithPraUrl()).thenReturn(networkFile);
-        Mockito.when(hourlyRaoResult.getRaoResultFileUrl()).thenReturn("raoResult.json");
-        hourlyRaoRequest = Mockito.mock(HourlyRaoRequest.class);
-        Mockito.when(hourlyRaoRequest.getResultsDestination()).thenReturn("/path");
-        coreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
-        Mockito.when(coreCCRequest.getId()).thenReturn("id");
-        Mockito.when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
-        Mockito.when(coreCCRequest.getHourlyRaoResult()).thenReturn(hourlyRaoResult);
-        Mockito.when(coreCCRequest.getVersion()).thenReturn(1);
-        Mockito.when(coreCCRequest.getTimestamp()).thenReturn(timestamp);
-        Mockito.when(coreCCRequest.getTimeInterval()).thenReturn("2023-07-25T15:02:00Z/2023-07-25T15:03:00Z");
-    }
-
-    @Test
-    void exportNetworkToMinio() throws IOException {
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
-        fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_2D2_UX1.uct";
-        removeCreationDateFromUct(new File(generatedFilePath));
-        assertFilesContentEqual("/fileExporterHelper/uploadedNetwork.uct", generatedFilePath);
-
-        Network networkAfterPostTreatment = CoreNetworkImporterWrapper.loadNetwork(Path.of(generatedFilePath));
-
-        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(load -> load.getId().contains("_virtualLoad")));
-        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(Identifiable::isFictitious));
-        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1A"));
-        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1B"));
-    }
-
-    @Test
-    void errorWhenUploadingNetworkToMinio() {
-        Mockito.when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> fileExporterHelper.exportNetworkToMinio(coreCCRequest));
-        assertEquals("Timestamp could not be retrieved.", exception.getMessage());
-    }
-
-    @Test
-    void exportRaoResultToMinio() throws IOException {
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
-        fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/raoResult.json";
-        assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
-    }
-
-    @Test
-    void errorWhenUploadingRaoResultToMinio() {
-        Mockito.when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> fileExporterHelper.exportRaoResultToMinio(coreCCRequest));
-        assertEquals("Timestamp could not be retrieved.", exception.getMessage());
-    }
-
-    @Test
-    void exportMetadataToMinio() throws IOException {
-        CoreCCFileResource raoRequest = Mockito.mock(CoreCCFileResource.class);
-        Mockito.when(raoRequest.getFilename()).thenReturn("raoRequest.json");
-        Mockito.when(coreCCRequest.getRaoRequest()).thenReturn(raoRequest);
-        Mockito.when(coreCCRequest.getRequestReceivedInstant()).thenReturn(instant);
-        Mockito.when(coreCCRequest.getCorrelationId()).thenReturn("00000000-0000-0000-0000-000000000001");
-        Mockito.when(hourlyRaoResult.getRaoRequestInstant()).thenReturn(instantString);
-        Mockito.when(hourlyRaoResult.getComputationStartInstant()).thenReturn(instant);
-        Mockito.when(hourlyRaoResult.getComputationEndInstant()).thenReturn(instant.plusSeconds(60));
-        Mockito.when(hourlyRaoResult.getStatus()).thenReturn(HourlyRaoResult.Status.SUCCESS);
-        Mockito.when(hourlyRaoResult.getErrorCodeString()).thenReturn("0");
-        Mockito.when(hourlyRaoResult.getErrorMessage()).thenReturn("Error message.");
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
-        fileExporterHelper.exportMetadataToMinio(coreCCRequest);
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1830_METADATA-01.json";
-        assertFilesContentEqual("/fileExporterHelper/uploadedMetadata.json", generatedFilePath);
-    }
-
-    @Test
-    void errorWhenUploadingMetadataToMinio() {
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter);
-        assertThrows(NullPointerException.class, () -> fileExporterHelper.exportMetadataToMinio(coreCCRequest));
-    }
-
-    @Test
-    void exportCneToMinio() throws IOException {
-        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter);
-
-        String cracXmlFileName = "/util/crac.json";
-        String cracJsonFileName = "/util/crac.json";
-        Path cracJsonFilePath = Paths.get(getClass().getResource(cracJsonFileName).getPath());
-        String networkFileName = "/util/TestCase12NodesHvdc.uct";
-        String raoResultFileName = "/util/raoResult.json";
-        Path raoResultFilePath = Paths.get(getClass().getResource(raoResultFileName).getPath());
-        String raoParametersFileName = "/util/raoParameters.json";
-
-        Mockito.when(hourlyRaoRequest.getNetworkFileUrl()).thenReturn(networkFileName);
-
-        CoreCCFileResource cbcora = Mockito.mock(CoreCCFileResource.class);
-        Mockito.when(cbcora.getUrl()).thenReturn(cracXmlFileName);
-        Mockito.when(coreCCRequest.getCbcora()).thenReturn(cbcora);
-        Mockito.when(coreCCRequest.getRequestReceivedInstant()).thenReturn(instant);
-
-        FbConstraintCreationContext fbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fbConstraintCreationContext.isCreationSuccessful()).thenReturn(true);
-        Mockito.when(fbConstraintCreationContext.getTimeStamp()).thenReturn(timestamp);
-        Mockito.when(fileImporter.importCrac(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(fbConstraintCreationContext);
-
-        Crac crac = CracImporters.importCrac(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath));
-        RaoResult raoResult = (new RaoResultImporter()).importRaoResult(Files.newInputStream(raoResultFilePath), crac);
-        Mockito.when(fileImporter.importRaoResult(Mockito.any(), Mockito.any())).thenReturn(raoResult);
-
-        Mockito.when(hourlyRaoRequest.getCracFileUrl()).thenReturn(cracJsonFileName);
-        Mockito.when(hourlyRaoRequest.getRaoParametersFileUrl()).thenReturn(raoParametersFileName);
-
-        fileExporterHelper.exportCneToMinio(coreCCRequest);
-
-        String generatedFilePath = "/tmp/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T10:47:51+02:00/2023-07-27T11:47:51+02:00/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
-        removeCreationDateInCne(new File(generatedFilePath));
-        assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
-
-        try (FileInputStream inputStreamCne = new FileInputStream(generatedFilePath)) {
-            CriticalNetworkElementMarketDocument cneFile = JaxbUtil.unmarshalContent(CriticalNetworkElementMarketDocument.class, inputStreamCne);
-            assertEquals("22XCORESO------S-20230727-F299v1", cneFile.getMRID());
-            assertEquals("1", cneFile.getRevisionNumber());
-            assertEquals("10Y1001C--00059P", cneFile.getDomainMRID().getValue());
-            assertEquals("A48", cneFile.getProcessProcessType());
-            assertEquals("A44", cneFile.getSenderMarketParticipantMarketRoleType());
-            assertEquals("22XCORESO------S", cneFile.getSenderMarketParticipantMRID().getValue());
-            assertEquals("A36", cneFile.getReceiverMarketParticipantMarketRoleType());
-            assertEquals("17XTSO-CS------W", cneFile.getReceiverMarketParticipantMRID().getValue());
-            assertEquals("2023-07-25T15:02Z", cneFile.getTimePeriodTimeInterval().getStart());
-            assertEquals("2023-07-25T15:03Z", cneFile.getTimePeriodTimeInterval().getEnd());
-        } catch (Exception e) {
-            fail("Failed to read generated CNE file");
-        }
-    }
-
-    private void removeCreationDateFromUct(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}(?:\\+\\d{2}:\\d{2})?Z?";
-        String replaceBy = "yyyy-MM-ddTHH:mm:ss.SSS+HH:mm";
-        String line;
-        StringBuilder oldText = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            oldText.append(line).append("\r\n");
-        }
-        reader.close();
-        String newText = oldText.toString().replaceAll(pattern, replaceBy);
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        writer.write(newText);
-        writer.close();
-    }
+    private FileImporter fileImporter;
+    private MinioAdapter minioAdapter;
+    private RegularOrDcCgmNetworkResolver regularOrDcCgmNetworkResolver;
+    private InternalCoreCCRequest coreCCRequest;
+    private HourlyRaoResult hourlyRaoResult;
+    private HourlyRaoRequest hourlyRaoRequest;
 
     public static void removeCreationDateInCne(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -244,7 +105,162 @@ class FileExporterHelperTest {
 
     @AfterAll
     public static void deleteTemporaryDirectory() throws IOException {
-        FileUtils.deleteDirectory(new File("/tmp/gridcapa-core-cc"));
+        FileUtils.deleteDirectory(new File(TEMP_DIR + "/gridcapa-core-cc"));
     }
 
+    @BeforeEach
+    void setUp() {
+        fileImporter = Mockito.mock(FileImporter.class);
+        Mockito.doReturn(FileExporterHelperTest.class.getResourceAsStream("/fileExporterHelper/raoResult.json")).when(fileImporter).importFileUrlAsInputStream("raoResult.json");
+        minioAdapter = Mockito.mock(MinioAdapter.class);
+        hourlyRaoResult = Mockito.mock(HourlyRaoResult.class);
+        when(hourlyRaoResult.getRaoRequestInstant()).thenReturn("2023-07-25T15:02:00Z");
+        when(hourlyRaoResult.getNetworkWithPraUrl()).thenReturn(networkFile);
+        when(hourlyRaoResult.getRaoResultFileUrl()).thenReturn("raoResult.json");
+        hourlyRaoRequest = Mockito.mock(HourlyRaoRequest.class);
+        when(hourlyRaoRequest.getResultsDestination()).thenReturn("/path");
+        coreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
+        when(coreCCRequest.getId()).thenReturn("id");
+        when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
+        when(coreCCRequest.getHourlyRaoResult()).thenReturn(hourlyRaoResult);
+        when(coreCCRequest.getVersion()).thenReturn(1);
+        when(coreCCRequest.getTimestamp()).thenReturn(timestamp);
+        when(coreCCRequest.getTimeInterval()).thenReturn("2023-07-25T15:02:00Z/2023-07-25T15:03:00Z");
+        when(coreCCRequest.getParameters()).thenReturn(List.of(new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE")));
+        regularOrDcCgmNetworkResolver = Mockito.mock(RegularOrDcCgmNetworkResolver.class);
+        when(regularOrDcCgmNetworkResolver.resolve(anyBoolean(), any())).thenReturn(network);
+    }
+
+    @Test
+    void exportNetworkToMinio() throws IOException {
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter, regularOrDcCgmNetworkResolver);
+        fileExporterHelper.exportNetworkToMinio(coreCCRequest);
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CGM_OUT/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1730_2D2_UX1.uct";
+
+        // to compare the content of the expected and the generated network we will skip the first three lines
+        // because the creation date changes each time the test is launched
+        Stream<String> generatedLines = new BufferedReader(new FileReader(generatedFilePath)).lines().skip(3);
+        Path expectedNetworkPath = Paths.get(getClass().getResource("/fileExporterHelper/uploadedNetwork.uct").getPath());
+        Stream<String> expectedLines = new BufferedReader(new FileReader(expectedNetworkPath.toString())).lines().skip(3);
+        assertStreamEquals(expectedLines, generatedLines);
+
+        Network networkAfterPostTreatment = CoreNetworkImporterWrapper.loadNetwork(Path.of(generatedFilePath));
+
+        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(load -> load.getId().contains("_virtualLoad")));
+        assertTrue(networkAfterPostTreatment.getLoadStream().noneMatch(Identifiable::isFictitious));
+        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1A"));
+        assertNull(networkAfterPostTreatment.getGenerator("XLI_OB1B"));
+    }
+
+    static void assertStreamEquals(Stream<String> s1, Stream<String> s2) {
+        Iterator<String> iter1 = s1.iterator();
+        Iterator<String> iter2 = s2.iterator();
+        while (iter1.hasNext() && iter2.hasNext()) {
+            assertEquals(iter1.next(), iter2.next());
+        }
+        assert !iter1.hasNext() && !iter2.hasNext();
+    }
+
+    @Test
+    void errorWhenUploadingNetworkToMinio() {
+        when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter, regularOrDcCgmNetworkResolver);
+        CoreCCInternalException exception = assertThrows(CoreCCInternalException.class, () -> fileExporterHelper.exportNetworkToMinio(coreCCRequest));
+        assertEquals("Network with PRA could not be uploaded to minio", exception.getMessage());
+    }
+
+    @Test
+    void exportRaoResultToMinio() throws IOException {
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter, regularOrDcCgmNetworkResolver);
+        fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/RAO_RESULT/2023-07-27T08:47:51/2023-07-27T09:47:51/path/CASTOR-INTERNAL-RESULTS_20230725_1730.json";
+        assertFilesContentEqual("/fileExporterHelper/uploadedRaoResult.json", generatedFilePath);
+    }
+
+    @Test
+    void errorWhenUploadingRaoResultToMinio() {
+        when(coreCCRequest.getTimestamp()).thenThrow(new RuntimeException("Timestamp could not be retrieved."));
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter, regularOrDcCgmNetworkResolver);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> fileExporterHelper.exportRaoResultToMinio(coreCCRequest));
+        assertEquals("Timestamp could not be retrieved.", exception.getMessage());
+    }
+
+    @Test
+    void exportMetadataToMinio() throws IOException {
+        CoreCCFileResource raoRequest = Mockito.mock(CoreCCFileResource.class);
+        when(raoRequest.getFilename()).thenReturn("raoRequest.json");
+        when(coreCCRequest.getRaoRequest()).thenReturn(raoRequest);
+        when(coreCCRequest.getRequestReceivedInstant()).thenReturn(instant);
+        when(coreCCRequest.getCorrelationId()).thenReturn("00000000-0000-0000-0000-000000000001");
+        when(hourlyRaoResult.getRaoRequestInstant()).thenReturn(instantString);
+        when(hourlyRaoResult.getComputationStartInstant()).thenReturn(instant);
+        when(hourlyRaoResult.getComputationEndInstant()).thenReturn(instant.plusSeconds(60));
+        when(hourlyRaoResult.getStatus()).thenReturn(HourlyRaoResult.Status.SUCCESS);
+        when(hourlyRaoResult.getErrorCodeString()).thenReturn("0");
+        when(hourlyRaoResult.getErrorMessage()).thenReturn("Error message.");
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter, regularOrDcCgmNetworkResolver);
+        fileExporterHelper.exportMetadataToMinio(coreCCRequest);
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/METADATA/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1830_METADATA-01.json";
+        assertFilesContentEqual("/fileExporterHelper/uploadedMetadata.json", generatedFilePath);
+    }
+
+    @Test
+    void errorWhenUploadingMetadataToMinio() {
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioAdapter, fileImporter, regularOrDcCgmNetworkResolver);
+        assertThrows(CoreCCInternalException.class, () -> fileExporterHelper.exportMetadataToMinio(coreCCRequest));
+    }
+
+    @Test
+    void exportCneToMinio() throws IOException {
+        FileExporterHelper fileExporterHelper = new FileExporterHelper(minioFileWriter, fileImporter, regularOrDcCgmNetworkResolver);
+
+        String cracXmlFileName = "/util/crac.json";
+        String cracJsonFileName = "/util/crac.json";
+        Path cracJsonFilePath = Paths.get(getClass().getResource(cracJsonFileName).getPath());
+        String networkFileName = "/util/TestCase12NodesHvdc.uct";
+        String raoResultFileName = "/util/raoResult.json";
+        Path raoResultFilePath = Paths.get(getClass().getResource(raoResultFileName).getPath());
+        String raoParametersFileName = "/util/raoParameters.json";
+        when(hourlyRaoRequest.getNetworkFileUrl()).thenReturn(networkFileName);
+
+        CoreCCFileResource cbcora = Mockito.mock(CoreCCFileResource.class);
+        when(cbcora.getUrl()).thenReturn(cracXmlFileName);
+        when(coreCCRequest.getCbcora()).thenReturn(cbcora);
+        when(coreCCRequest.getRequestReceivedInstant()).thenReturn(instant);
+
+        Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
+        final FbConstraintCreationContext fbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
+        when(fbConstraintCreationContext.getCrac()).thenReturn(crac);
+        when(fbConstraintCreationContext.isCreationSuccessful()).thenReturn(true);
+        when(fbConstraintCreationContext.getTimeStamp()).thenReturn(timestamp);
+        when(fileImporter.importCrac(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(fbConstraintCreationContext);
+
+        RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
+        when(fileImporter.importRaoResult(Mockito.any(), Mockito.any())).thenReturn(raoResult);
+
+        when(hourlyRaoRequest.getCracFileUrl()).thenReturn(cracJsonFileName);
+        when(hourlyRaoRequest.getRaoParametersFileUrl()).thenReturn(raoParametersFileName);
+
+        fileExporterHelper.exportCneToMinio(coreCCRequest);
+
+        String generatedFilePath = TEMP_DIR + "/gridcapa-core-cc/CORE_CC/CNE/2023-07-27T08:47:51/2023-07-27T09:47:51/path/20230725_1730_20230725-F299-v1-22XCORESO------S_to_17XTSO-CS------W.xml";
+        removeCreationDateInCne(new File(generatedFilePath));
+        assertFilesContentEqual("/fileExporterHelper/uploadedCne.xml", generatedFilePath);
+
+        try (FileInputStream inputStreamCne = new FileInputStream(generatedFilePath)) {
+            CriticalNetworkElementMarketDocument cneFile = JaxbUtil.unmarshalContent(CriticalNetworkElementMarketDocument.class, inputStreamCne);
+            assertEquals("22XCORESO------S-20230727-F299v1", cneFile.getMRID());
+            assertEquals("1", cneFile.getRevisionNumber());
+            assertEquals("10Y1001C--00059P", cneFile.getDomainMRID().getValue());
+            assertEquals("A48", cneFile.getProcessProcessType());
+            assertEquals("A44", cneFile.getSenderMarketParticipantMarketRoleType());
+            assertEquals("22XCORESO------S", cneFile.getSenderMarketParticipantMRID().getValue());
+            assertEquals("A36", cneFile.getReceiverMarketParticipantMarketRoleType());
+            assertEquals("17XTSO-CS------W", cneFile.getReceiverMarketParticipantMRID().getValue());
+            assertEquals("2023-07-25T15:02Z", cneFile.getTimePeriodTimeInterval().getStart());
+            assertEquals("2023-07-25T15:03Z", cneFile.getTimePeriodTimeInterval().getEnd());
+        } catch (Exception e) {
+            fail("Failed to read generated CNE file");
+        }
+    }
 }

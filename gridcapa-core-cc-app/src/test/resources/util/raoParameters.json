@@ -1,5 +1,5 @@
 {
-  "version" : "2.0",
+  "version" : "2.4",
   "objective-function" : {
     "type" : "MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT",
     "forbid-cost-increase" : true,
@@ -13,9 +13,9 @@
     "pst-sensitivity-threshold" : 0.1,
     "pst-model" : "APPROXIMATED_INTEGERS",
     "hvdc-penalty-cost" : 0.001,
-    "hvdc-sensitivity-threshold" : 0.0,
+    "hvdc-sensitivity-threshold" : 1e-6,
     "injection-ra-penalty-cost" : 0.001,
-    "injection-ra-sensitivity-threshold" : 0.0,
+    "injection-ra-sensitivity-threshold" : 1e-6,
     "linear-optimization-solver" : {
       "solver" : "XPRESS",
       "relative-mip-gap" : 0.001,
@@ -23,7 +23,9 @@
     }
   },
   "topological-actions-optimization" : {
-    "max-search-tree-depth" : 0,
+    "max-preventive-search-tree-depth" : 0,
+    "max-auto-search-tree-depth" : 0,
+    "max-curative-search-tree-depth" : 0,
     "predefined-combinations" : [ ],
     "relative-minimum-impact-threshold" : 0.0,
     "absolute-minimum-impact-threshold" : 10.0,
@@ -40,64 +42,8 @@
     "re-optimize-curative-range-actions" : false,
     "hint-from-first-preventive-rao" : false
   },
-  "ra-usage-limits-per-contingency" : {
-    "max-curative-ra" : 2147483647,
-    "max-curative-tso" : 2147483647,
-    "max-curative-topo-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 1,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 1,
-      "HR" : 0,
-      "HU" : 1,
-      "NL" : 0,
-      "PL" : 1,
-      "RO" : 0,
-      "SI" : 2,
-      "SK" : 1
-    },
-    "max-curative-pst-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 2,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 0,
-      "HR" : 0,
-      "HU" : 0,
-      "NL" : 0,
-      "PL" : 2,
-      "RO" : 0,
-      "SI" : 2,
-      "SK" : 0
-    },
-    "max-curative-ra-per-tso" : {
-      "AT" : 0,
-      "BE" : 0,
-      "CZ" : 2,
-      "D2" : 0,
-      "D4" : 0,
-      "D7" : 0,
-      "D8" : 0,
-      "FR" : 1,
-      "HR" : 0,
-      "HU" : 1,
-      "NL" : 0,
-      "PL" : 2,
-      "RO" : 0,
-      "SI" : 3,
-      "SK" : 1
-    }
-  },
   "not-optimized-cnecs" : {
-    "do-not-optimize-curative-cnecs-for-tsos-without-cras" : true,
-    "do-not-optimize-cnec-secured-by-its-pst" : { }
+    "do-not-optimize-curative-cnecs-for-tsos-without-cras" : true
   },
   "load-flow-and-sensitivity-computation" : {
     "load-flow-provider" : "OpenLoadFlow",
@@ -137,7 +83,7 @@
     },
     "loop-flow-parameters" : {
       "acceptable-increase" : 5.0,
-      "approximation" : "UPDATE_PTDF_WITH_TOPO",
+      "ptdf-approximation" : "UPDATE_PTDF_WITH_TOPO",
       "constraint-adjustment-coefficient" : 7.0,
       "violation-cost" : 100.0,
       "countries" : [ "AT", "BE", "CZ", "DE", "FR", "HR", "HU", "NL", "PL", "RO", "SI", "SK" ]

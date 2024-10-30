@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
  *  This Source Code Form is subject to the terms of the Mozilla Public
  *  License, v. 2.0. If a copy of the MPL was not distributed with this
  *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,7 +7,6 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app;
 
-import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCResponse;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,9 +65,6 @@ class CoreCCListenerTest {
     void checkThatCorrectMessageIsHandledCorrectly() throws URISyntaxException, IOException {
         byte[] correctMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
         Message message = MessageBuilder.withBody(correctMessage).build();
-        String resultFileUrl = "fileUrl";
-        CoreCCResponse coreCCResponse = new CoreCCResponse("c7fc89da-dcd7-40d2-8d63-b8aef0a1ecdf");
-        Mockito.when(coreCCHandler.handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class))).thenReturn(coreCCResponse);
         coreCCListener.onMessage(message);
         Mockito.verify(streamBridge, Mockito.times(1)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));

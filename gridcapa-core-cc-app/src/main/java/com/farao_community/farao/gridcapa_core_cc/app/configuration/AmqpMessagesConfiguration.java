@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2023, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -25,10 +25,6 @@ import java.util.Optional;
 @Configuration
 public class AmqpMessagesConfiguration {
 
-    @Value("${core-cc-runner.bindings.response.destination}")
-    private String responseDestination;
-    @Value("${core-cc-runner.bindings.response.expiration}")
-    private String responseExpiration;
     @Value("${core-cc-runner.bindings.request.destination}")
     private String requestDestination;
     @Value("${core-cc-runner.bindings.request.routing-key}")
@@ -67,15 +63,6 @@ public class AmqpMessagesConfiguration {
         simpleMessageListenerContainer.setQueues(coreCCRequestQueue);
         simpleMessageListenerContainer.setMessageListener(listener);
         return simpleMessageListenerContainer;
-    }
-
-    @Bean
-    public FanoutExchange coreCCResponseExchange() {
-        return new FanoutExchange(responseDestination);
-    }
-
-    public String coreCCResponseExpiration() {
-        return responseExpiration;
     }
 
     public String getAsyncTimeOutInMinutes() {

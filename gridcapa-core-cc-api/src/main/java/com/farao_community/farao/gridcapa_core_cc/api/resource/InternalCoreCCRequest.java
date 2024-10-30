@@ -8,14 +8,12 @@
 
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -38,12 +36,20 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getId();
     }
 
+    public String getRunId() {
+        return coreCCRequest.getCurrentRunId();
+    }
+
     public OffsetDateTime getTimestamp() {
         return coreCCRequest.getTimestamp();
     }
 
     public CoreCCFileResource getCgm() {
         return coreCCRequest.getCgm();
+    }
+
+    public CoreCCFileResource getDcCgm() {
+        return coreCCRequest.getDcCgm();
     }
 
     public CoreCCFileResource getCbcora() {
@@ -64,6 +70,10 @@ public class InternalCoreCCRequest {
 
     public CoreCCFileResource getVirtualHub() {
         return coreCCRequest.getVirtualHub();
+    }
+
+    public List<TaskParameterDto> getParameters() {
+        return coreCCRequest.getTaskParameterList();
     }
 
     public HourlyRaoRequest getHourlyRaoRequest() {
@@ -96,26 +106,6 @@ public class InternalCoreCCRequest {
 
     public void setRequestReceivedInstant(Instant inputsReceivedInstant) {
         this.requestReceivedInstant = inputsReceivedInstant;
-    }
-
-    public String getDestinationKey() {
-        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("Europe/Brussels")));
-        return "RAO_WORKING_DIR" + "/" + handle25TimestampCase(hourlyFolderName, getTimestamp().toInstant().toString());
-    }
-
-    private static String handle25TimestampCase(String filename, String instant) {
-        ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instant).minus(1, ChronoUnit.HOURS).atZone(ZoneId.of("Europe/Brussels"))).getOffset();
-        ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instant).atZone(ZoneId.of("Europe/Brussels"))).getOffset();
-        if (previousOffset == ZoneOffset.ofHours(2) && currentOffset == ZoneOffset.ofHours(1)) {
-            return filename.replace("_0", "_B");
-        } else {
-            return filename;
-        }
-    }
-
-    public String getAckDestinationKey() {
-        String hourlyFolderName = OffsetDateTime.parse(getTimestamp().toString()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("Europe/Brussels")));
-        return "RAO_OUTPUTS_DIR" + "/" + handle25TimestampCase(hourlyFolderName, getTimestamp().toInstant().toString());
     }
 
     public String getTimeInterval() {
