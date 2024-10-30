@@ -34,7 +34,8 @@ public class MinioFileWriter extends MinioAdapter {
     public void uploadOutput(String path, InputStream inputStream) {
         File outputDir = new File(tempDir + "/outputs/");
         if (!outputDir.exists()) {
-            boolean created = outputDir.mkdir();
+            boolean created = outputDir.mkdirs();
+            System.out.println(created);
         }
         File targetFile = new File(path);
         try {
@@ -51,7 +52,8 @@ public class MinioFileWriter extends MinioAdapter {
         String additionalPathName = targetProcess + "/" + type + "/" + utcLocalDateTime + "/" + utcLocalDateTime.plusHours(1L) + "/";
         File tmpDir = new File(outputDir + additionalPathName);
         if (!tmpDir.exists()) {
-            boolean created = tmpDir.mkdir();
+            boolean created = tmpDir.mkdirs();
+            System.out.println(created);
         }
         String fullPath = outputDir + additionalPathName + path;
         File targetFile = new File(fullPath);

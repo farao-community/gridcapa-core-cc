@@ -7,7 +7,6 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
-import com.farao_community.farao.data.rao_result_api.RaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.ucte.UcteGlskDocument;
@@ -15,6 +14,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
 import com.powsybl.openrao.data.cracapi.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.cracio.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
