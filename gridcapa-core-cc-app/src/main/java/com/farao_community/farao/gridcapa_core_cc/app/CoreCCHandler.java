@@ -121,31 +121,28 @@ public class CoreCCHandler {
         }
     }
 
-    private void handleRaoRunnerException(HourlyRaoResult hourlyRaoResult, Throwable exception) {
+    void handleRaoRunnerException(final HourlyRaoResult hourlyRaoResult,
+                                  final Throwable exception) {
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
         hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
-        if (exception instanceof ResourceParseException) {
+        if (exception instanceof final ResourceParseException resourceParseException) {
             // Sync scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format.
-            ResourceParseException resourceParseException = (ResourceParseException) exception;
-            String originCause = resourceParseException.getErrors().getErrors().get(0).getDetail();
-            hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
-        } else if (exception.getCause() instanceof ResourceParseException) {
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
+        } else if (exception.getCause() instanceof final ResourceParseException resourceParseException) {
             // Async scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format, which is wrapped itself into a ConcurrencyException.
-            ResourceParseException resourceParseException = (ResourceParseException) exception.getCause();
-            String originCause = resourceParseException.getErrors().getErrors().get(0).getDetail();
-            hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
         } else if (exception.getCause() instanceof AmqpReplyTimeoutException) {
-            String originCause = "Timeout reached, Rao has not finished within allocated time of : " + amqpConfiguration.getAsyncTimeOutInMinutes() + " minutes";
-            hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
+            setErrorMessageAndLogIt(hourlyRaoResult, "Timeout reached, Rao has not finished within allocated time of : " + amqpConfiguration.getAsyncTimeOutInMinutes() + " minutes");
         } else {
             // if exception is not a json api Error neither an AmqpReplyTimeoutException
-            String originCause = exception.getMessage();
-            hourlyRaoResult.setErrorMessage(originCause);
-            LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
+            setErrorMessageAndLogIt(hourlyRaoResult, exception.getMessage());
         }
+    }
+
+    private static void setErrorMessageAndLogIt(final HourlyRaoResult hourlyRaoResult,
+                                                final String originCause) {
+        hourlyRaoResult.setErrorMessage(originCause);
+        LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
     }
 
 }

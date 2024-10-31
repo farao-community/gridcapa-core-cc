@@ -14,6 +14,8 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.cracapi.Crac;
 import com.powsybl.openrao.data.cracapi.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.cracio.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.raoresultapi.ComputationStatus;
+import com.powsybl.openrao.data.raoresultapi.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,16 +43,16 @@ class FileImporterTest {
 
     @Test
     void importGlskTest() {
-        CoreCCFileResource glskFile = createFileResource("glsk", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
-        GlskDocument glskDocument = fileImporter.importGlskFile(glskFile);
+        final CoreCCFileResource glskFile = createFileResource("glsk", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
+        final GlskDocument glskDocument = fileImporter.importGlskFile(glskFile);
         assertEquals(4, ((UcteGlskDocument) glskDocument).getListGlskSeries().size());
         assertEquals(1, glskDocument.getGlskPoints("10YFR-RTE------C").size());
     }
 
     @Test
     void importReferenceProgram() {
-        CoreCCFileResource refProgFile = createFileResource("refprog", getClass().getResource(testDirectory + "/20210723-F110.xml"));
-        ReferenceProgram referenceProgram = fileImporter.importReferenceProgram(refProgFile, dateTime);
+        final CoreCCFileResource refProgFile = createFileResource("refprog", getClass().getResource(testDirectory + "/20210723-F110.xml"));
+        final ReferenceProgram referenceProgram = fileImporter.importReferenceProgram(refProgFile, dateTime);
         assertEquals(-50, referenceProgram.getGlobalNetPosition("10YFR-RTE------C"));
         assertEquals(-450, referenceProgram.getGlobalNetPosition("10YCB-GERMANY--8"));
         assertEquals(225, referenceProgram.getGlobalNetPosition("10YNL----------L"));
@@ -59,40 +61,56 @@ class FileImporterTest {
 
     @Test
     void importCrac() {
-        InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
-        Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
-        CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
-        Crac crac = fbConstraintCreationContext.getCrac();
+        final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
+        final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
+        final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
+        final Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
         assertEquals("17XTSO-CS------W-20190108-F301v1", crac.getId());
     }
 
     @Test
     void cracCreationParameters() {
-        CracCreationParameters parameters = fileImporter.getCimCracCreationParameters();
+        final CracCreationParameters parameters = fileImporter.getCimCracCreationParameters();
         Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxRa());
         Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxTso());
     }
 
     @Test
     void importNetworkTest() {
-        String networkFileName = "20210723_0030_2D5_CGM.uct";
-        CoreCCFileResource networkFile = createFileResource(networkFileName, getClass().getResource(testDirectory + "/" + networkFileName));
-        Network network = fileImporter.importNetwork(networkFile);
+        final String networkFileName = "20210723_0030_2D5_CGM.uct";
+        final CoreCCFileResource networkFile = createFileResource(networkFileName, getClass().getResource(testDirectory + "/" + networkFileName));
+        final Network network = fileImporter.importNetwork(networkFile);
         assertNotNull(network);
         assertEquals("20210723_0030_2D5_CGM", network.getNameOrId());
     }
 
     @Test
     void importNetworkFromUrlTest() {
-        String cgmUrl = getClass().getResource(testDirectory + "/20210723_0030_2D5_CGM.uct").toExternalForm();
-        Network network = fileImporter.importNetworkFromUrl(cgmUrl);
+        final String cgmUrl = getClass().getResource(testDirectory + "/20210723_0030_2D5_CGM.uct").toExternalForm();
+        final Network network = fileImporter.importNetworkFromUrl(cgmUrl);
         assertNotNull(network);
         assertEquals("20210723_0030_2D5_CGM", network.getNameOrId());
     }
 
-    private CoreCCFileResource createFileResource(String filename, URL resource) {
+    @Test
+    void importRaoResult() {
+        final String raoResultFileName = "raoResult.json";
+        final String raoResultUrl = getClass().getResource(testDirectory + "/" + raoResultFileName).toExternalForm();
+
+        final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
+        final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
+        final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
+        final Crac crac = fbConstraintCreationContext.getCrac();
+
+        final RaoResult raoResult = fileImporter.importRaoResult(raoResultUrl, crac);
+        assertEquals(ComputationStatus.DEFAULT, raoResult.getComputationStatus());
+        assertNotNull(raoResult);
+    }
+
+    private CoreCCFileResource createFileResource(final String filename, final URL resource) {
         return new CoreCCFileResource(filename, resource.toExternalForm());
     }
 }
