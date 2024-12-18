@@ -11,7 +11,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;

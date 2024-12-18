@@ -22,7 +22,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWr
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.data.cracapi.CracCreationContext;
+import com.powsybl.openrao.data.crac.api.CracCreationContext;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +30,10 @@ import org.springframework.stereotype.Service;
 import org.threeten.extra.Interval;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Marshaller;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;

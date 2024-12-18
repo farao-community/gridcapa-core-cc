@@ -10,7 +10,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.*;
+import jakarta.xml.bind.*;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.InputStream;

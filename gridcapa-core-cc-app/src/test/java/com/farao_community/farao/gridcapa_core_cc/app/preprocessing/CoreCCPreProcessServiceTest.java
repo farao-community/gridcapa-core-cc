@@ -22,8 +22,8 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Respon
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.cracio.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext;
 import com.unicorn.request.request_payload.RequestItem;
 import com.unicorn.request.request_payload.RequestItems;
 import com.unicorn.response.response_payload.File;
