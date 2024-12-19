@@ -11,7 +11,7 @@ import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
 import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

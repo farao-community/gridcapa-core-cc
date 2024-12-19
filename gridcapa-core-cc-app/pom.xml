@@ -39,9 +39,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>${maven.jaxb2.version}</version>
+                <groupId>org.jvnet.jaxb</groupId>
+                <artifactId>jaxb-maven-plugin</artifactId>
+                <version>${maven.jaxb.version}</version>
                 <executions>
                     <execution>
                         <id>rao-request-xsd</id>
@@ -126,6 +126,10 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-cne-exporter-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>open-rao-virtual-hubs-api</artifactId>
          </dependency>
         <dependency>
@@ -167,18 +171,6 @@
         <dependency>
             <groupId>com.farao-community.farao</groupId>
             <artifactId>gridcapa-starter-minio-adapter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-virtual-hubs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-virtual-hubs-xml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-virtual-hubs-network-assigner</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -243,7 +235,6 @@
             <artifactId>powsybl-open-loadflow</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- TEST DEPENDENCIES -->
         <dependency>
             <groupId>com.powsybl</groupId>

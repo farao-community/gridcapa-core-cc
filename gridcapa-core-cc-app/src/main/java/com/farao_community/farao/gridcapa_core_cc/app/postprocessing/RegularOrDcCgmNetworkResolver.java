@@ -16,9 +16,9 @@ import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.cracapi.State;
-import com.powsybl.openrao.data.raoresultapi.RaoResult;
+import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.crac.api.State;
+import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
