@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
-public class CoreCCMetadataTest {
+class CoreCCMetadataTest {
     @Test
     void checkCoreCCMetadata() {
         CoreCCMetadata coreCCMetadata = new CoreCCMetadata("raoRequest.json", "2023-07-27T14:00:00Z", "2023-07-27T14:02:00Z", "2023-07-27T14:05:00Z", "2023-07-27T14:06:00Z", "interval", "correlationId", "status", "0", "This is an error.", 0);

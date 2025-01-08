@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -64,7 +63,7 @@ class RaoParametersServiceTest {
         assertEquals(10.0, raoParameters.getRangeActionsOptimizationParameters().getPstPenaltyCost());
 
         List<String> expectedLoopFlowConstraintCountries = Arrays.asList("CZ", "SK", "FR", "PL", "RO", "DE", "SI", "NL", "HR", "HU", "AT");
-        List<String> actualLoopFlowConstraintCountries = raoParameters.getExtension(LoopFlowParametersExtension.class).getCountries().stream().map(Country::toString).collect(Collectors.toList());
+        List<String> actualLoopFlowConstraintCountries = raoParameters.getExtension(LoopFlowParametersExtension.class).getCountries().stream().map(Country::toString).toList();
         assertTrue(expectedLoopFlowConstraintCountries.size() == actualLoopFlowConstraintCountries.size()
                 && expectedLoopFlowConstraintCountries.containsAll(actualLoopFlowConstraintCountries)
                 && actualLoopFlowConstraintCountries.containsAll(expectedLoopFlowConstraintCountries));
@@ -73,9 +72,7 @@ class RaoParametersServiceTest {
     }
 
     private VirtualHubsConfiguration buildVirtualHubsConfiguration() {
-        VirtualHubsConfiguration configuration = new VirtualHubsConfiguration();
-
-        return configuration;
+        return new VirtualHubsConfiguration();
     }
 
     @Test
