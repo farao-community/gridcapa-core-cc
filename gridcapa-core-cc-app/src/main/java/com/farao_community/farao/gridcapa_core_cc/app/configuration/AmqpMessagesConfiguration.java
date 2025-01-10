@@ -15,20 +15,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmqpMessagesConfiguration {
 
-    @Value("${core-cc-runner.bindings.request.destination}")
-    private String requestDestination;
-    @Value("${core-cc-runner.bindings.request.routing-key}")
-    private String requestRoutingKey;
     @Value("${core-cc-runner.async-time-out}")
     private long asyncTimeOut;
-
-    public String getRequestDestination() {
-        return requestDestination;
-    }
-
-    public String getRequestRoutingKey() {
-        return requestRoutingKey;
-    }
 
     public long getAsyncTimeOutInMilliseconds() {
         return asyncTimeOut;

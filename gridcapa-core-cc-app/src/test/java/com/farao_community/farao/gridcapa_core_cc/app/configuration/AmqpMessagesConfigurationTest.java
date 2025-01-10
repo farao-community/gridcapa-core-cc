@@ -8,11 +8,11 @@
 package com.farao_community.farao.gridcapa_core_cc.app.configuration;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -22,13 +22,9 @@ class AmqpMessagesConfigurationTest {
     @Autowired
     private AmqpMessagesConfiguration amqpConfiguration;
 
-    @Autowired
-    private Queue requestQueue;
-
     @Test
     void checkAmqpMessageConfiguration() {
         assertNotNull(amqpConfiguration);
-        assertNotNull(requestQueue);
-        assertEquals("core-cc-requests", requestQueue.getName());
+        assertEquals("10,00", amqpConfiguration.getAsyncTimeOutInMinutes());
     }
 }
