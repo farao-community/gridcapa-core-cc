@@ -37,11 +37,11 @@ class CoreCCClientTest {
 
     private CoreCCClientProperties buildProperties() {
         CoreCCClientProperties properties = new CoreCCClientProperties();
-        CoreCCClientProperties.AmqpConfiguration amqpConfiguration = new CoreCCClientProperties.AmqpConfiguration();
-        amqpConfiguration.setQueueName("my-queue");
+        CoreCCClientProperties.BindingConfiguration amqpConfiguration = new CoreCCClientProperties.BindingConfiguration();
+        amqpConfiguration.setDestination("my-queue");
         amqpConfiguration.setExpiration("60000");
         amqpConfiguration.setApplicationId("application-id");
-        properties.setAmqp(amqpConfiguration);
+        properties.setBinding(amqpConfiguration);
         return properties;
     }
 }

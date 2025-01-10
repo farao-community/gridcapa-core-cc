@@ -30,7 +30,9 @@ public class CoreCCClient {
     }
 
     public void run(CoreCCRequest coreCCRequest, int priority) {
-        amqpTemplate.send(coreCCClientProperties.getAmqp().getQueueName(), buildMessage(coreCCRequest, priority));
+        amqpTemplate.send(coreCCClientProperties.getBinding().getDestination(),
+                coreCCClientProperties.getBinding().getRoutingKey(),
+                buildMessage(coreCCRequest, priority));
     }
 
     public void run(CoreCCRequest coreCCRequest) {
@@ -45,11 +47,11 @@ public class CoreCCClient {
 
     private MessageProperties buildMessageProperties(int priority) {
         return MessagePropertiesBuilder.newInstance()
-                .setAppId(coreCCClientProperties.getAmqp().getApplicationId())
+                .setAppId(coreCCClientProperties.getBinding().getApplicationId())
                 .setContentEncoding(CONTENT_ENCODING)
                 .setContentType(CONTENT_TYPE)
                 .setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT)
-                .setExpiration(coreCCClientProperties.getAmqp().getExpiration())
+                .setExpiration(coreCCClientProperties.getBinding().getExpiration())
                 .setPriority(priority)
                 .build();
     }
