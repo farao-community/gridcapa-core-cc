@@ -6,18 +6,8 @@
  */
 package com.farao_community.farao.gridcapa_core_cc.app.configuration;
 
-import com.farao_community.farao.gridcapa_core_cc.app.CoreCCListener;
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Optional;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -32,37 +22,16 @@ public class AmqpMessagesConfiguration {
     @Value("${core-cc-runner.async-time-out}")
     private long asyncTimeOut;
 
-    @Bean
-    AsyncAmqpTemplate asyncTemplate(RabbitTemplate rabbitTemplate) {
-        AsyncRabbitTemplate asyncTemplate = new AsyncRabbitTemplate(rabbitTemplate);
-        asyncTemplate.setReceiveTimeout(asyncTimeOut);
-        return asyncTemplate;
+    public String getRequestDestination() {
+        return requestDestination;
     }
 
-    @Bean
-    public Queue coreCCRequestQueue() {
-        return new Queue(requestDestination);
+    public String getRequestRoutingKey() {
+        return requestRoutingKey;
     }
 
-    @Bean
-    public TopicExchange coreCCTopicExchange() {
-        return new TopicExchange(requestDestination);
-    }
-
-    @Bean
-    public Binding coreCCRequestBinding() {
-        return BindingBuilder.bind(coreCCRequestQueue()).to(coreCCTopicExchange()).with(Optional.ofNullable(requestRoutingKey).orElse("#"));
-    }
-
-    @Bean
-    public MessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory,
-                                                             Queue coreCCRequestQueue,
-                                                             CoreCCListener listener) {
-        SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
-        simpleMessageListenerContainer.setConnectionFactory(connectionFactory);
-        simpleMessageListenerContainer.setQueues(coreCCRequestQueue);
-        simpleMessageListenerContainer.setMessageListener(listener);
-        return simpleMessageListenerContainer;
+    public long getAsyncTimeOutInMilliseconds() {
+        return asyncTimeOut;
     }
 
     public String getAsyncTimeOutInMinutes() {

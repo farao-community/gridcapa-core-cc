@@ -243,9 +243,15 @@ class CoreCCPreProcessServiceTest {
 
         coreCCPreProcessService.logCoreCCParameters(internalCoreCCRequest, coreCCTaskParameters);
         if (parameter) {
-            verify(businessLogger).warn("Core CC task parameters : '{\n" + "\t\"USE_DC_CGM_INPUT\": true\n" + "}'");
+            verify(businessLogger).warn("""
+                    Core CC task parameters : '{
+                    \t"USE_DC_CGM_INPUT": true
+                    }'""");
         } else {
-            verify(businessLogger).info("Core CC task parameters : '{\n" + "\t\"USE_DC_CGM_INPUT\": false\n" + "}'");
+            verify(businessLogger).info("""
+                    Core CC task parameters : '{
+                    \t"USE_DC_CGM_INPUT": false
+                    }'""");
         }
 
     }

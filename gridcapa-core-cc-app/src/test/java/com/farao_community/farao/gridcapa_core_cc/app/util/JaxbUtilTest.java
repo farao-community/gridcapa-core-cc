@@ -8,11 +8,14 @@
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import jakarta.xml.bind.annotation.*;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,7 +56,7 @@ class JaxbUtilTest {
     }
 
     @Test
-    void unmarshalFile() throws IOException {
+    void unmarshalFile() {
         String xmlFile = "/util/fileToUnmarshal.xml";
         Path pathToXmlFile = Paths.get(getClass().getResource(xmlFile).getPath());
         BasicCity unmarshaledFile = JaxbUtil.unmarshalFile(BasicCity.class, pathToXmlFile);
@@ -63,8 +66,9 @@ class JaxbUtilTest {
 
     @Test
     void errorWhenUnmarshalFile() {
+        final Path path = Path.of("path");
         CoreCCInternalException coreCCInternalException = assertThrows(CoreCCInternalException.class, () -> {
-            JaxbUtil.unmarshalFile(int.class, Path.of("path"));
+            JaxbUtil.unmarshalFile(int.class, path);
         });
         assertEquals("Error occurred when converting xml file path to object of type int", coreCCInternalException.getMessage());
     }

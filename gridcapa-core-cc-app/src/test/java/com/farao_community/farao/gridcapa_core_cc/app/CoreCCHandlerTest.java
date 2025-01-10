@@ -102,7 +102,7 @@ class CoreCCHandlerTest {
     private CoreCCFileResource createFileResource(final String filename, final URL resource) {
         try {
             return new CoreCCFileResource(filename, resource.toURI().toURL().toString());
-        } catch (final MalformedURLException | URISyntaxException e) {
+        } catch (final MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
     }

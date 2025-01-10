@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,7 +44,8 @@ class CoreCCTaskParametersTest {
         Mockito.when(parameter.getParameterType()).thenReturn("STRING");
         Mockito.when(parameter.getValue()).thenReturn("true");
 
-        final CoreCCInvalidDataException exception = assertThrows(CoreCCInvalidDataException.class, () -> new CoreCCTaskParameters(Collections.singletonList(parameter)));
+        final List<TaskParameterDto> parameters = Collections.singletonList(parameter);
+        final CoreCCInvalidDataException exception = assertThrows(CoreCCInvalidDataException.class, () -> new CoreCCTaskParameters(parameters));
         assertTrue(exception.getMessage().contains("Parameter USE_DC_CGM_INPUT was expected to be of type BOOLEAN, got STRING"));
     }
 

@@ -37,7 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +48,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Amira Kahya {@literal <amira.kahya at rte-france.com>}
@@ -134,7 +134,7 @@ public class FileImporter {
             Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_XML_HEADER_NAME))
                     .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
             ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
-            List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).collect(Collectors.toList());
+            List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).toList();
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, cgmsZimFileResource.getUrl()), e);
@@ -157,8 +157,8 @@ public class FileImporter {
 
     String getFilenameFromUrl(String url) {
         try {
-            return FilenameUtils.getName(new URL(url).getPath());
-        } catch (MalformedURLException e) {
+            return FilenameUtils.getName(new URI(url).toURL().getPath());
+        } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             throw new CoreCCInvalidDataException(String.format("URL is invalid: %s", url), e);
         }
     }

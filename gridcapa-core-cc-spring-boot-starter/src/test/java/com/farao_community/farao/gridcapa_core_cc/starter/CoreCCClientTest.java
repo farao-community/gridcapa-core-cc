@@ -9,6 +9,7 @@ package com.farao_community.farao.gridcapa_core_cc.starter;
 
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -30,8 +31,8 @@ class CoreCCClientTest {
         Message responseMessage = Mockito.mock(Message.class);
 
         Mockito.when(responseMessage.getBody()).thenReturn(getClass().getResourceAsStream("/coreCCResponse.json").readAllBytes());
-        Mockito.when(amqpTemplate.sendAndReceive(Mockito.same("my-queue"), Mockito.any())).thenReturn(responseMessage);
-        client.run(request);
+        Mockito.doNothing().when(amqpTemplate).send(Mockito.same("my-queue"), Mockito.any());
+        Assertions.assertDoesNotThrow(() -> client.run(request));
     }
 
     private CoreCCClientProperties buildProperties() {
