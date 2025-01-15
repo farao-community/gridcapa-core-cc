@@ -25,6 +25,6 @@ class AmqpMessagesConfigurationTest {
     @Test
     void checkAmqpMessageConfiguration() {
         assertNotNull(amqpConfiguration);
-        assertEquals("10,00", amqpConfiguration.getAsyncTimeOutInMinutes());
+        assertEquals("10.00", amqpConfiguration.getAsyncTimeOutInMinutes());
     }
 }

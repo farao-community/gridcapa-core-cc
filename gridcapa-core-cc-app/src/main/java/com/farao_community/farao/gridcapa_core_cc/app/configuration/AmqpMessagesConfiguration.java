@@ -9,6 +9,8 @@ package com.farao_community.farao.gridcapa_core_cc.app.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Locale;
+
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  */
@@ -23,6 +25,6 @@ public class AmqpMessagesConfiguration {
     }
 
     public String getAsyncTimeOutInMinutes() {
-        return String.format("%.2f", (double) asyncTimeOut / 1000 / 60);
+        return String.format(Locale.US,"%.2f", (double) asyncTimeOut / 1000 / 60);
     }
 }
