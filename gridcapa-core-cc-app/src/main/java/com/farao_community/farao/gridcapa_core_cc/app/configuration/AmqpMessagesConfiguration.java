@@ -25,6 +25,6 @@ public class AmqpMessagesConfiguration {
     }
 
     public String getAsyncTimeOutInMinutes() {
-        return String.format(Locale.US,"%.2f", (double) asyncTimeOut / 1000 / 60);
+        return String.format(Locale.US, "%.2f", (double) asyncTimeOut / 1000 / 60);
     }
 }
