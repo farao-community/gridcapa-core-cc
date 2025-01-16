@@ -36,12 +36,6 @@ class CoreCCClientTest {
     }
 
     private CoreCCClientProperties buildProperties() {
-        CoreCCClientProperties properties = new CoreCCClientProperties();
-        CoreCCClientProperties.BindingConfiguration amqpConfiguration = new CoreCCClientProperties.BindingConfiguration();
-        amqpConfiguration.setDestination("my-queue");
-        amqpConfiguration.setExpiration("60000");
-        amqpConfiguration.setApplicationId("application-id");
-        properties.setBinding(amqpConfiguration);
-        return properties;
+        return new CoreCCClientProperties(new CoreCCClientProperties.BindingConfiguration("my-queue", null, "60000", "application-id"));
     }
 }
