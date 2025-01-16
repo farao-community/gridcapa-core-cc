@@ -9,11 +9,21 @@ package com.farao_community.farao.gridcapa_core_cc.starter;
 
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.MessagePropertiesBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  */
+// EnableConfigurationProperties has been put here to make this package standalone and simplify its usage by other applications
+@EnableConfigurationProperties(CoreCCClientProperties.class)
+@Component
 public class CoreCCClient {
     private static final int DEFAULT_PRIORITY = 1;
     private static final String CONTENT_ENCODING = "UTF-8";
@@ -23,33 +33,35 @@ public class CoreCCClient {
     private final CoreCCClientProperties coreCCClientProperties;
     private final JsonApiConverter jsonConverter;
 
-    public CoreCCClient(AmqpTemplate amqpTemplate, CoreCCClientProperties coreCCClientProperties) {
+    public CoreCCClient(final AmqpTemplate amqpTemplate, final CoreCCClientProperties coreCCClientProperties) {
         this.amqpTemplate = amqpTemplate;
         this.coreCCClientProperties = coreCCClientProperties;
         this.jsonConverter = new JsonApiConverter();
     }
 
-    public void run(CoreCCRequest coreCCRequest, int priority) {
-        amqpTemplate.send(coreCCClientProperties.getAmqp().getQueueName(), buildMessage(coreCCRequest, priority));
+    public void run(final CoreCCRequest coreCCRequest, final int priority) {
+        amqpTemplate.send(coreCCClientProperties.binding().destination(),
+                coreCCClientProperties.binding().routingKey(),
+                buildMessage(coreCCRequest, priority));
     }
 
-    public void run(CoreCCRequest coreCCRequest) {
+    public void run(final CoreCCRequest coreCCRequest) {
         run(coreCCRequest, DEFAULT_PRIORITY);
     }
 
-    public Message buildMessage(CoreCCRequest coreCCRequest, int priority) {
+    public Message buildMessage(final CoreCCRequest coreCCRequest, final int priority) {
         return MessageBuilder.withBody(jsonConverter.toJsonMessage(coreCCRequest))
                 .andProperties(buildMessageProperties(priority))
                 .build();
     }
 
-    private MessageProperties buildMessageProperties(int priority) {
+    private MessageProperties buildMessageProperties(final int priority) {
         return MessagePropertiesBuilder.newInstance()
-                .setAppId(coreCCClientProperties.getAmqp().getApplicationId())
+                .setAppId(coreCCClientProperties.binding().applicationId())
                 .setContentEncoding(CONTENT_ENCODING)
                 .setContentType(CONTENT_TYPE)
                 .setDeliveryMode(MessageDeliveryMode.NON_PERSISTENT)
-                .setExpiration(coreCCClientProperties.getAmqp().getExpiration())
+                .setExpiration(coreCCClientProperties.binding().expiration())
                 .setPriority(priority)
                 .build();
     }
