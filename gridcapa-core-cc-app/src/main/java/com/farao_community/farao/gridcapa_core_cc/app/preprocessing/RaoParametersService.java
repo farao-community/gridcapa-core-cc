@@ -12,9 +12,9 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
+import com.powsybl.openrao.raoapi.parameters.LoopFlowParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
-import com.powsybl.openrao.raoapi.parameters.extensions.LoopFlowParametersExtension;
-import com.powsybl.openrao.raoapi.parameters.extensions.RelativeMarginsParametersExtension;
+import com.powsybl.openrao.raoapi.parameters.RelativeMarginsParameters;
 import com.powsybl.openrao.virtualhubs.BorderDirection;
 import com.powsybl.openrao.virtualhubs.MarketArea;
 import com.powsybl.openrao.virtualhubs.VirtualHub;
@@ -79,7 +79,7 @@ public class RaoParametersService {
         if (pstRaMinImpactOptional.isPresent()) {
             pstRaMinImpact += Double.parseDouble(pstRaMinImpactOptional.get().getValue());
         }
-        raoParameters.getRangeActionsOptimizationParameters().setPstPenaltyCost(pstRaMinImpact);
+        raoParameters.getRangeActionsOptimizationParameters().setHvdcRAMinImpactThreshold(pstRaMinImpact);
     }
 
     static void setAbsoluteMinimumImpactThreshold(RequestMessage requestMessage, RaoParameters raoParameters) {
@@ -92,35 +92,37 @@ public class RaoParametersService {
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(topoRaMinImpact);
     }
 
-    static void setLoopFlowCountries(RequestMessage requestMessage, RaoParameters raoParameters) {
-        Set<Country> loopFlowCountries = requestMessage.getHeader().getProperty().stream()
-            .filter(property -> property.getName().toUpperCase().startsWith(LOOP_FLOW_COUNTRIES.toUpperCase()) && property.getValue().equalsIgnoreCase(Boolean.TRUE.toString()))
+    static void setLoopFlowCountries(final RequestMessage requestMessage, final RaoParameters raoParameters) {
+        final Set<Country> loopFlowCountries = requestMessage.getHeader().getProperty().stream()
+            .filter(property -> property.getName().toUpperCase().startsWith(LOOP_FLOW_COUNTRIES.toUpperCase())
+                                && property.getValue().equalsIgnoreCase(Boolean.TRUE.toString()))
             .map(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1))
             .map(RaoParametersService::convertGermanyZones)
             .map(Country::valueOf)
             .collect(Collectors.toSet());
 
-        LoopFlowParametersExtension loopFlowParameters;
-        if (raoParameters.hasExtension(LoopFlowParametersExtension.class)) {
-            loopFlowParameters = raoParameters.getExtension(LoopFlowParametersExtension.class);
-        } else {
-            loopFlowParameters = new LoopFlowParametersExtension();
-            raoParameters.addExtension(LoopFlowParametersExtension.class, loopFlowParameters);
-        }
+        final LoopFlowParameters loopFlowParameters =
+                raoParameters.getLoopFlowParameters()
+                        .orElseGet(() -> {
+                            final LoopFlowParameters newParams = new LoopFlowParameters();
+                            raoParameters.setLoopFlowParameters(newParams);
+                            return newParams;
+                        });
         loopFlowParameters.setCountries(loopFlowCountries);
     }
 
-    static void setPtdfBoundaries(VirtualHubsConfiguration virtualHubsConfiguration, RaoParameters raoParameters) {
-        List<String> ptdfBoundariesStrings = getPtdfBoundariesStrings(virtualHubsConfiguration);
+    static void setPtdfBoundaries(final VirtualHubsConfiguration virtualHubsConfiguration,
+                                  final RaoParameters raoParameters) {
+        final List<String> ptdfBoundariesStrings = getPtdfBoundariesStrings(virtualHubsConfiguration);
 
-        RelativeMarginsParametersExtension relativeMarginsParametersExtension;
-        if (raoParameters.hasExtension(RelativeMarginsParametersExtension.class)) {
-            relativeMarginsParametersExtension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        } else {
-            relativeMarginsParametersExtension = new RelativeMarginsParametersExtension();
-            raoParameters.addExtension(RelativeMarginsParametersExtension.class, relativeMarginsParametersExtension);
-        }
-        relativeMarginsParametersExtension.setPtdfBoundariesFromString(ptdfBoundariesStrings);
+        final RelativeMarginsParameters relativeMarginsParameters =
+                raoParameters.getRelativeMarginsParameters()
+                        .orElseGet(() -> {
+                            final RelativeMarginsParameters newParams = new RelativeMarginsParameters();
+                            raoParameters.setRelativeMarginsParameters(newParams);
+                            return newParams;
+                        });
+        relativeMarginsParameters.setPtdfBoundariesFromString(ptdfBoundariesStrings);
     }
 
     private static List<String> getPtdfBoundariesStrings(VirtualHubsConfiguration virtualHubsConfiguration) {

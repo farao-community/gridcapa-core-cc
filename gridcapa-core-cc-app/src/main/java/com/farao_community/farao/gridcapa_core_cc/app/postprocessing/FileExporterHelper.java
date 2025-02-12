@@ -27,9 +27,8 @@ import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.data.raoresult.io.cne.core.CoreCneExporter;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
+import com.powsybl.openrao.raoapi.parameters.MnecParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
-import com.powsybl.openrao.raoapi.parameters.extensions.LoopFlowParametersExtension;
-import com.powsybl.openrao.raoapi.parameters.extensions.MnecParametersExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -208,9 +207,11 @@ public class FileExporterHelper {
         properties.setProperty(RELATIVE_POSITIVE_MARGINS.getPrefixedKey(),
                 valueOf(raoParameters.getObjectiveFunctionParameters().getType().relativePositiveMargins()));
         properties.setProperty(WITH_LOOP_FLOWS.getPrefixedKey(),
-                valueOf(raoParameters.getExtension(LoopFlowParametersExtension.class) != null));
+                valueOf(raoParameters.getLoopFlowParameters().isPresent()));
+        //If no value exists in raoParameters, we use default value
+        final MnecParameters mnecParameters = raoParameters.getMnecParameters().orElseGet(MnecParameters::new);
         properties.setProperty(MNEC_ACCEPTABLE_MARGIN_DIMINUTION.getPrefixedKey(),
-                valueOf(raoParameters.getExtension(MnecParametersExtension.class).getAcceptableMarginDecrease()));
+                valueOf(mnecParameters.getAcceptableMarginDecrease()));
         properties.setProperty(DOCUMENT_ID.getPrefixedKey(), generateCneMRID(coreCCRequest));
         properties.setProperty(REVISION_NUMBER.getPrefixedKey(), valueOf(coreCCRequest.getVersion()));
         properties.setProperty(CneProperties.DOMAIN_ID.getPrefixedKey(), DOMAIN_ID);

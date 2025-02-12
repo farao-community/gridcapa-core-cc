@@ -12,9 +12,12 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.Request
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.openrao.raoapi.ZoneToZonePtdfDefinition;
+import com.powsybl.openrao.raoapi.parameters.LoopFlowParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
-import com.powsybl.openrao.raoapi.parameters.extensions.LoopFlowParametersExtension;
-import com.powsybl.openrao.raoapi.parameters.extensions.RelativeMarginsParametersExtension;
+import com.powsybl.openrao.raoapi.parameters.RelativeMarginsParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.OpenRaoSearchTreeParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoLoopFlowParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoRelativeMarginsParameters;
 import com.powsybl.openrao.virtualhubs.BorderDirection;
 import com.powsybl.openrao.virtualhubs.MarketArea;
 import com.powsybl.openrao.virtualhubs.VirtualHub;
@@ -28,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -60,13 +64,13 @@ class RaoParametersServiceTest {
         assertEquals("2020-03-29T23:00:00Z/2020-03-30T00:00:00Z", raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         RaoParameters raoParameters = raoParametersService.createRaoParametersFromRequest(raoRequestMessage, buildVirtualHubsConfiguration());
 
-        assertEquals(10.0, raoParameters.getRangeActionsOptimizationParameters().getPstPenaltyCost());
+        assertEquals(10.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
 
         List<String> expectedLoopFlowConstraintCountries = Arrays.asList("CZ", "SK", "FR", "PL", "RO", "DE", "SI", "NL", "HR", "HU", "AT");
-        List<String> actualLoopFlowConstraintCountries = raoParameters.getExtension(LoopFlowParametersExtension.class).getCountries().stream().map(Country::toString).toList();
+        List<String> actualLoopFlowConstraintCountries = raoParameters.getLoopFlowParameters().get().getCountries().stream().map(Country::toString).toList();
         assertTrue(expectedLoopFlowConstraintCountries.size() == actualLoopFlowConstraintCountries.size()
-                && expectedLoopFlowConstraintCountries.containsAll(actualLoopFlowConstraintCountries)
-                && actualLoopFlowConstraintCountries.containsAll(expectedLoopFlowConstraintCountries));
+                   && expectedLoopFlowConstraintCountries.containsAll(actualLoopFlowConstraintCountries)
+                   && actualLoopFlowConstraintCountries.containsAll(expectedLoopFlowConstraintCountries));
 
         assertEquals(10.0, raoParameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
     }
@@ -89,7 +93,7 @@ class RaoParametersServiceTest {
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
         assertNotNull(raoParameters.getRangeActionsOptimizationParameters());
-        assertEquals(42.0, raoParameters.getRangeActionsOptimizationParameters().getPstPenaltyCost());
+        assertEquals(42.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
     }
 
     @Test
@@ -102,7 +106,7 @@ class RaoParametersServiceTest {
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
         assertNotNull(raoParameters.getRangeActionsOptimizationParameters());
-        assertEquals(0.0, raoParameters.getRangeActionsOptimizationParameters().getPstPenaltyCost());
+        assertEquals(0.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
     }
 
     @Test
@@ -145,16 +149,20 @@ class RaoParametersServiceTest {
         property.setName("LF_CONSTRAINT_FR");
         property.setValue("true");
         RaoParameters raoParameters = new RaoParameters();
-        LoopFlowParametersExtension extension = new LoopFlowParametersExtension();
-        raoParameters.addExtension(LoopFlowParametersExtension.class, extension);
-        extension.setConstraintAdjustmentCoefficient(35.0);
+
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
+        final SearchTreeRaoLoopFlowParameters loopFlowParametersExtension = new SearchTreeRaoLoopFlowParameters();
+        loopFlowParametersExtension.setConstraintAdjustmentCoefficient(35.0);
+        openRaoSearchTreeParameters.setLoopFlowParameters(loopFlowParametersExtension);
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
-        LoopFlowParametersExtension loopFlowParametersExtension = raoParameters.getExtension(LoopFlowParametersExtension.class);
-        assertEquals(35.0, loopFlowParametersExtension.getConstraintAdjustmentCoefficient());
-        assertNotNull(loopFlowParametersExtension.getCountries());
-        assertTrue(loopFlowParametersExtension.getCountries().contains(Country.FR));
+        final OpenRaoSearchTreeParameters retrievedExtension = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
+        assertEquals(35.0, retrievedExtension.getLoopFlowParameters().get().getConstraintAdjustmentCoefficient());
+        final LoopFlowParameters retrievedLoopFlowParameters = raoParameters.getLoopFlowParameters().get();
+        assertNotNull(retrievedLoopFlowParameters.getCountries());
+        assertTrue(retrievedLoopFlowParameters.getCountries().contains(Country.FR));
     }
 
     @Test
@@ -167,13 +175,18 @@ class RaoParametersServiceTest {
         property.setName("LF_CONSTRAINT_FR");
         property.setValue("true");
         RaoParameters raoParameters = new RaoParameters();
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
+        final SearchTreeRaoLoopFlowParameters loopFlowParametersExtension = new SearchTreeRaoLoopFlowParameters();
+        openRaoSearchTreeParameters.setLoopFlowParameters(loopFlowParametersExtension);
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
-        LoopFlowParametersExtension loopFlowParametersExtension = raoParameters.getExtension(LoopFlowParametersExtension.class);
-        assertEquals(0.0, loopFlowParametersExtension.getConstraintAdjustmentCoefficient());
-        assertNotNull(loopFlowParametersExtension.getCountries());
-        assertTrue(loopFlowParametersExtension.getCountries().contains(Country.FR));
+        final OpenRaoSearchTreeParameters retrievedExtension = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
+        assertEquals(0.0, retrievedExtension.getLoopFlowParameters().get().getConstraintAdjustmentCoefficient());
+        final LoopFlowParameters retrievedLoopFlowParameters = raoParameters.getLoopFlowParameters().get();
+        assertFalse(retrievedLoopFlowParameters.getCountries().isEmpty());
+        assertTrue(retrievedLoopFlowParameters.getCountries().contains(Country.FR));
     }
 
     @Test
@@ -201,10 +214,9 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
-        LoopFlowParametersExtension loopFlowParametersExtension = raoParameters.getExtension(LoopFlowParametersExtension.class);
-        assertNotNull(loopFlowParametersExtension.getCountries());
-        assertEquals(1, loopFlowParametersExtension.getCountries().size());
-        assertTrue(loopFlowParametersExtension.getCountries().contains(Country.DE));
+        final LoopFlowParameters retrievedLoopFlowParameters = raoParameters.getLoopFlowParameters().get();
+        assertEquals(1, retrievedLoopFlowParameters.getCountries().size());
+        assertTrue(retrievedLoopFlowParameters.getCountries().contains(Country.DE));
     }
 
     @Test
@@ -237,34 +249,37 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
-        LoopFlowParametersExtension loopFlowParametersExtension = raoParameters.getExtension(LoopFlowParametersExtension.class);
-        assertNotNull(loopFlowParametersExtension.getCountries());
-        assertEquals(0, loopFlowParametersExtension.getCountries().size());
+        final LoopFlowParameters retrievedLoopFlowParameters = raoParameters.getLoopFlowParameters().get();
+        assertTrue(retrievedLoopFlowParameters.getCountries().isEmpty());
     }
 
     @Test
     void ptdfBoundariesWithExtensionTest() {
-        VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        RaoParameters raoParameters = new RaoParameters();
-        RelativeMarginsParametersExtension extension = new RelativeMarginsParametersExtension();
-        raoParameters.addExtension(RelativeMarginsParametersExtension.class, extension);
-        extension.setPtdfSumLowerBound(76.0);
+        final VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
+        final RaoParameters raoParameters = new RaoParameters();
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
+        final SearchTreeRaoRelativeMarginsParameters relativeMarginsParametersExtension = new SearchTreeRaoRelativeMarginsParameters();
+        relativeMarginsParametersExtension.setPtdfSumLowerBound(76.0);
+        openRaoSearchTreeParameters.setRelativeMarginsParameters(relativeMarginsParametersExtension);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension rmpExtension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertEquals(76.0, rmpExtension.getPtdfSumLowerBound());
+        assertEquals(76.0, raoParameters.getExtension(OpenRaoSearchTreeParameters.class).getRelativeMarginsParameters().get().getPtdfSumLowerBound());
     }
 
     @Test
     void ptdfBoundariesWithoutExtensionTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
         RaoParameters raoParameters = new RaoParameters();
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
+        final SearchTreeRaoRelativeMarginsParameters relativeMarginsParametersExtension = new SearchTreeRaoRelativeMarginsParameters();
+        openRaoSearchTreeParameters.setRelativeMarginsParameters(relativeMarginsParametersExtension);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertTrue(extension.getPtdfSumLowerBound() < 1.0);
+        assertTrue(raoParameters.getExtension(OpenRaoSearchTreeParameters.class).getRelativeMarginsParameters().get().getPtdfSumLowerBound() < 1.0);
     }
 
     @Test
@@ -282,10 +297,10 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertNotNull(extension.getPtdfBoundaries());
-        assertEquals(2, extension.getPtdfBoundaries().size());
-        List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
+        RelativeMarginsParameters relativeMarginsParameters = raoParameters.getRelativeMarginsParameters().get();
+        assertNotNull(relativeMarginsParameters.getPtdfBoundaries());
+        assertEquals(2, relativeMarginsParameters.getPtdfBoundaries().size());
+        List<String> ptdfBoundariesStrings = relativeMarginsParameters.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
         assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{10YSK-SEPS-----K}"));
         assertTrue(ptdfBoundariesStrings.contains("{10YBE----------2}-{10YSK-SEPS-----K}"));
     }
@@ -310,10 +325,10 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertNotNull(extension.getPtdfBoundaries());
-        assertEquals(3, extension.getPtdfBoundaries().size());
-        List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
+        RelativeMarginsParameters relativeMarginsParameters = raoParameters.getRelativeMarginsParameters().get();
+        assertNotNull(relativeMarginsParameters.getPtdfBoundaries());
+        assertEquals(3, relativeMarginsParameters.getPtdfBoundaries().size());
+        List<String> ptdfBoundariesStrings = relativeMarginsParameters.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
         assertTrue(ptdfBoundariesStrings.contains("{10YBE----------2}-{BE2-XXXXXXXXXXXX}"));
         assertTrue(ptdfBoundariesStrings.contains("{10YES-REE------0}-{ES1-XXXXXXXXXXXX}"));
         assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{FR1-XXXXXXXXXXXX}-{10YBE----------2}+{BE1-XXXXXXXXXXXX}"));
@@ -335,10 +350,10 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertNotNull(extension.getPtdfBoundaries());
-        assertEquals(2, extension.getPtdfBoundaries().size());
-        List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
+        RelativeMarginsParameters relativeMarginsParameters = raoParameters.getRelativeMarginsParameters().get();
+        assertNotNull(relativeMarginsParameters.getPtdfBoundaries());
+        assertEquals(2, relativeMarginsParameters.getPtdfBoundaries().size());
+        List<String> ptdfBoundariesStrings = relativeMarginsParameters.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
         assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{10YSK-SEPS-----K}"));
         assertTrue(ptdfBoundariesStrings.contains("{10YFR-RTE------C}-{FR1-XXXXXXXXXXXX}-{10YBE----------2}+{BE1-XXXXXXXXXXXX}"));
     }
@@ -355,10 +370,10 @@ class RaoParametersServiceTest {
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
-        RelativeMarginsParametersExtension extension = raoParameters.getExtension(RelativeMarginsParametersExtension.class);
-        assertNotNull(extension.getPtdfBoundaries());
-        assertEquals(1, extension.getPtdfBoundaries().size());
-        List<String> ptdfBoundariesStrings = extension.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
+        RelativeMarginsParameters relativeMarginsParameters = raoParameters.getRelativeMarginsParameters().get();
+        assertNotNull(relativeMarginsParameters.getPtdfBoundaries());
+        assertEquals(1, relativeMarginsParameters.getPtdfBoundaries().size());
+        List<String> ptdfBoundariesStrings = relativeMarginsParameters.getPtdfBoundaries().stream().map(ZoneToZonePtdfDefinition::toString).toList();
         assertTrue(ptdfBoundariesStrings.contains("{DE-XXXXXXXXXXXXX}-{DK1-XXXXXXXXXXXX}"));
     }
 }
