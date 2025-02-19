@@ -79,7 +79,7 @@ public class RaoParametersService {
         if (pstRaMinImpactOptional.isPresent()) {
             pstRaMinImpact += Double.parseDouble(pstRaMinImpactOptional.get().getValue());
         }
-        raoParameters.getRangeActionsOptimizationParameters().setHvdcRAMinImpactThreshold(pstRaMinImpact);
+        raoParameters.getRangeActionsOptimizationParameters().setPstRAMinImpactThreshold(pstRaMinImpact);
     }
 
     static void setAbsoluteMinimumImpactThreshold(RequestMessage requestMessage, RaoParameters raoParameters) {

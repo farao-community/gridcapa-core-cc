@@ -64,7 +64,7 @@ class RaoParametersServiceTest {
         assertEquals("2020-03-29T23:00:00Z/2020-03-30T00:00:00Z", raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         RaoParameters raoParameters = raoParametersService.createRaoParametersFromRequest(raoRequestMessage, buildVirtualHubsConfiguration());
 
-        assertEquals(10.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
+        assertEquals(10.0, raoParameters.getRangeActionsOptimizationParameters().getPstRAMinImpactThreshold());
 
         List<String> expectedLoopFlowConstraintCountries = Arrays.asList("CZ", "SK", "FR", "PL", "RO", "DE", "SI", "NL", "HR", "HU", "AT");
         List<String> actualLoopFlowConstraintCountries = raoParameters.getLoopFlowParameters().get().getCountries().stream().map(Country::toString).toList();
@@ -93,7 +93,7 @@ class RaoParametersServiceTest {
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
         assertNotNull(raoParameters.getRangeActionsOptimizationParameters());
-        assertEquals(42.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
+        assertEquals(42.0, raoParameters.getRangeActionsOptimizationParameters().getPstRAMinImpactThreshold());
     }
 
     @Test
@@ -106,7 +106,7 @@ class RaoParametersServiceTest {
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
         assertNotNull(raoParameters.getRangeActionsOptimizationParameters());
-        assertEquals(0.0, raoParameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
+        assertEquals(0.0, raoParameters.getRangeActionsOptimizationParameters().getPstRAMinImpactThreshold());
     }
 
     @Test
