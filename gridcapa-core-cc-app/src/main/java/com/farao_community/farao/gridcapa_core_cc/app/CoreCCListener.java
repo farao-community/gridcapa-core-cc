@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -39,9 +40,12 @@ public class CoreCCListener {
     private final JsonApiConverter jsonApiConverter;
     private final CoreCCHandler coreCCHandler;
     private final StreamBridge streamBridge;
+    private final Logger businessLogger;
 
-    public CoreCCListener(final CoreCCHandler coreCCHandler,
+    public CoreCCListener(final Logger businessLogger,
+                          final CoreCCHandler coreCCHandler,
                           final StreamBridge streamBridge) {
+        this.businessLogger = businessLogger;
         this.streamBridge = streamBridge;
         this.jsonApiConverter = new JsonApiConverter();
         this.coreCCHandler = coreCCHandler;
@@ -55,6 +59,7 @@ public class CoreCCListener {
     }
 
     protected void launchCoreRequest(final byte[] req) {
+        final OffsetDateTime startTime = OffsetDateTime.now();
         try {
             final CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(req, CoreCCRequest.class);
             // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
@@ -69,7 +74,17 @@ public class CoreCCListener {
             LOGGER.error("Core CC exception occured", e);
         } catch (final RuntimeException e) {
             LOGGER.error("Unhandled exception: ", e);
+        } finally {
+            logComputationTime(startTime);
         }
+    }
+
+    private void logComputationTime(final OffsetDateTime startTime) {
+        final Duration difference = Duration.between(startTime, OffsetDateTime.now());
+        businessLogger.info("Summary : computation time: {}h {}min {}s since the task switched to RUNNING.",
+                difference.toHours(),
+                difference.toMinutesPart(),
+                difference.toSecondsPart());
     }
 
     private void updateTaskStatus(final String internalRequestId,
@@ -80,7 +95,6 @@ public class CoreCCListener {
             LOGGER.info("Updating task status to SUCCESS for timestamp {}", timestamp);
         } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(internalRequestId), TaskStatus.ERROR));
-            LOGGER.info("Updating task status to ERROR for timestamp {}", timestamp);
         }
     }
 }
