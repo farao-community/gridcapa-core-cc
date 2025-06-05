@@ -25,7 +25,7 @@ import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,10 +47,10 @@ class CoreCCHandlerTest {
     @Autowired
     private CoreCCHandler coreCCHandler;
 
-    @MockBean
+    @MockitoBean
     private MinioAdapter minioAdapter;
 
-    @MockBean
+    @MockitoBean
     private RaoRunnerService raoRunnerService;
 
     @Test
