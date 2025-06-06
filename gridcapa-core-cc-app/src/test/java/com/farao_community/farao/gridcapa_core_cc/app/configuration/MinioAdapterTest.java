@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +25,7 @@ class MinioAdapterTest {
     @Autowired
     private MinioAdapter minioAdapter;
 
-    @MockBean
+    @MockitoBean
     private MinioClient minioClient;
 
     @BeforeEach
