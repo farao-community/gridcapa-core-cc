@@ -105,7 +105,7 @@ class FileExporterHelperTest {
     }
 
     @AfterAll
-    public static void deleteTemporaryDirectory() throws IOException {
+    static void deleteTemporaryDirectory() throws IOException {
         FileUtils.deleteDirectory(new File(TEMP_DIR + "/gridcapa-core-cc"));
     }
 

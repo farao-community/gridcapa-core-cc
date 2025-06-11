@@ -90,7 +90,7 @@ class CoreCCPreProcessServiceTest {
     private Logger businessLogger;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
