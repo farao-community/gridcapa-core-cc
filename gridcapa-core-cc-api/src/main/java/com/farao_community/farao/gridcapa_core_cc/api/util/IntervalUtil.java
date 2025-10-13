@@ -11,7 +11,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 /**
  * @author Pengbo Wang {@literal <pengbo.wang at rte-international.com>}
@@ -20,23 +21,27 @@ import java.time.temporal.ChronoUnit;
  */
 public final class IntervalUtil {
     public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
+    public static final int OFFSET_BEFORE_WINTER_DST = 2;
+    public static final int OFFSET_AFTER_WINTER_DST = 1;
 
     private IntervalUtil() {
         throw new AssertionError("Utility class should not be constructed");
     }
 
-    public static String getBrusselsFormattedBusinessDayFromUtc(OffsetDateTime offsetDateTime) {
-        return DateTimeFormatter.ofPattern("yyyyMMdd").format(convertUtcToBrusselOffsetDateTime(offsetDateTime));
+    public static String getBrusselsFormattedBusinessDayFromUtc(final OffsetDateTime offsetDateTime) {
+        return DateTimeFormatter.ofPattern("yyyyMMdd").format(utcToBrussels(offsetDateTime));
     }
 
-    private static OffsetDateTime convertUtcToBrusselOffsetDateTime(OffsetDateTime offsetDateTime) {
+    private static OffsetDateTime utcToBrussels(final OffsetDateTime offsetDateTime) {
         return offsetDateTime.withOffsetSameInstant(ZONE_ID.getRules().getOffset(offsetDateTime.toInstant()));
     }
 
-    public static String handle25TimestampCase(String filename, String instant) {
-        ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instant).minus(1, ChronoUnit.HOURS).atZone(ZONE_ID)).getOffset();
-        ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instant).atZone(ZONE_ID)).getOffset();
-        if (previousOffset == ZoneOffset.ofHours(2) && currentOffset == ZoneOffset.ofHours(1)) {
+    public static String handleWinterDst(final String filename, final String instantInDstHour) {
+        final ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instantInDstHour).minus(1, HOURS).atZone(ZONE_ID)).getOffset();
+        final ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instantInDstHour).atZone(ZONE_ID)).getOffset();
+        // is this the winter daylight saving time ?
+        if (previousOffset == ZoneOffset.ofHours(OFFSET_BEFORE_WINTER_DST)
+                && currentOffset == ZoneOffset.ofHours(OFFSET_AFTER_WINTER_DST)) {
             return filename.replace("_0", "_B");
         } else {
             return filename;

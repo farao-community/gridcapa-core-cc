@@ -17,11 +17,11 @@ import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
  */
 public abstract class AbstractCoreCCException extends RuntimeException {
 
-    protected AbstractCoreCCException(String message) {
+    protected AbstractCoreCCException(final String message) {
         super(message);
     }
 
-    protected AbstractCoreCCException(String message, Throwable throwable) {
+    protected AbstractCoreCCException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 
@@ -34,12 +34,14 @@ public abstract class AbstractCoreCCException extends RuntimeException {
     }
 
     public final String getDetails() {
-        String message = getMessage();
-        Throwable cause = getCause();
+        final String message = getMessage();
+        final Throwable cause = getCause();
+
         if (cause == null) {
             return message;
         }
-        StringBuilder sb = new StringBuilder(64);
+
+        final StringBuilder sb = new StringBuilder(64);
         if (message != null) {
             sb.append(message).append("; ");
         }

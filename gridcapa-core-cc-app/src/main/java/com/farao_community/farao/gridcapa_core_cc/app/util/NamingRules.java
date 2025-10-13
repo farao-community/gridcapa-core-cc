@@ -58,18 +58,18 @@ public final class NamingRules {
         String output = UCT_FILENAME_FORMATTER.format(Instant.parse(instant));
         output = output.replace("2D0", "2D" + Instant.parse(instant).atZone(IntervalUtil.ZONE_ID).getDayOfWeek().getValue())
             .replace("_UXV", "_UX" + version);
-        return IntervalUtil.handle25TimestampCase(output, instant);
+        return IntervalUtil.handleWinterDst(output, instant);
     }
 
     public static String generateCneFileName(String instant, InternalCoreCCRequest coreCCRequest) {
         String output = CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
             .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
-        return IntervalUtil.handle25TimestampCase(output, instant);
+        return IntervalUtil.handleWinterDst(output, instant);
     }
 
     public static String generateRaoResultFileName(String instant) {
         String output = RAO_RESULT_FILENAME_FORMATTER.format(Instant.parse(instant));
-        return IntervalUtil.handle25TimestampCase(output, instant);
+        return IntervalUtil.handleWinterDst(output, instant);
     }
 
     public static String generateOutputsDestinationPath(String destinationPrefix, String fileName) {
@@ -78,18 +78,18 @@ public final class NamingRules {
 
     public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
         String output =  formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
-        return IntervalUtil.handle25TimestampCase(output, instant);
+        return IntervalUtil.handleWinterDst(output, instant);
     }
 
     // -- Destination keys
     public static String getDestinationKey(OffsetDateTime offsetDateTime) {
         String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(IntervalUtil.ZONE_ID));
-        return "RAO_WORKING_DIR" + "/" + IntervalUtil.handle25TimestampCase(hourlyFolderName, offsetDateTime.toInstant().toString());
+        return "RAO_WORKING_DIR" + "/" + IntervalUtil.handleWinterDst(hourlyFolderName, offsetDateTime.toInstant().toString());
     }
 
     public static String getAckDestinationKey(OffsetDateTime offsetDateTime) {
         String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(IntervalUtil.ZONE_ID));
-        return "RAO_OUTPUTS_DIR" + "/" + IntervalUtil.handle25TimestampCase(hourlyFolderName, offsetDateTime.toInstant().toString());
+        return "RAO_OUTPUTS_DIR" + "/" + IntervalUtil.handleWinterDst(hourlyFolderName, offsetDateTime.toInstant().toString());
     }
 
     private static String formatVersion(String filename, int v) {

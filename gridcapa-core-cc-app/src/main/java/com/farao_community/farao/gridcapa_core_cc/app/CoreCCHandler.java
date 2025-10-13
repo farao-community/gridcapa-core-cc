@@ -127,6 +127,7 @@ public class CoreCCHandler {
                                   final Throwable exception) {
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
         hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
+
         if (exception instanceof final ResourceParseException resourceParseException) {
             // Sync scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format.
             setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
