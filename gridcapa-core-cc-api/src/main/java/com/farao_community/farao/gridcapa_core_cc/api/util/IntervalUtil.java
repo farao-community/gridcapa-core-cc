@@ -37,11 +37,13 @@ public final class IntervalUtil {
     }
 
     public static String handleWinterDst(final String filename, final String instantInDstHour) {
-        final ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instantInDstHour).minus(1, HOURS).atZone(ZONE_ID)).getOffset();
-        final ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instantInDstHour).atZone(ZONE_ID)).getOffset();
+        final Instant instant = Instant.parse(instantInDstHour);
+        final ZoneOffset previousOffset = OffsetDateTime.from(instant.minus(1, HOURS)
+                                                                  .atZone(ZONE_ID)).getOffset();
+        final ZoneOffset currentOffset = OffsetDateTime.from(instant.atZone(ZONE_ID)).getOffset();
         // is this the winter daylight saving time ?
-        if (previousOffset == ZoneOffset.ofHours(OFFSET_BEFORE_WINTER_DST)
-                && currentOffset == ZoneOffset.ofHours(OFFSET_AFTER_WINTER_DST)) {
+        if (previousOffset.equals(ZoneOffset.ofHours(OFFSET_BEFORE_WINTER_DST))
+                && currentOffset.equals(ZoneOffset.ofHours(OFFSET_AFTER_WINTER_DST))) {
             return filename.replace("_0", "_B");
         } else {
             return filename;
