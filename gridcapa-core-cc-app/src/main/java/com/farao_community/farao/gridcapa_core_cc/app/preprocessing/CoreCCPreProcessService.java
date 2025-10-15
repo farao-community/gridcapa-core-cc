@@ -112,14 +112,19 @@ public class CoreCCPreProcessService {
         final String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, virtualHubsConfiguration, destinationKey);
         final CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
         final CgmsAndXmlHeader dcCgmsAndXmlHeader = coreCCRequest.getDcCgm() != null ? fileImporter.importCgmsZip(coreCCRequest.getDcCgm()) : null;
-
-        if (!Interval.parse(raoRequestItems.getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader
-                                                                                             .getXmlHeader()
-                                                                                             .getPayload()
-                                                                                             .getResponseItems()
-                                                                                             .getTimeInterval()))) {
-            throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
+        
+        try {
+            if (!Interval.parse(raoRequestItems.getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader
+                                                                                                 .getXmlHeader()
+                                                                                                 .getPayload()
+                                                                                                 .getResponseItems()
+                                                                                                 .getTimeInterval()))) {
+                throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
+            }
+        } catch (final IllegalArgumentException | NullPointerException e) {
+            throw new CoreCCInvalidDataException("Malformed time intervals (%s)".formatted(e.getMessage()));
         }
+
 
         final OffsetDateTime requestTime = coreCCRequest.getTimestamp();
         final AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();

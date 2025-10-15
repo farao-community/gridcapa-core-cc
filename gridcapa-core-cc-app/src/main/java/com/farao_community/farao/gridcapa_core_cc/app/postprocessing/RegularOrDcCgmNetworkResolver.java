@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.time.Instant;
 
+import static com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper.importCracFromHourlyRaoRequest;
+
 /**
  * @author Daniel Thirion {@literal <daniel.thirion at rte-france.com>}
  */
@@ -45,7 +47,7 @@ public class RegularOrDcCgmNetworkResolver {
             final CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
             final Path cgmPath = cgmsAndXmlHeader.getNetworkPath(Instant.parse(hourlyRaoResult.getRaoRequestInstant()));
             network = CoreNetworkImporterWrapper.loadNetwork(cgmPath);
-            final Crac crac = FileExporterHelper.importCracFromHourlyRaoRequest(coreCCRequest, network, this.minioAdapter);
+            final Crac crac = importCracFromHourlyRaoRequest(coreCCRequest, network, this.minioAdapter);
             final RaoResult raoResult = fileImporter.importRaoResult(hourlyRaoResult.getRaoResultFileUrl(), crac);
             applyRemedialActionsForState(network, raoResult, crac.getPreventiveState());
         } else {

@@ -138,16 +138,12 @@ public class FileExporterHelper {
     private void removeFictitiousGeneratorsFromNetwork(final Network network) {
         network.getGeneratorStream()
                 .filter(Generator::isFictitious)
-                .map(Generator::getId)
-                .map(network::getGenerator)
                 .forEach(Generator::remove);
     }
 
     private void removeFictitiousLoadsFromNetwork(final Network network) {
         network.getLoadStream()
                 .filter(Load::isFictitious)
-                .map(Load::getId)
-                .map(network::getLoad)
                 .forEach(Load::remove);
     }
 
@@ -262,17 +258,21 @@ public class FileExporterHelper {
             final String metaDataFilePath = buildFilePath(hourlyRaoRequest.getResultsDestination(), metaDataFileName);
             final CoreCCMetadata metadata = new CoreCCMetadata(coreCCRequest.getRaoRequest().getFilename(),
                                                                coreCCRequest.getRequestReceivedInstant().toString(),
-                                                               coreCCRequest.getHourlyRaoResult().getRaoRequestInstant(),
-                                                               coreCCRequest.getHourlyRaoResult().getComputationStartInstant().toString(),
-                                                               coreCCRequest.getHourlyRaoResult().getComputationEndInstant().toString(),
+                                                               hourlyRaoResult.getRaoRequestInstant(),
+                                                               hourlyRaoResult.getComputationStartInstant().toString(),
+                                                               hourlyRaoResult.getComputationEndInstant().toString(),
                                                                coreCCRequest.getTimeInterval(),
                                                                coreCCRequest.getCorrelationId(),
-                                                               coreCCRequest.getHourlyRaoResult().getStatus().toString(),
-                                                               coreCCRequest.getHourlyRaoResult().getErrorCodeString(),
-                                                               coreCCRequest.getHourlyRaoResult().getErrorMessage(),
+                                                               hourlyRaoResult.getStatus().toString(),
+                                                               hourlyRaoResult.getErrorCodeString(),
+                                                               hourlyRaoResult.getErrorMessage(),
                                                                coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
-            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetaData.toByteArray()), CORE_CC, "METADATA", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(metaDataFilePath,
+                                                  new ByteArrayInputStream(outputStreamMetaData.toByteArray()),
+                                                  CORE_CC,
+                                                  "METADATA",
+                                                  coreCCRequest.getTimestamp());
         } catch (final Exception e) {
             throw new CoreCCInternalException("Metadata could not be uploaded to minio", e);
         }
@@ -291,17 +291,17 @@ public class FileExporterHelper {
 
         try (final ByteArrayOutputStream outputStreamMetaData = new ByteArrayOutputStream()) {
             final String metaDataFilePath = buildFilePath(hourlyRaoRequest.getResultsDestination(), metaDataFileName);
-            final HourlyRaoResult result = coreCCRequest.getHourlyRaoResult();
+            final HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
             final CoreCCMetadata metadata = new CoreCCMetadata(coreCCRequest.getRaoRequest().getFilename(),
                                                                coreCCRequest.getRequestReceivedInstant().toString(),
-                                                               result.getRaoRequestInstant(),
+                                                               hourlyRaoResult.getRaoRequestInstant(),
                                                                null,
                                                                null,
                                                                coreCCRequest.getTimeInterval(),
                                                                coreCCRequest.getCorrelationId(),
-                                                               result.getStatus().toString(),
-                                                               result.getErrorCodeString(),
-                                                               result.getErrorMessage(),
+                                                               hourlyRaoResult.getStatus().toString(),
+                                                               hourlyRaoResult.getErrorCodeString(),
+                                                               hourlyRaoResult.getErrorMessage(),
                                                                coreCCRequest.getVersion());
             new ObjectMapper().writeValue(outputStreamMetaData, metadata);
             minioAdapter.uploadOutputForTimestamp(metaDataFilePath,
