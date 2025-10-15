@@ -122,7 +122,7 @@ public class CoreCCPreProcessService {
                                                                                                  .getTimeInterval()))) {
                 throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
             }
-        } catch (final DateTimeParseException e) {
+        } catch (final DateTimeParseException | NullPointerException e) {
             throw new CoreCCInvalidDataException("Malformed time intervals", e);
         }
         final OffsetDateTime requestTime = coreCCRequest.getTimestamp();
