@@ -47,6 +47,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -121,7 +122,7 @@ public class CoreCCPreProcessService {
                                                                                                  .getTimeInterval()))) {
                 throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
             }
-        } catch (final Exception e) {
+        } catch (final DateTimeParseException e) {
             throw new CoreCCInvalidDataException("Malformed time intervals", e);
         }
         final OffsetDateTime requestTime = coreCCRequest.getTimestamp();
