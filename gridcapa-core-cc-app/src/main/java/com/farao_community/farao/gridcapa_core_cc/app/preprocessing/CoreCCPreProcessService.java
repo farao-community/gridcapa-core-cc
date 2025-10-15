@@ -121,8 +121,8 @@ public class CoreCCPreProcessService {
                                                                                                  .getTimeInterval()))) {
                 throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
             }
-        } catch (final IllegalArgumentException | NullPointerException e) {
-            throw new CoreCCInvalidDataException("Malformed time intervals (%s)".formatted(e.getMessage()));
+        } catch (final Exception e) {
+            throw new CoreCCInvalidDataException("Malformed time intervals", e);
         }
         final OffsetDateTime requestTime = coreCCRequest.getTimestamp();
         final AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
