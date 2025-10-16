@@ -115,17 +115,18 @@ public class CoreCCPreProcessService {
         final CgmsAndXmlHeader dcCgmsAndXmlHeader = coreCCRequest.getDcCgm() != null ? fileImporter.importCgmsZip(coreCCRequest.getDcCgm()) : null;
         //check intervals validity
         try {
-            if (!Interval.parse(raoRequestItems.getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader
-                                                                                                 .getXmlHeader()
-                                                                                                 .getPayload()
-                                                                                                 .getResponseItems()
-                                                                                                 .getTimeInterval()))) {
-                throw new CoreCCInvalidDataException("RaoRequest and CGM headers time intervals don't match");
+            final Interval cgmsTimeInterval = Interval.parse(cgmsAndXmlHeader
+                                   .getXmlHeader()
+                                   .getPayload()
+                                   .getResponseItems()
+                                   .getTimeInterval());
+            if (!Interval.parse(raoRequestItems.getTimeInterval()).equals(cgmsTimeInterval)) {
+                throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
             }
         } catch (final DateTimeParseException | NullPointerException e) {
             throw new CoreCCInvalidDataException("Malformed time intervals", e);
         }
-        final OffsetDateTime requestTime = coreCCRequest.getTimestamp();
+        final OffsetDateTime ccRequestTime = coreCCRequest.getTimestamp();
         final AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
         final AtomicReference<HourlyRaoResult> raoResult = new AtomicReference<>();
         // Looping through all raoRequest items. Only item matching coreCCRequest's timestamp will set raoRequest
@@ -134,9 +135,9 @@ public class CoreCCPreProcessService {
                 .map(Interval::parse)
                 .forEach(interval -> {
                     final Instant start = interval.getStart();
-                    if (interval.contains(requestTime.toInstant())) {
-                        LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", requestTime, start);
-                        sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(requestTime), raoRequestMessage);
+                    if (interval.contains(ccRequestTime.toInstant())) {
+                        LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", ccRequestTime, start);
+                        sendRaoRequestAcknowledgement(coreCCRequest, NamingRules.getAckDestinationKey(ccRequestTime), raoRequestMessage);
                         try {
                             final Path cgmPath = resolveCgmPath(dcCgmsAndXmlHeader, start, cgmsAndXmlHeader, parameters);
                             final Network network = convertNetworkToIidm(cgmPath);
@@ -236,11 +237,11 @@ public class CoreCCPreProcessService {
                                   final String destinationKey,
                                   final Instant utcInstant,
                                   final Network network) {
-        final CracCreationContext context = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(),
+        final CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(),
                                                                     OffsetDateTime.parse(utcInstant.toString()),
                                                                     network);
         try (final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            context.getCrac().write(JSON_CRAC_PROVIDER, outputStream);
+            cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, outputStream);
             String jsonCracFilePath = String.format(S_INPUTS_CRACS_S,
                                                     destinationKey,
                                                     UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(JSON_EXTENSION));
@@ -261,9 +262,9 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private void sendRaoRequestAcknowledgment(final InternalCoreCCRequest coreCCRequest,
-                                              final String destinationKey,
-                                              final RequestMessage receivedRequestMessage) {
+    private void sendRaoRequestAcknowledgement(final InternalCoreCCRequest coreCCRequest,
+                                               final String destinationKey,
+                                               final RequestMessage receivedRequestMessage) {
         final ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
         exportRaoRequestAcknowledgement(responseMessage, coreCCRequest, destinationKey);
     }

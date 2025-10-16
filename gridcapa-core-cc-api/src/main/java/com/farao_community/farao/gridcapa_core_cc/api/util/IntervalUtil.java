@@ -21,8 +21,8 @@ import static java.time.temporal.ChronoUnit.HOURS;
  */
 public final class IntervalUtil {
     public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
-    public static final int OFFSET_BEFORE_WINTER_DST = 2;
-    public static final int OFFSET_AFTER_WINTER_DST = 1;
+    private static final ZoneOffset OFFSET_BEFORE_WINTER_DST = ZoneOffset.ofHours(2);
+    private static final ZoneOffset OFFSET_AFTER_WINTER_DST = ZoneOffset.ofHours(1);
 
     private IntervalUtil() {
         throw new AssertionError("Utility class should not be constructed");
@@ -38,12 +38,10 @@ public final class IntervalUtil {
 
     public static String handleWinterDst(final String filename, final String instantInDstHour) {
         final Instant instant = Instant.parse(instantInDstHour);
-        final ZoneOffset previousOffset = OffsetDateTime.from(instant.minus(1, HOURS)
-                                                                  .atZone(ZONE_ID)).getOffset();
+        final ZoneOffset previousOffset = OffsetDateTime.from(instant.minus(1, HOURS).atZone(ZONE_ID)).getOffset();
         final ZoneOffset currentOffset = OffsetDateTime.from(instant.atZone(ZONE_ID)).getOffset();
         // is this the winter daylight saving time ?
-        if (previousOffset.equals(ZoneOffset.ofHours(OFFSET_BEFORE_WINTER_DST))
-                && currentOffset.equals(ZoneOffset.ofHours(OFFSET_AFTER_WINTER_DST))) {
+        if (previousOffset.equals(OFFSET_BEFORE_WINTER_DST) && currentOffset.equals(OFFSET_AFTER_WINTER_DST)) {
             return filename.replace("_0", "_B");
         } else {
             return filename;

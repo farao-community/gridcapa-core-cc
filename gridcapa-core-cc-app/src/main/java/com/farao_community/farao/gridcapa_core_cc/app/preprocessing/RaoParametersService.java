@@ -170,10 +170,10 @@ public class RaoParametersService {
 
         final Map<String, Pair<VirtualHub, VirtualHub>> pairedVirtualHubs = new HashMap<>();
         for (final VirtualHub hub : marketParticipants) {
-            final String oppositeKey = hub.oppositeHub();
-            if (hub.oppositeHub() != null && pairedVirtualHubs.containsKey(oppositeKey)) {
-                final VirtualHub oppositeHub = pairedVirtualHubs.get(oppositeKey).getKey();
-                pairedVirtualHubs.put(oppositeKey, Pair.of(oppositeHub, hub)); // Complete existing pair with current virtual hub
+            final String oppositeHubKey = hub.oppositeHub();
+            if (oppositeHubKey != null && pairedVirtualHubs.containsKey(oppositeHubKey)) {
+                final VirtualHub oppositeHub = pairedVirtualHubs.get(oppositeHubKey).getKey();
+                pairedVirtualHubs.put(oppositeHubKey, Pair.of(oppositeHub, hub)); // Complete existing pair with current virtual hub
             } else {
                 pairedVirtualHubs.put(hub.code(), Pair.of(hub, null)); // Add a new partial pair
             }
@@ -192,10 +192,12 @@ public class RaoParametersService {
     private static String getOrderedPtdfBoundaryFromBorderDirection(final BorderDirection direction,
                                                                     final VirtualHubsConfiguration virtualHubsConfiguration) {
         if (direction.from().compareTo(direction.to()) < 0) {
-            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, getEicIfAvailable(direction.from(), virtualHubsConfiguration),
+            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT,
+                                 getEicIfAvailable(direction.from(), virtualHubsConfiguration),
                                  getEicIfAvailable(direction.to(), virtualHubsConfiguration));
         } else {
-            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT, getEicIfAvailable(direction.to(), virtualHubsConfiguration),
+            return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT,
+                                 getEicIfAvailable(direction.to(), virtualHubsConfiguration),
                                  getEicIfAvailable(direction.from(), virtualHubsConfiguration));
         }
     }
@@ -210,16 +212,19 @@ public class RaoParametersService {
     }
 
     private static String getPtdfBoundaryFromVirtualHub(final Pair<VirtualHub, VirtualHub> hubs) {
-        final VirtualHub firstVirtualHub = hubs.getKey();
-        final VirtualHub secondVirtualHub = hubs.getValue();
+        final VirtualHub firstVirtualHub = hubs.getLeft();
+        final VirtualHub secondVirtualHub = hubs.getRight();
 
         if (secondVirtualHub == null) {
             return String.format(SIMPLE_PTDF_BOUNDARIES_FORMAT,
-                                 firstVirtualHub.relatedMa().eic(), firstVirtualHub.eic());
+                                 firstVirtualHub.relatedMa().eic(),
+                                 firstVirtualHub.eic());
         } else {
             return String.format(COMPLEX_PTDF_BOUNDARIES_FORMAT,
-                                 firstVirtualHub.relatedMa().eic(), firstVirtualHub.eic(),
-                                 secondVirtualHub.relatedMa().eic(), secondVirtualHub.eic());
+                                 firstVirtualHub.relatedMa().eic(),
+                                 firstVirtualHub.eic(),
+                                 secondVirtualHub.relatedMa().eic(),
+                                 secondVirtualHub.eic());
         }
     }
 

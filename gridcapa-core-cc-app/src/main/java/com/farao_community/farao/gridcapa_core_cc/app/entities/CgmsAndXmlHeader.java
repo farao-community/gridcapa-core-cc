@@ -15,7 +15,8 @@ public class CgmsAndXmlHeader {
     private final ResponseMessage xmlHeader;
     private final List<Path> networkPaths;
 
-    public CgmsAndXmlHeader(ResponseMessage xmlHeader, List<Path> networkPaths) {
+    public CgmsAndXmlHeader(ResponseMessage xmlHeader,
+                            List<Path> networkPaths) {
         this.xmlHeader = xmlHeader;
         this.networkPaths = networkPaths;
     }
@@ -26,18 +27,19 @@ public class CgmsAndXmlHeader {
 
     public Path getNetworkPath(final Instant instant) {
         final String pathUrl = xmlHeader.getPayload()
-                                   .getResponseItems()
-                                   .getResponseItem().stream()
-                                   .filter(responseItem -> Interval.parse(responseItem.getTimeInterval()).contains(instant))
-                                   .map(ResponseItem::getFiles)
-                                   .map(Files::getFile)
-                                   .map(List::getFirst).map(File::getUrl)
-                                   .map(fullUrl -> fullUrl.substring(11))
-                                   .findFirst()
-                                   .orElseThrow(() -> new CoreCCInvalidDataException("cannot find instant " + instant + " in cgm xml header time intervals"));
+                .getResponseItems()
+                .getResponseItem().stream()
+                .filter(responseItem -> Interval.parse(responseItem.getTimeInterval()).contains(instant))
+                .map(ResponseItem::getFiles)
+                .map(Files::getFile)
+                .map(List::getFirst)
+                .map(File::getUrl)
+                .map(fullUrl -> fullUrl.substring(11))
+                .findFirst()
+                .orElseThrow(() -> new CoreCCInvalidDataException("cannot find instant " + instant + " in cgm xml header time intervals"));
 
         return networkPaths.stream()
-                   .filter(p -> p.toString().contains(pathUrl))
-                   .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("cannot find cgm for instant " + instant + " in zip folder"));
+                .filter(p -> p.toString().contains(pathUrl))
+                .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("cannot find cgm for instant " + instant + " in zip folder"));
     }
 }
