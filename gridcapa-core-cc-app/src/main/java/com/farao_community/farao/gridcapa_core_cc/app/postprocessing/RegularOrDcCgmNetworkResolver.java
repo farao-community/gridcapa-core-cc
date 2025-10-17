@@ -7,21 +7,17 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
-import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
-import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.State;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Instant;
 
@@ -31,12 +27,9 @@ import java.time.Instant;
 @Service
 public class RegularOrDcCgmNetworkResolver {
     private final FileImporter fileImporter;
-    private final MinioAdapter minioAdapter;
 
-    public RegularOrDcCgmNetworkResolver(final FileImporter fileImporter,
-                                         final MinioAdapter minioAdapter) {
+    public RegularOrDcCgmNetworkResolver(final FileImporter fileImporter) {
         this.fileImporter = fileImporter;
-        this.minioAdapter = minioAdapter;
     }
 
     public Network resolve(final boolean useDcCGmInput,
@@ -48,7 +41,7 @@ public class RegularOrDcCgmNetworkResolver {
             final CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
             final Path cgmPath = cgmsAndXmlHeader.getNetworkPath(Instant.parse(hourlyRaoResult.getRaoRequestInstant()));
             network = CoreNetworkImporterWrapper.loadNetwork(cgmPath);
-            final Crac crac = importCracFromHourlyRaoRequest(coreCCRequest, network);
+            final Crac crac = fileImporter.importCracFromHourlyRaoRequest(coreCCRequest, network);
             final RaoResult raoResult = fileImporter.importRaoResult(hourlyRaoResult.getRaoResultFileUrl(), crac);
             applyRemedialActionsForState(network, raoResult, crac.getPreventiveState());
         } else {
@@ -63,16 +56,5 @@ public class RegularOrDcCgmNetworkResolver {
         raoResult.getActivatedNetworkActionsDuringState(state).forEach(networkAction -> networkAction.apply(network));
         raoResult.getActivatedRangeActionsDuringState(state).forEach(rangeAction ->
                 rangeAction.apply(network, raoResult.getOptimizedSetPointsOnState(state).get(rangeAction)));
-    }
-
-    private Crac importCracFromHourlyRaoRequest(final InternalCoreCCRequest coreCCRequest,
-                                                final Network network) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
-        try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
-            return Crac.read(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);
-        } catch (final Exception e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", Path.of(cracFileUrl).getFileName().toString()), e);
-        }
     }
 }

@@ -164,18 +164,6 @@ public class FileExporterHelper {
         return t -> seen.add(propertyGetter.apply(t));
     }
 
-    private Crac importCracFromHourlyRaoRequest(final InternalCoreCCRequest coreCCRequest,
-                                                final Network network) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
-        Path path = Path.of(cracFileUrl);
-        try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
-            return Crac.read(path.getFileName().toString(), cracFileInputStream, network);
-        } catch (final Exception e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", path.getFileName().toString()), e);
-        }
-    }
-
     public void exportCneToMinio(final InternalCoreCCRequest coreCCRequest) throws IOException {
         final HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
         final String requestInstant = hourlyRaoResult.getRaoRequestInstant();
@@ -201,7 +189,7 @@ public class FileExporterHelper {
             throw new CoreCCInvalidDataException("Crac creation context failed for timestamp: " + requestInstant);
         }
         //get crac from hourly inputs
-        final Crac cracJson = importCracFromHourlyRaoRequest(coreCCRequest, network);
+        final Crac cracJson = fileImporter.importCracFromHourlyRaoRequest(coreCCRequest, network);
 
         //get raoResult from result
         final RaoResult raoResult = fileImporter.importRaoResult(hourlyRaoResult.getRaoResultFileUrl(), cracJson);

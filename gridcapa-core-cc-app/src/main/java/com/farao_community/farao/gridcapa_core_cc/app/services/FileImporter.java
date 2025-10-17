@@ -7,14 +7,18 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
+import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.util.ZipUtil;
+import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
@@ -60,10 +64,13 @@ public class FileImporter {
     public static final String CRAC_CREATION_PARAMETERS_JSON = "/crac/cracCreationParameters.json";
     public static final String CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL = "Cannot download rao request file from URL '%s'";
     private final UrlValidationService urlValidationService;
+    private final MinioAdapter minioAdapter;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileImporter.class);
 
-    public FileImporter(UrlValidationService urlValidationService) {
+    public FileImporter(final UrlValidationService urlValidationService,
+                        final MinioAdapter minioAdapter) {
         this.urlValidationService = urlValidationService;
+        this.minioAdapter = minioAdapter;
     }
 
     public Network importNetwork(CoreCCFileResource cgmFile) {
@@ -155,6 +162,18 @@ public class FileImporter {
             return XmlVirtualHubsConfiguration.importConfiguration(virtualHubsInputStream);
         } catch (Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, virtualHubsFileResource.getUrl()), e);
+        }
+    }
+
+    public Crac importCracFromHourlyRaoRequest(final InternalCoreCCRequest coreCCRequest,
+                                               final Network network) {
+        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
+        Path path = Path.of(cracFileUrl);
+        try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
+            return Crac.read(path.getFileName().toString(), cracFileInputStream, network);
+        } catch (final Exception e) {
+            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", path.getFileName().toString()), e);
         }
     }
 
