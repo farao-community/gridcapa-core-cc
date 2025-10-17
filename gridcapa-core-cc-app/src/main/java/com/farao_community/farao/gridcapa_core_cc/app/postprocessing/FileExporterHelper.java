@@ -41,10 +41,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -140,31 +140,32 @@ public class FileExporterHelper {
     private void removeFictitiousGeneratorsFromNetwork(final Network network) {
         network.getGeneratorStream()
                 .filter(Generator::isFictitious)
-                .filter(distinctByKey(Generator::getId))
+                .filter(distinctByProperty(Generator::getId))
                 .forEach(Generator::remove);
     }
 
     private void removeFictitiousLoadsFromNetwork(final Network network) {
         network.getLoadStream()
                 .filter(Load::isFictitious)
-                .filter(distinctByKey(Load::getId))
+                .filter(distinctByProperty(Load::getId))
                 .forEach(Load::remove);
     }
 
     /**
-     * Predicate used to eliminate duplicates by key (keyExtractor being the getter)
+     * Predicate used to eliminate duplicates by property
      *
-     * @param keyExtractor keyExtractor
-     * @param <T>          T
+     * @param propertyGetter getter of the property
+     * @param <T>            class being filtered
+     * @param <R>            class of property
      * @return <T> T
      */
-    private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        final Set<Object> seen = ConcurrentHashMap.newKeySet();
-        return t -> seen.add(keyExtractor.apply(t));
+    private static <T, R> Predicate<T> distinctByProperty(Function<? super T, R> propertyGetter) {
+        final Set<R> seen = new HashSet<>();
+        return t -> seen.add(propertyGetter.apply(t));
     }
 
     private Crac importCracFromHourlyRaoRequest(final InternalCoreCCRequest coreCCRequest,
-                                                      final Network network) {
+                                                final Network network) {
         final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         Path path = Path.of(cracFileUrl);
