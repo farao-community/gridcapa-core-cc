@@ -188,7 +188,7 @@ public class CoreCCPreProcessService {
         }
     }
 
-    protected Path resolveCgmPath(final CgmsAndXmlHeader dcCgmsPaths,
+    Path resolveCgmPath(final CgmsAndXmlHeader dcCgmsPaths,
                                   final Instant utcInstant,
                                   final CgmsAndXmlHeader cgmsAndXmlHeader,
                                   final CoreCCTaskParameters parameters) {
