@@ -14,7 +14,7 @@ import java.util.List;
 public class CgmsAndXmlHeader {
     private final ResponseMessage xmlHeader;
     private final List<Path> networkPaths;
-    private static final int ROOT_FOLDER_PATH_LENGTH = 11;
+    private static final int FILE_PREFIX_LENGTH = 11;
 
     public CgmsAndXmlHeader(final ResponseMessage xmlHeader,
                             final List<Path> networkPaths) {
@@ -35,7 +35,7 @@ public class CgmsAndXmlHeader {
                 .map(Files::getFile)
                 .map(List::getFirst)
                 .map(File::getUrl)
-                .map(fullUrl -> fullUrl.substring(ROOT_FOLDER_PATH_LENGTH))
+                .map(fullUrl -> fullUrl.substring(FILE_PREFIX_LENGTH))
                 .findFirst()
                 .orElseThrow(() -> new CoreCCInvalidDataException("cannot find instant " + instant + " in cgm xml header time intervals"));
 
