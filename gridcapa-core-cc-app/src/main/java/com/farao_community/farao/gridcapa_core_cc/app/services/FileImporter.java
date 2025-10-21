@@ -16,7 +16,6 @@ import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
-import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.util.ZipUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.glsk.api.GlskDocument;
@@ -54,6 +53,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import static com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules.CGM_FILE_NAME;
+import static com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules.CGM_XML_HEADER_NAME;
+
 /**
  * @author Amira Kahya {@literal <amira.kahya at rte-france.com>}
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
@@ -73,80 +75,90 @@ public class FileImporter {
         this.minioAdapter = minioAdapter;
     }
 
-    public Network importNetwork(CoreCCFileResource cgmFile) {
-        try (InputStream networkStream = urlValidationService.openUrlStream(cgmFile.getUrl())) {
-            return NetworkHandler.loadNetwork(cgmFile.getFilename(), networkStream);
-        } catch (IOException e) {
+    public Network importNetwork(final CoreCCFileResource cgmFile) {
+        try (final InputStream networkStream = urlValidationService.openUrlStream(cgmFile.getUrl())) {
+            return NetworkHandler.loadNetwork(cgmFile.getFilename(),
+                                              networkStream);
+        } catch (final IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download network file from URL '%s'", cgmFile.getUrl()), e);
         }
     }
 
-    public Network importNetworkFromUrl(String cgmUrl) {
-        return Network.read(getFilenameFromUrl(cgmUrl), urlValidationService.openUrlStream(cgmUrl));
+    public Network importNetworkFromUrl(final String cgmUrl) {
+        return Network.read(getFilenameFromUrl(cgmUrl),
+                            urlValidationService.openUrlStream(cgmUrl));
     }
 
-    public GlskDocument importGlskFile(CoreCCFileResource glskFileResource) {
-        try (InputStream glskStream = urlValidationService.openUrlStream(glskFileResource.getUrl())) {
+    public GlskDocument importGlskFile(final CoreCCFileResource glskFileResource) {
+        try (final InputStream glskStream = urlValidationService.openUrlStream(glskFileResource.getUrl())) {
             return GlskDocumentImporters.importGlsk(glskStream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download GLSK file from URL '%s'", glskFileResource.getUrl()), e);
         }
     }
 
-    public ReferenceProgram importReferenceProgram(CoreCCFileResource refProgFile, OffsetDateTime timestamp) {
-        try (InputStream refProgStream = urlValidationService.openUrlStream(refProgFile.getUrl())) {
+    public ReferenceProgram importReferenceProgram(final CoreCCFileResource refProgFile,
+                                                   final OffsetDateTime timestamp) {
+        try (final InputStream refProgStream = urlValidationService.openUrlStream(refProgFile.getUrl())) {
             return RefProgImporter.importRefProg(refProgStream, timestamp);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download reference program file from URL '%s'", refProgFile.getUrl()), e);
         }
     }
 
-    public RaoResult importRaoResult(String raoResultUrl, Crac crac) {
-        try (InputStream raoResultStream = urlValidationService.openUrlStream(raoResultUrl)) {
+    public RaoResult importRaoResult(final String raoResultUrl,
+                                     final Crac crac) {
+        try (final InputStream raoResultStream = urlValidationService.openUrlStream(raoResultUrl)) {
             return RaoResult.read(raoResultStream, crac);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download RaoResult file from URL '%s'", raoResultUrl), e);
         }
     }
 
-    public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
-        CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
+    public FbConstraintCreationContext importCrac(final String cbcoraUrl,
+                                                  final OffsetDateTime targetProcessDateTime,
+                                                  final Network network) {
+        final CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
         cracCreationParameters.addExtension(FbConstraintCracCreationParameters.class, new FbConstraintCracCreationParameters());
         cracCreationParameters.getExtension(FbConstraintCracCreationParameters.class).setTimestamp(targetProcessDateTime);
-        try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
+        try (final InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
             return (FbConstraintCreationContext) new FbConstraintImporter().importData(cracInputStream, cracCreationParameters, network);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInvalidDataException(String.format("Cannot download cbcora file from URL '%s'", cbcoraUrl), e);
         }
     }
 
-    public InputStream importFileUrlAsInputStream(String fileUrl) {
+    public InputStream importFileUrlAsInputStream(final String fileUrl) {
         return urlValidationService.openUrlStream(fileUrl);
     }
 
-    public RequestMessage importRaoRequest(CoreCCFileResource raoRequestFileResource) {
-        try (InputStream raoRequestInputStream = urlValidationService.openUrlStream(raoRequestFileResource.getUrl())) {
+    public RequestMessage importRaoRequest(final CoreCCFileResource raoRequestFileResource) {
+        try (final InputStream raoRequestInputStream = urlValidationService.openUrlStream(raoRequestFileResource.getUrl())) {
             return JaxbUtil.unmarshalContent(RequestMessage.class, raoRequestInputStream);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, raoRequestFileResource.getUrl()), e);
         }
     }
 
-    public CgmsAndXmlHeader importCgmsZip(CoreCCFileResource cgmsZimFileResource) {
-        try (InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.getUrl())) {
+    public CgmsAndXmlHeader importCgmsZip(final CoreCCFileResource cgmsZimFileResource) {
+        try (final InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.getUrl())) {
             LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.getFilename());
 
             // Setting permissions
-            FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
-            String tmpInputsPath = Files.createTempDirectory("gridcapa-core-cc-temp-dir", attr).toString();
-            Path tmpCgmInputsPath = Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"), attr);
-            List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
-            Path xmlHeaderPath = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_XML_HEADER_NAME))
-                    .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
-            ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
-            List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).toList();
+            final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
+            final String tmpInputsPath = Files.createTempDirectory("gridcapa-core-cc-temp-dir", attr).toString();
+            final Path tmpCgmInputsPath = Files.createDirectories(Paths.get(tmpInputsPath + File.separator + "cgm"), attr);
+            final List<Path> unzippedPaths = ZipUtil.unzipInputStream(cgmsZipInputStream, tmpCgmInputsPath);
+            final Path xmlHeaderPath = unzippedPaths.stream()
+                    .filter(p -> p.toFile().getName().matches(CGM_XML_HEADER_NAME))
+                    .findFirst()
+                    .orElseThrow(() -> new CoreCCInvalidDataException("CGM zip does not contain XML header"));
+            final ResponseMessage xmlHeader = JaxbUtil.unmarshalFile(ResponseMessage.class, xmlHeaderPath);
+            final List<Path> networkPaths = unzippedPaths.stream()
+                    .filter(p -> p.toFile().getName().matches(CGM_FILE_NAME))
+                    .toList();
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, cgmsZimFileResource.getUrl()), e);
         }
     }
@@ -156,11 +168,11 @@ public class FileImporter {
         return JsonCracCreationParameters.read(getClass().getResourceAsStream(CRAC_CREATION_PARAMETERS_JSON));
     }
 
-    public VirtualHubsConfiguration importVirtualHubs(CoreCCFileResource virtualHubsFileResource) {
-        try (InputStream virtualHubsInputStream = urlValidationService.openUrlStream(virtualHubsFileResource.getUrl())) {
+    public VirtualHubsConfiguration importVirtualHubs(final CoreCCFileResource virtualHubsFileResource) {
+        try (final InputStream virtualHubsInputStream = urlValidationService.openUrlStream(virtualHubsFileResource.getUrl())) {
             LOGGER.info("Import of virtual hubs from {} file ", virtualHubsFileResource.getFilename());
             return XmlVirtualHubsConfiguration.importConfiguration(virtualHubsInputStream);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, virtualHubsFileResource.getUrl()), e);
         }
     }
@@ -169,7 +181,7 @@ public class FileImporter {
                                                final Network network) {
         final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
         final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
-        Path path = Path.of(cracFileUrl);
+        final Path path = Path.of(cracFileUrl);
         try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
             return Crac.read(path.getFileName().toString(), cracFileInputStream, network);
         } catch (final Exception e) {
@@ -177,10 +189,10 @@ public class FileImporter {
         }
     }
 
-    String getFilenameFromUrl(String url) {
+    private String getFilenameFromUrl(final String url) {
         try {
             return FilenameUtils.getName(new URI(url).toURL().getPath());
-        } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+        } catch (final MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             throw new CoreCCInvalidDataException(String.format("URL is invalid: %s", url), e);
         }
     }

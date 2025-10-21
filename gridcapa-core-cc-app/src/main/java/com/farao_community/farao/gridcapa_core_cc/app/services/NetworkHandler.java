@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 
 /**
+ * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  * UCTE-DEF file does not provide configuration for default nominal voltage setup.
  * This post processor modifies default nominal voltages in order to adapt it to FMAX calculation based on IMAX.
  * By default, UCTE sets nominal voltage to 220 and 380kV for the voltage levels 6 and 7,
@@ -21,6 +22,7 @@ import java.io.InputStream;
  */
 public final class NetworkHandler {
 
+    //in kV
     private static final int VOLTAGE_LEVEL_6_UCTE = 220;
     private static final int VOLTAGE_LEVEL_7_UCTE = 380;
     private static final int VOLTAGE_LEVEL_6_CORE = 225;
@@ -32,9 +34,11 @@ public final class NetworkHandler {
         throw new IllegalStateException("Utility class");
     }
 
-    public static Network loadNetwork(final String filename, final InputStream inputStream) {
+    public static Network loadNetwork(final String filename,
+                                      final InputStream inputStream) {
         LOGGER.info("IIDM import of network : {}", filename);
-        final Network network = Network.read(filename, inputStream);
+        final Network network = Network.read(filename,
+                                             inputStream);
         updateVoltageLevelNominalV(network);
         return network;
     }
@@ -50,7 +54,8 @@ public final class NetworkHandler {
         });
     }
 
-    private static boolean safeDoubleEquals(final double a, final double b) {
+    private static boolean safeDoubleEquals(final double a,
+                                            final double b) {
         return Math.abs(a - b) < 1e-3;
     }
 

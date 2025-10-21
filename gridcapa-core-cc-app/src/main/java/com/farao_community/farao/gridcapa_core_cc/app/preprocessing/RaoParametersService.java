@@ -81,13 +81,15 @@ public class RaoParametersService {
     static void setPstPenaltyCost(final RequestMessage requestMessage,
                                   final RaoParameters raoParameters) {
         raoParameters.getRangeActionsOptimizationParameters()
-                .setPstRAMinImpactThreshold(getNumericHeaderValue(requestMessage, PST_RA_MIN_IMPACT));
+                .setPstRAMinImpactThreshold(getNumericHeaderValue(requestMessage,
+                                                                  PST_RA_MIN_IMPACT));
     }
 
-    static void setAbsoluteMinimumImpactThreshold(RequestMessage requestMessage,
-                                                  RaoParameters raoParameters) {
+    static void setAbsoluteMinimumImpactThreshold(final RequestMessage requestMessage,
+                                                  final RaoParameters raoParameters) {
         raoParameters.getTopoOptimizationParameters()
-                .setAbsoluteMinImpactThreshold(getNumericHeaderValue(requestMessage, TOPO_RA_MIN_IMPACT));
+                .setAbsoluteMinImpactThreshold(getNumericHeaderValue(requestMessage,
+                                                                     TOPO_RA_MIN_IMPACT));
     }
 
     private static Double getNumericHeaderValue(final RequestMessage requestMessage,

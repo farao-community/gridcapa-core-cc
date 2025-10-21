@@ -14,6 +14,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import static com.farao_community.farao.gridcapa_core_cc.api.util.IntervalUtil.ZONE_ID;
+
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -40,11 +42,11 @@ public final class NamingRules {
     // DateTimeFormatter are systematically rezoned even applied on offsetDateTimes as a security measure
     public static final DateTimeFormatter UTC_HOURLY_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZoneId.of("UTC"));
 
-    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_'yyyyMMdd'-F302-<version>.xml'").withZone(IntervalUtil.ZONE_ID); // NOSONAR because a bug in the java:S3986 rule triggers a warning on the use of "Y" in the pattern even if it is escaped (placed between single quotes in order to be used as String and not to be interpreted by the formatter)
-    public static final DateTimeFormatter UCT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_2D0_UXV.uct'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-<version>.json'").withZone(IntervalUtil.ZONE_ID);
-    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-INTERNAL-RESULTS_'yyyyMMdd'_'HH'30.json'").withZone(IntervalUtil.ZONE_ID);
+    public static final DateTimeFormatter RAO_REQUEST_ACK_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'22XCORESO------S_10V1001C--00236Y_CORE-FB-302-ACK_'yyyyMMdd'-F302-<version>.xml'").withZone(ZONE_ID); // NOSONAR because a bug in the java:S3986 rule triggers a warning on the use of "Y" in the pattern even if it is escaped (placed between single quotes in order to be used as String and not to be interpreted by the formatter)
+    public static final DateTimeFormatter UCT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_2D0_UXV.uct'").withZone(ZONE_ID);
+    public static final DateTimeFormatter CNE_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_'yyyyMMdd'-F299-v0-22XCORESO------S_to_17XTSO-CS------W.xml'").withZone(ZONE_ID);
+    public static final DateTimeFormatter INTERMEDIATE_METADATA_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'_'HH'30_METADATA-<version>.json'").withZone(ZONE_ID);
+    public static final DateTimeFormatter RAO_RESULT_FILENAME_FORMATTER = DateTimeFormatter.ofPattern("'CASTOR-INTERNAL-RESULTS_'yyyyMMdd'_'HH'30.json'").withZone(ZONE_ID);
 
     // -- Xml Response Generator constants
     public static final String XML_RESPONSE_GENERATOR_SENDER_ID = "22XCORESO------S";
@@ -54,45 +56,51 @@ public final class NamingRules {
         return formatVersion(RAO_REQUEST_ACK_FILENAME_FORMATTER.format(coreCCRequest.getTimestamp()), coreCCRequest.getVersion());
     }
 
-    public static String generateUctFileName(String instant, int version) {
-        String output = UCT_FILENAME_FORMATTER.format(Instant.parse(instant));
-        output = output.replace("2D0", "2D" + Instant.parse(instant).atZone(IntervalUtil.ZONE_ID).getDayOfWeek().getValue())
-            .replace("_UXV", "_UX" + version);
+    public static String generateUctFileName(final String instant,
+                                             final int version) {
+        final String output = UCT_FILENAME_FORMATTER.format(Instant.parse(instant))
+                .replace("2D0", "2D" + Instant.parse(instant).atZone(ZONE_ID).getDayOfWeek().getValue())
+                .replace("_UXV", "_UX" + version);
         return IntervalUtil.handleWinterDst(output, instant);
     }
 
-    public static String generateCneFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output = CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
-            .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
+    public static String generateCneFileName(final String instant,
+                                             final InternalCoreCCRequest coreCCRequest) {
+        final String output = CNE_FILENAME_FORMATTER.format(Instant.parse(instant))
+                .replace("-v0-", "-v" + coreCCRequest.getVersion() + "-");
         return IntervalUtil.handleWinterDst(output, instant);
     }
 
-    public static String generateRaoResultFileName(String instant) {
-        String output = RAO_RESULT_FILENAME_FORMATTER.format(Instant.parse(instant));
+    public static String generateRaoResultFileName(final String instant) {
+        final String output = RAO_RESULT_FILENAME_FORMATTER.format(Instant.parse(instant));
         return IntervalUtil.handleWinterDst(output, instant);
     }
 
-    public static String generateOutputsDestinationPath(String destinationPrefix, String fileName) {
+    public static String generateOutputsDestinationPath(final String destinationPrefix,
+                                                        final String fileName) {
         return String.format(OUTPUTS, destinationPrefix, fileName);
     }
 
-    public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output =  formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
+    public static String generateMetadataFileName(final String instant,
+                                                  final InternalCoreCCRequest coreCCRequest) {
+        final String output = formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)),
+                                      coreCCRequest.getVersion());
         return IntervalUtil.handleWinterDst(output, instant);
     }
 
     // -- Destination keys
-    public static String getDestinationKey(OffsetDateTime offsetDateTime) {
-        String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(IntervalUtil.ZONE_ID));
+    public static String getDestinationKey(final OffsetDateTime offsetDateTime) {
+        final String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd'_'HHmm").withZone(ZONE_ID));
         return "RAO_WORKING_DIR" + "/" + IntervalUtil.handleWinterDst(hourlyFolderName, offsetDateTime.toInstant().toString());
     }
 
-    public static String getAckDestinationKey(OffsetDateTime offsetDateTime) {
-        String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(IntervalUtil.ZONE_ID));
+    public static String getAckDestinationKey(final OffsetDateTime offsetDateTime) {
+        final String hourlyFolderName = offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZONE_ID));
         return "RAO_OUTPUTS_DIR" + "/" + IntervalUtil.handleWinterDst(hourlyFolderName, offsetDateTime.toInstant().toString());
     }
 
-    private static String formatVersion(String filename, int v) {
+    private static String formatVersion(final String filename,
+                                        final int v) {
         return filename.replace("<version>", String.format("%02d", v));
     }
 }

@@ -14,9 +14,10 @@ import java.util.List;
 public class CgmsAndXmlHeader {
     private final ResponseMessage xmlHeader;
     private final List<Path> networkPaths;
+    private static final int ROOT_FOLDER_PATH_LENGTH = 11;
 
-    public CgmsAndXmlHeader(ResponseMessage xmlHeader,
-                            List<Path> networkPaths) {
+    public CgmsAndXmlHeader(final ResponseMessage xmlHeader,
+                            final List<Path> networkPaths) {
         this.xmlHeader = xmlHeader;
         this.networkPaths = networkPaths;
     }
@@ -34,12 +35,13 @@ public class CgmsAndXmlHeader {
                 .map(Files::getFile)
                 .map(List::getFirst)
                 .map(File::getUrl)
-                .map(fullUrl -> fullUrl.substring(11))
+                .map(fullUrl -> fullUrl.substring(ROOT_FOLDER_PATH_LENGTH))
                 .findFirst()
                 .orElseThrow(() -> new CoreCCInvalidDataException("cannot find instant " + instant + " in cgm xml header time intervals"));
 
         return networkPaths.stream()
                 .filter(p -> p.toString().contains(pathUrl))
-                .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("cannot find cgm for instant " + instant + " in zip folder"));
+                .findFirst()
+                .orElseThrow(() -> new CoreCCInvalidDataException("cannot find cgm for instant " + instant + " in zip folder"));
     }
 }
