@@ -40,7 +40,7 @@ public final class IntervalUtil {
         final Instant instant = Instant.parse(instantInDstHour);
         final ZoneOffset previousOffset = OffsetDateTime.from(instant.minus(1, HOURS).atZone(ZONE_ID)).getOffset();
         final ZoneOffset currentOffset = OffsetDateTime.from(instant.atZone(ZONE_ID)).getOffset();
-        // is this the winter daylight saving time ?
+        // change filename if interval is in winter DST
         if (previousOffset.equals(OFFSET_BEFORE_WINTER_DST) && currentOffset.equals(OFFSET_AFTER_WINTER_DST)) {
             return filename.replace("_0", "_B");
         } else {
