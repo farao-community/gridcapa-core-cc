@@ -28,6 +28,9 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.ErrorCode.RAO_FAILURE;
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.Status.FAILURE;
+
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
  * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
@@ -81,7 +84,7 @@ public class CoreCCHandler {
             hourlyRaoResult = new HourlyRaoResult(hourlyRaoRequest.getRaoRequestInstant());
             coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
         }
-        if (hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
+        if (hourlyRaoResult.getStatus().equals(FAILURE)) {
             saveMetadataWhenPreProcessingFailed(coreCCRequest);
             LOGGER.info("Skipping RAO");
             return;
@@ -109,8 +112,8 @@ public class CoreCCHandler {
             //no throwing exception, just save cause and pass to next timestamp
             String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
             LOGGER.error(errorMessage);
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-            hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
+            hourlyRaoResult.setStatus(FAILURE);
+            hourlyRaoResult.setErrorCode(RAO_FAILURE);
             hourlyRaoResult.setErrorMessage(errorMessage);
         }
     }
@@ -125,14 +128,14 @@ public class CoreCCHandler {
 
     void handleRaoRunnerException(final HourlyRaoResult hourlyRaoResult,
                                   final Throwable exception) {
-        hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
+        hourlyRaoResult.setStatus(FAILURE);
+        hourlyRaoResult.setErrorCode(RAO_FAILURE);
         if (exception instanceof final ResourceParseException resourceParseException) {
             // Sync scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format.
-            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().getFirst().getDetail());
         } else if (exception.getCause() instanceof final ResourceParseException resourceParseException) {
             // Async scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format, which is wrapped itself into a ConcurrencyException.
-            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().getFirst().getDetail());
         } else if (exception.getCause() instanceof AmqpReplyTimeoutException) {
             setErrorMessageAndLogIt(hourlyRaoResult, "Timeout reached, Rao has not finished within allocated time of : " + amqpConfiguration.getAsyncTimeOutInMinutes() + " minutes");
         } else {

@@ -14,11 +14,11 @@ public class CoreCCRaoException extends AbstractCoreCCException {
     private static final int STATUS = 500;
     private static final String CODE = "500-RaoException";
 
-    public CoreCCRaoException(String message) {
+    public CoreCCRaoException(final String message) {
         super(message);
     }
 
-    public CoreCCRaoException(String message, Throwable throwable) {
+    public CoreCCRaoException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 

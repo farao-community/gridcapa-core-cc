@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Daniel Thirion {@literal <daniel.thirion at rte-france.com>}
@@ -43,7 +44,7 @@ public class CoreCCTaskParameters {
     private boolean validateIsBooleanAndGet(final TaskParameterDto parameter,
                                             final List<String> errors) {
         if (StringUtils.equals("BOOLEAN", parameter.getParameterType())) {
-            final String value = parameter.getValue() != null ? parameter.getValue() : parameter.getDefaultValue();
+            final String value = Optional.ofNullable(parameter.getValue()).orElse(parameter.getDefaultValue());
             return Boolean.parseBoolean(value);
         } else {
             errors.add(String.format("Parameter %s was expected to be of type BOOLEAN, got %s", parameter.getId(), parameter.getParameterType()));
