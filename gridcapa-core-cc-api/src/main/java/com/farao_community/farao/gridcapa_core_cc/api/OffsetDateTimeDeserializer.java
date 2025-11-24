@@ -20,7 +20,8 @@ import java.time.OffsetDateTime;
  */
 public class OffsetDateTimeDeserializer extends JsonDeserializer<OffsetDateTime> {
     @Override
-    public OffsetDateTime deserialize(JsonParser arg0, DeserializationContext arg1) throws IOException {
-        return OffsetDateTime.parse(arg0.getText());
+    public OffsetDateTime deserialize(final JsonParser parser,
+                                      final DeserializationContext context) throws IOException {
+        return OffsetDateTime.parse(parser.getText());
     }
 }

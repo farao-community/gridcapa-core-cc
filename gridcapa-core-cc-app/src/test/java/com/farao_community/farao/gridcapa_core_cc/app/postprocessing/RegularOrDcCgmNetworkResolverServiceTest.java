@@ -12,7 +12,6 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
-import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
@@ -35,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,9 +45,6 @@ class RegularOrDcCgmNetworkResolverServiceTest {
 
     @Mock
     private FileImporter fileImporter;
-
-    @Mock
-    private MinioAdapter minioAdapter;
 
     @InjectMocks
     private RegularOrDcCgmNetworkResolver regularOrDcCgmNetworkResolver;
@@ -83,26 +77,23 @@ class RegularOrDcCgmNetworkResolverServiceTest {
         final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
         final RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
         //mock cgms
-        when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
         when(fileImporter.importCgmsZip(any())).thenReturn(cgmsAndXmlHeader);
         //mock cgm path
         when(cgmsAndXmlHeader.getNetworkPath(any(Instant.class))).thenReturn(networkPath);
         //mock crac
         when(hourlyRaoResult.getRaoRequestInstant()).thenReturn("2023-05-31T00:00:00Z");
-        when(hourlyRaoRequest.getCracFileUrl()).thenReturn(cracJsonFilePath.toString());
+        when(fileImporter.importCracFromHourlyRaoRequest(any(), any())).thenReturn(crac);
 
         //
         when(fileImporter.importRaoResult(null, crac)).thenReturn(raoResult);
-        try (final MockedStatic<Crac> mockedStatic = mockStatic(Crac.class)) {
-            mockedStatic.when(() -> Crac.read(any(), any(), any())).thenReturn(crac);
-            final Network result = regularOrDcCgmNetworkResolver.resolve(true, coreCCRequest);
+        final Network result = regularOrDcCgmNetworkResolver.resolve(true, coreCCRequest);
 
-            assertNotNull(result);
-            //Corresponding TWT must have its current tap position switch from 0 to -6
-            assertEquals(0, network.getTwoWindingsTransformer("BBE2AA1  BBE3AA1  1").getPhaseTapChanger().getTapPosition());
-            assertEquals(-6, result.getTwoWindingsTransformer("BBE2AA1  BBE3AA1  1").getPhaseTapChanger().getTapPosition());
-            verify(fileImporter, never()).importNetworkFromUrl(any());
-        }
+        assertNotNull(result);
+        //Corresponding TWT must have its current tap position switch from 0 to -6
+        assertEquals(0, network.getTwoWindingsTransformer("BBE2AA1  BBE3AA1  1").getPhaseTapChanger().getTapPosition());
+        assertEquals(-6, result.getTwoWindingsTransformer("BBE2AA1  BBE3AA1  1").getPhaseTapChanger().getTapPosition());
+        verify(fileImporter, never()).importNetworkFromUrl(any());
+
     }
 
     @Test

@@ -16,11 +16,11 @@ public class CoreCCInvalidDataException extends AbstractCoreCCException {
     private static final int STATUS = 400;
     private static final String CODE = "400-InvalidDataException";
 
-    public CoreCCInvalidDataException(String message) {
+    public CoreCCInvalidDataException(final String message) {
         super(message);
     }
 
-    public CoreCCInvalidDataException(String message, Throwable throwable) {
+    public CoreCCInvalidDataException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 

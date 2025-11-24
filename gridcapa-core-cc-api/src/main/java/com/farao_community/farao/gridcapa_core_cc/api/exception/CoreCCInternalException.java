@@ -15,11 +15,11 @@ public class CoreCCInternalException extends AbstractCoreCCException {
     private static final int STATUS = 500;
     private static final String CODE = "500-InternalException";
 
-    public CoreCCInternalException(String message) {
+    public CoreCCInternalException(final String message) {
         super(message);
     }
 
-    public CoreCCInternalException(String message, Throwable throwable) {
+    public CoreCCInternalException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 
