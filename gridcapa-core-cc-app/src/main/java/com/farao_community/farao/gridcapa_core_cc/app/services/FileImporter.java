@@ -15,8 +15,6 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Respon
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.util.ZipUtil;
-import com.powsybl.glsk.api.GlskDocument;
-import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
@@ -66,24 +64,8 @@ public class FileImporter {
         this.urlValidationService = urlValidationService;
     }
 
-    public Network importNetwork(CoreCCFileResource cgmFile) {
-        try (InputStream networkStream = urlValidationService.openUrlStream(cgmFile.getUrl())) {
-            return NetworkHandler.loadNetwork(cgmFile.getFilename(), networkStream);
-        } catch (IOException e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download network file from URL '%s'", cgmFile.getUrl()), e);
-        }
-    }
-
     public Network importNetworkFromUrl(String cgmUrl) {
         return Network.read(getFilenameFromUrl(cgmUrl), urlValidationService.openUrlStream(cgmUrl));
-    }
-
-    public GlskDocument importGlskFile(CoreCCFileResource glskFileResource) {
-        try (InputStream glskStream = urlValidationService.openUrlStream(glskFileResource.getUrl())) {
-            return GlskDocumentImporters.importGlsk(glskStream);
-        } catch (IOException e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download GLSK file from URL '%s'", glskFileResource.getUrl()), e);
-        }
     }
 
     public ReferenceProgram importReferenceProgram(CoreCCFileResource refProgFile, OffsetDateTime timestamp) {
