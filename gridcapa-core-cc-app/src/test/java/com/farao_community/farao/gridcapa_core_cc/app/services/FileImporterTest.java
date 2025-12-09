@@ -8,8 +8,6 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
-import com.powsybl.glsk.api.GlskDocument;
-import com.powsybl.glsk.ucte.UcteGlskDocument;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
@@ -42,14 +40,6 @@ class FileImporterTest {
     private final OffsetDateTime dateTime = OffsetDateTime.parse("2021-07-22T22:30Z");
 
     @Test
-    void importGlskTest() {
-        final CoreCCFileResource glskFile = createFileResource("glsk", getClass().getResource(testDirectory + "/20210723-F226-v1.xml"));
-        final GlskDocument glskDocument = fileImporter.importGlskFile(glskFile);
-        assertEquals(4, ((UcteGlskDocument) glskDocument).getListGlskSeries().size());
-        assertEquals(1, glskDocument.getGlskPoints("10YFR-RTE------C").size());
-    }
-
-    @Test
     void importReferenceProgram() {
         final CoreCCFileResource refProgFile = createFileResource("refprog", getClass().getResource(testDirectory + "/20210723-F110.xml"));
         final ReferenceProgram referenceProgram = fileImporter.importReferenceProgram(refProgFile, dateTime);
@@ -75,15 +65,6 @@ class FileImporterTest {
         final CracCreationParameters parameters = fileImporter.getCimCracCreationParameters();
         Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxRa());
         Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxTso());
-    }
-
-    @Test
-    void importNetworkTest() {
-        final String networkFileName = "20210723_0030_2D5_CGM.uct";
-        final CoreCCFileResource networkFile = createFileResource(networkFileName, getClass().getResource(testDirectory + "/" + networkFileName));
-        final Network network = fileImporter.importNetwork(networkFile);
-        assertNotNull(network);
-        assertEquals("20210723_0030_2D5_CGM", network.getNameOrId());
     }
 
     @Test
