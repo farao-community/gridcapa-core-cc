@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.farao-community.farao</groupId>
         <artifactId>farao-parent-ws</artifactId>
-        <version>1.13.0</version>
+        <version>1.14.0</version>
     </parent>
 
     <artifactId>gridcapa-core-cc</artifactId>
@@ -57,16 +57,16 @@
         <!-- Dependencies versions -->
         <apache.commons.version>1.9.0</apache.commons.version>
         <commons.io.version>2.11.0</commons.io.version>
-        <farao.dependencies.version>1.45.0</farao.dependencies.version>
-        <gridcapa.rao.runner.starter.version>1.38.0</gridcapa.rao.runner.starter.version>
+        <farao.dependencies.version>1.46.0</farao.dependencies.version>
+        <gridcapa.rao.runner.starter.version>1.42.0</gridcapa.rao.runner.starter.version>
         <jackson-datatype.version>2.17.0</jackson-datatype.version>
         <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
         <jaxb-runtime.version>4.0.5</jaxb-runtime.version>
         <jsonapi.converter.version>0.11</jsonapi.converter.version>
         <maven.jaxb.version>4.0.8</maven.jaxb.version>
-        <minio.adapter.version>1.6.0</minio.adapter.version>
+        <minio.adapter.version>1.8.0</minio.adapter.version>
         <opencsv.version>5.6</opencsv.version>
-        <task-manager.version>1.36.0</task-manager.version>
+        <task-manager.version>1.38.0</task-manager.version>
         <mockito-core.version>5.14.2</mockito-core.version>
     </properties>
 
