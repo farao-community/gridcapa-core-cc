@@ -56,7 +56,6 @@ import java.util.Set;
 public class FileImporter {
 
     public static final String CRAC_CREATION_PARAMETERS_JSON = "/crac/cracCreationParameters.json";
-    public static final String CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL = "Cannot download rao request file from URL '%s'";
     private final UrlValidationService urlValidationService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileImporter.class);
 
@@ -103,7 +102,7 @@ public class FileImporter {
         try (InputStream raoRequestInputStream = urlValidationService.openUrlStream(raoRequestFileResource.getUrl())) {
             return JaxbUtil.unmarshalContent(RequestMessage.class, raoRequestInputStream);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, raoRequestFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download rao request file from URL '%s'", raoRequestFileResource.getUrl()), e);
         }
     }
 
@@ -122,7 +121,7 @@ public class FileImporter {
             List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).toList();
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, cgmsZimFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download CGM file from URL '%s'", cgmsZimFileResource.getUrl()), e);
         }
     }
 
@@ -136,7 +135,7 @@ public class FileImporter {
             LOGGER.info("Import of virtual hubs from {} file ", virtualHubsFileResource.getFilename());
             return XmlVirtualHubsConfiguration.importConfiguration(virtualHubsInputStream);
         } catch (Exception e) {
-            throw new CoreCCInvalidDataException(String.format(CANNOT_DOWNLOAD_RAO_REQUEST_FILE_FROM_URL, virtualHubsFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download VirtualHubs file from URL '%s'", virtualHubsFileResource.getUrl()), e);
         }
     }
 
