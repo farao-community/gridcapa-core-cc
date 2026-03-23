@@ -36,6 +36,7 @@ public class CoreCCListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCListener.class);
     private static final String TASK_STATUS_UPDATE = "task-status-update";
+    private static final String GRIDCAPA_TASK_ID = "gridcapa-task-id";
 
     private final JsonApiConverter jsonApiConverter;
     private final CoreCCHandler coreCCHandler;
@@ -60,23 +61,35 @@ public class CoreCCListener {
 
     protected void launchCoreRequest(final byte[] req) {
         final OffsetDateTime startTime = OffsetDateTime.now();
+        final CoreCCRequest coreCCRequest;
         try {
-            final CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(req, CoreCCRequest.class);
+            coreCCRequest = jsonApiConverter.fromJsonMessage(req, CoreCCRequest.class);
+        } catch (final RuntimeException e) {
+            LOGGER.error("Core CC exception occurred", e);
+            return;
+        }
+        try {
             // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
             // This should be done only once, as soon as the information to add in mdc is available.
-            MDC.put("gridcapa-task-id", coreCCRequest.getId());
+            MDC.put(GRIDCAPA_TASK_ID, coreCCRequest.getId());
             streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
             updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
-            LOGGER.error("Core CC exception occured", e);
+            logExceptionAndUpdateTask(coreCCRequest.getId(), "Core CC exception occurred", e);
         } catch (final RuntimeException e) {
-            LOGGER.error("Unhandled exception: ", e);
+            logExceptionAndUpdateTask(coreCCRequest.getId(), "Core CC runtime exception occurred", e);
         } finally {
             logComputationTime(startTime);
         }
+    }
+
+    private void logExceptionAndUpdateTask(String taskId, String logMessage, Exception e) {
+        LOGGER.error(logMessage, e);
+        businessLogger.error(logMessage);
+        streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(taskId), TaskStatus.ERROR));
     }
 
     private void logComputationTime(final OffsetDateTime startTime) {
