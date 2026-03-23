@@ -68,25 +68,26 @@ public class CoreCCListener {
             LOGGER.error("Core CC exception occurred", e);
             return;
         }
+        final String ccRequestId = coreCCRequest.getId();
         try {
             // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
             // This should be done only once, as soon as the information to add in mdc is available.
-            MDC.put(GRIDCAPA_TASK_ID, coreCCRequest.getId());
-            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(coreCCRequest.getId()), TaskStatus.RUNNING));
+            MDC.put(GRIDCAPA_TASK_ID, ccRequestId);
+            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(ccRequestId), TaskStatus.RUNNING));
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
             updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
-            logExceptionAndUpdateTask(coreCCRequest.getId(), "Core CC exception occurred", e);
+            logExceptionAndUpdateTask(ccRequestId, "Core CC exception occurred", e);
         } catch (final RuntimeException e) {
-            logExceptionAndUpdateTask(coreCCRequest.getId(), "Core CC runtime exception occurred", e);
+            logExceptionAndUpdateTask(ccRequestId, "Core CC runtime exception occurred", e);
         } finally {
             logComputationTime(startTime);
         }
     }
 
-    private void logExceptionAndUpdateTask(String taskId, String logMessage, Exception e) {
+    private void logExceptionAndUpdateTask(final String taskId, final String logMessage, final Exception e) {
         LOGGER.error(logMessage, e);
         businessLogger.error(logMessage);
         streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(taskId), TaskStatus.ERROR));
