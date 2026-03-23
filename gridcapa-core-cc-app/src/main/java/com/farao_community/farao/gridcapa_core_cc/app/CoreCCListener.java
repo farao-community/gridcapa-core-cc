@@ -96,7 +96,7 @@ public class CoreCCListener {
                                                  final String logMessage,
                                                  final Exception e) {
         LOGGER.error(logMessage, e);
-        businessLogger.error(logMessage);
+        businessLogger.error("{}: {}", logMessage, e.getMessage());
         sendTaskStatusUpdate(taskId, TaskStatus.ERROR);
     }
 

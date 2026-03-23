@@ -87,7 +87,7 @@ class CoreCCListenerTest {
         coreCCListener.launchCoreRequest(invalidMessage);
         Mockito.verify(streamBridge, Mockito.times(2)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
-        Mockito.verify(businessLogger, Mockito.times(1)).error("Core CC exception occurred");
+        Mockito.verify(businessLogger, Mockito.times(1)).error("{}: {}", "Core CC exception occurred", "test");
     }
 
 }
