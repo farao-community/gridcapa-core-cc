@@ -66,7 +66,7 @@ class CoreCCListenerTest {
 
     @Test
     void checkThatCorrectMessageIsHandledCorrectly() throws URISyntaxException, IOException {
-        byte[] correctMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
+        final byte[] correctMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
         coreCCListener.launchCoreRequest(correctMessage);
         Mockito.verify(streamBridge, Mockito.times(2)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(coreCCHandler, Mockito.times(1)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
@@ -74,7 +74,7 @@ class CoreCCListenerTest {
 
     @Test
     void checkThatInvalidMessageReturnsError() throws URISyntaxException, IOException {
-        byte[] invalidMessage = Files.readAllBytes(Paths.get(getClass().getResource("/invalidRequest.json").toURI()));
+        final byte[] invalidMessage = Files.readAllBytes(Paths.get(getClass().getResource("/invalidRequest.json").toURI()));
         coreCCListener.launchCoreRequest(invalidMessage);
         Mockito.verify(streamBridge, Mockito.times(0)).send(Mockito.anyString(), Mockito.any());
         Mockito.verify(coreCCHandler, Mockito.times(0)).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
@@ -82,7 +82,7 @@ class CoreCCListenerTest {
 
     @Test
     void checkWithCoreCcError() throws URISyntaxException, IOException {
-        byte[] invalidMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
+        final byte[] invalidMessage = Files.readAllBytes(Paths.get(getClass().getResource("/validRequest.json").toURI()));
         Mockito.doThrow(new CoreCCInvalidDataException("test")).when(coreCCHandler).handleCoreCCRequest(Mockito.any(InternalCoreCCRequest.class));
         coreCCListener.launchCoreRequest(invalidMessage);
         Mockito.verify(streamBridge, Mockito.times(2)).send(Mockito.anyString(), Mockito.any());

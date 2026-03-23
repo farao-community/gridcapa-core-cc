@@ -73,24 +73,31 @@ public class CoreCCListener {
             // propagate in logs MDC the task id as an extra field to be able to match microservices logs with calculation tasks.
             // This should be done only once, as soon as the information to add in mdc is available.
             MDC.put(GRIDCAPA_TASK_ID, ccRequestId);
-            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(ccRequestId), TaskStatus.RUNNING));
+            sendTaskStatusUpdate(ccRequestId, TaskStatus.RUNNING);
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
             updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
-            logExceptionAndUpdateTask(ccRequestId, "Core CC exception occurred", e);
+            logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);
         } catch (final RuntimeException e) {
-            logExceptionAndUpdateTask(ccRequestId, "Core CC runtime exception occurred", e);
+            logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC runtime exception occurred", e);
         } finally {
             logComputationTime(startTime);
         }
     }
 
-    private void logExceptionAndUpdateTask(final String taskId, final String logMessage, final Exception e) {
+    private void sendTaskStatusUpdate(final String ccRequestId,
+                                      final TaskStatus taskStatus) {
+        streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(ccRequestId), taskStatus));
+    }
+
+    private void logExceptionAndUpdateTaskStatus(final String taskId,
+                                                 final String logMessage,
+                                                 final Exception e) {
         LOGGER.error(logMessage, e);
         businessLogger.error(logMessage);
-        streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(taskId), TaskStatus.ERROR));
+        sendTaskStatusUpdate(taskId, TaskStatus.ERROR);
     }
 
     private void logComputationTime(final OffsetDateTime startTime) {
@@ -105,10 +112,10 @@ public class CoreCCListener {
                                   final HourlyRaoResult.Status status,
                                   final OffsetDateTime timestamp) {
         if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
-            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(internalRequestId), TaskStatus.SUCCESS));
+            sendTaskStatusUpdate(internalRequestId, TaskStatus.SUCCESS);
             LOGGER.info("Updating task status to SUCCESS for timestamp {}", timestamp);
         } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
-            streamBridge.send(TASK_STATUS_UPDATE, new TaskStatusUpdate(UUID.fromString(internalRequestId), TaskStatus.ERROR));
+            sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);
         }
     }
 }
