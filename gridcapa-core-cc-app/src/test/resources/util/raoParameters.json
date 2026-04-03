@@ -1,9 +1,8 @@
 {
-  "version" : "3.2.1",
+  "version" : "3.3",
   "objective-function" : {
     "type" : "MAX_MIN_RELATIVE_MARGIN",
-    "enforce-curative-security" : true,
-    "unit" : "MW"
+    "enforce-curative-security" : true
   },
   "range-actions-optimization" : {
     "pst-ra-min-impact-threshold" : 2.0,
