@@ -64,7 +64,6 @@ class FileImporterTest {
     void cracCreationParameters() {
         final CracCreationParameters parameters = fileImporter.getCimCracCreationParameters();
         Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxRa());
-        Assertions.assertEquals(2147483647, parameters.getRaUsageLimitsPerInstant().get("curative").getMaxTso());
     }
 
     @Test

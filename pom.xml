@@ -55,10 +55,10 @@
     <properties>
         <argLine /> <!-- required for java agent declaration, do not remove -->
         <!-- Dependencies versions -->
-        <apache.commons.version>1.9.0</apache.commons.version>
-        <commons.io.version>2.11.0</commons.io.version>
-        <farao.dependencies.version>1.46.2</farao.dependencies.version>
-        <gridcapa.rao.runner.starter.version>1.42.0</gridcapa.rao.runner.starter.version>
+        <apache.commons.version>1.14.0</apache.commons.version>
+        <commons.io.version>2.19.0</commons.io.version>
+        <farao.dependencies.version>1.47.0</farao.dependencies.version>
+        <gridcapa.rao.runner.starter.version>1.43.0</gridcapa.rao.runner.starter.version>
         <jackson-datatype.version>2.17.0</jackson-datatype.version>
         <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
         <jaxb-runtime.version>4.0.5</jaxb-runtime.version>
