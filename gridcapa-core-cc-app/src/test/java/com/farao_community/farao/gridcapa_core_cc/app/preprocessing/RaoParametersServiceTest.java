@@ -10,6 +10,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.Header;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.Property;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.JaxbUtil;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.openrao.raoapi.ZoneToZonePtdfDefinition;
 import com.powsybl.openrao.raoapi.parameters.LoopFlowParameters;
@@ -88,7 +89,7 @@ class RaoParametersServiceTest {
         header.getProperty().add(property);
         property.setName("PST_RA_MIN_IMPACT");
         property.setValue("42.0");
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
@@ -101,7 +102,7 @@ class RaoParametersServiceTest {
         RequestMessage requestMessage = new RequestMessage();
         Header header = new Header();
         requestMessage.setHeader(header);
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPstPenaltyCost(requestMessage, raoParameters);
 
@@ -118,7 +119,7 @@ class RaoParametersServiceTest {
         header.getProperty().add(property);
         property.setName("TOPO_RA_MIN_IMPACT");
         property.setValue("42.0");
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setAbsoluteMinimumImpactThreshold(requestMessage, raoParameters);
 
@@ -131,7 +132,7 @@ class RaoParametersServiceTest {
         RequestMessage requestMessage = new RequestMessage();
         Header header = new Header();
         requestMessage.setHeader(header);
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setAbsoluteMinimumImpactThreshold(requestMessage, raoParameters);
 
@@ -148,9 +149,9 @@ class RaoParametersServiceTest {
         header.getProperty().add(property);
         property.setName("LF_CONSTRAINT_FR");
         property.setValue("true");
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
-        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters(ReportNode.NO_OP);
         raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
         final SearchTreeRaoLoopFlowParameters loopFlowParametersExtension = new SearchTreeRaoLoopFlowParameters();
         loopFlowParametersExtension.setConstraintAdjustmentCoefficient(35.0);
@@ -174,8 +175,8 @@ class RaoParametersServiceTest {
         header.getProperty().add(property);
         property.setName("LF_CONSTRAINT_FR");
         property.setValue("true");
-        RaoParameters raoParameters = new RaoParameters();
-        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters(ReportNode.NO_OP);
         raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
         final SearchTreeRaoLoopFlowParameters loopFlowParametersExtension = new SearchTreeRaoLoopFlowParameters();
         openRaoSearchTreeParameters.setLoopFlowParameters(loopFlowParametersExtension);
@@ -210,7 +211,7 @@ class RaoParametersServiceTest {
         header.getProperty().add(propertyD4);
         header.getProperty().add(propertyD7);
         header.getProperty().add(propertyD8);
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
@@ -228,7 +229,7 @@ class RaoParametersServiceTest {
         property.setName("LF_CONSTRAINT_test");
         property.setValue("true");
         header.getProperty().add(property);
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -245,7 +246,7 @@ class RaoParametersServiceTest {
         header.getProperty().add(property);
         property.setName("LF_CONSTRAINT_FR");
         property.setValue("false");
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
 
@@ -256,8 +257,8 @@ class RaoParametersServiceTest {
     @Test
     void ptdfBoundariesWithExtensionTest() {
         final VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        final RaoParameters raoParameters = new RaoParameters();
-        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        final RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters(ReportNode.NO_OP);
         raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
         final SearchTreeRaoRelativeMarginsParameters relativeMarginsParametersExtension = new SearchTreeRaoRelativeMarginsParameters();
         relativeMarginsParametersExtension.setPtdfSumLowerBound(76.0);
@@ -271,8 +272,8 @@ class RaoParametersServiceTest {
     @Test
     void ptdfBoundariesWithoutExtensionTest() {
         VirtualHubsConfiguration virtualHubsConfiguration = new VirtualHubsConfiguration();
-        RaoParameters raoParameters = new RaoParameters();
-        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
+        final OpenRaoSearchTreeParameters openRaoSearchTreeParameters = new OpenRaoSearchTreeParameters(ReportNode.NO_OP);
         raoParameters.addExtension(OpenRaoSearchTreeParameters.class, openRaoSearchTreeParameters);
         final SearchTreeRaoRelativeMarginsParameters relativeMarginsParametersExtension = new SearchTreeRaoRelativeMarginsParameters();
         openRaoSearchTreeParameters.setRelativeMarginsParameters(relativeMarginsParametersExtension);
@@ -293,7 +294,7 @@ class RaoParametersServiceTest {
         virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, SK, false));
         virtualHubsConfiguration.addBorderDirection(new BorderDirection(BE, SK, false));
         virtualHubsConfiguration.addBorderDirection(new BorderDirection(SK, BE, false));
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
@@ -321,7 +322,7 @@ class RaoParametersServiceTest {
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE2", "BE2-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaBe, null));
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("ES1", "ES1-XXXXXXXXXXXX", true, false, NODE_NAME_SK, marketAreaEs, null));
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("SK1", "SK1-XXXXXXXXXXXX", false, false, NODE_NAME_SK, marketAreaSk, null));
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
@@ -346,7 +347,7 @@ class RaoParametersServiceTest {
         virtualHubsConfiguration.addBorderDirection(new BorderDirection(FR, SK, false));
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("FR1", "FR1-XXXXXXXXXXXX", true, false, NODE_NAME_FR, marketAreaFr, "BE1"));
         virtualHubsConfiguration.addVirtualHub(new VirtualHub("BE1", "BE1-XXXXXXXXXXXX", false, true, NODE_NAME_SK, marketAreaBe, "FR1"));
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
@@ -366,7 +367,7 @@ class RaoParametersServiceTest {
         virtualHubsConfiguration.addMarketArea(marketAreaDk);
         virtualHubsConfiguration.addMarketArea(marketAreaDe);
         virtualHubsConfiguration.addBorderDirection(new BorderDirection("DK1", "DE", true));
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
 
         RaoParametersService.setPtdfBoundaries(virtualHubsConfiguration, raoParameters);
 
