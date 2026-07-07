@@ -10,6 +10,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.Propert
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_request.RequestMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.LoopFlowParameters;
@@ -55,14 +56,14 @@ public class RaoParametersService {
     public String uploadJsonRaoParameters(RequestMessage requestMessage, VirtualHubsConfiguration virtualHubsConfiguration, String destinationKey) {
         RaoParameters raoParameters = createRaoParametersFromRequest(requestMessage, virtualHubsConfiguration);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        JsonRaoParameters.write(raoParameters, outputStream);
+        JsonRaoParameters.write(raoParameters, outputStream, ReportNode.NO_OP);
         String jsonRaoParametersFilePath = String.format(NamingRules.S_INPUTS_S, destinationKey, NamingRules.JSON_RAO_PARAMETERS_FILE_NAME);
         minioAdapter.uploadArtifact(jsonRaoParametersFilePath, new ByteArrayInputStream(outputStream.toByteArray()));
         return jsonRaoParametersFilePath;
     }
 
     public RaoParameters createRaoParametersFromRequest(RequestMessage requestMessage, VirtualHubsConfiguration virtualHubsConfiguration) {
-        RaoParameters raoParameters = RaoParameters.load();
+        RaoParameters raoParameters = RaoParameters.load(ReportNode.NO_OP);
 
         setLoopFlowCountries(requestMessage, raoParameters);
         setPstPenaltyCost(requestMessage, raoParameters);

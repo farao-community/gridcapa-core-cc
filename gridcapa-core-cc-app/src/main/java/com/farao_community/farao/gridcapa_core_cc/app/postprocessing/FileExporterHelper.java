@@ -19,6 +19,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powsybl.commons.datasource.MemDataSource;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
@@ -176,7 +177,7 @@ public class FileExporterHelper {
         //get raoParams from input
         final RaoParameters raoParameters;
         try (final InputStream raoParametersInputStream = minioAdapter.getFile(hourlyRaoRequest.getRaoParametersFileUrl())) {
-            raoParameters = JsonRaoParameters.read(raoParametersInputStream);
+            raoParameters = JsonRaoParameters.read(raoParametersInputStream, ReportNode.NO_OP);
         } catch (final Exception e) {
             throw new CoreCCInternalException("Rao parameters file could not be read", e);
         }
