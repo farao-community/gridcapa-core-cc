@@ -57,7 +57,7 @@ public class RaoResultMerger {
         final PrePerimeterResult initialFlowResult = initialPrePerimeterSensitivityAnalysis.runInitialSensitivityAnalysis(network, reportNode);
 
         // create a new network variant from initial variant for performing the results merging
-        final String variantName = "PSTRegulationResultsMerging";
+        final String variantName = "RaoResultsMerging";
         // TODO utiliser le variant initial et non pas le dernier variant (qui contient possiblement des PRA appliquées ou autre modif)
         network.getVariantManager().cloneVariant(network.getVariantManager().getWorkingVariantId(), variantName);
         network.getVariantManager().setWorkingVariant(variantName);
@@ -171,7 +171,7 @@ public class RaoResultMerger {
             raoParameters,
             reportNode
         );
-        final String executionDetails = String.format("%s / %s", coreRaoResult.getExecutionDetails(), semRaoResult.getExecutionDetails());
+        final String executionDetails = String.format("[CORE] %s / [SEM] %s", coreRaoResult.getExecutionDetails(), semRaoResult.getExecutionDetails());
         postRegulationRaoResult.setExecutionDetails(executionDetails);
 
         // post-process variants
