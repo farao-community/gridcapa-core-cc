@@ -24,6 +24,9 @@ import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext;
+import com.powsybl.openrao.virtualhubs.MarketArea;
+import com.powsybl.openrao.virtualhubs.VirtualHub;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import com.unicorn.request.request_payload.RequestItem;
 import com.unicorn.request.request_payload.RequestItems;
 import com.unicorn.response.response_payload.File;
@@ -52,10 +55,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -99,11 +105,17 @@ class CoreCCPreProcessServiceTest {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
+        final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
+        Mockito.when(raoParametersService.uploadJsonRaoParameters(any(), eq(virtualHubsMock), any()))
+            .thenReturn("/path/to/virtualhubs_failed_url.xml");
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", "current RunID", OffsetDateTime.now(), dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, List.of(taskParameterDto));
+                "id", "current RunID", OffsetDateTime.now(),
+                dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource,
+                dummyVirtualHubsFileResource,
+                List.of(taskParameterDto));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
 
         prepareAndMockRaoRequest(dummyFileResource);
@@ -113,8 +125,8 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
 
         verifyDefaultRaoRequest(coreCCRequest);
-        assertEquals("Missing raoRequest", coreCCRequest.getHourlyRaoResult().getErrorMessage());
-
+        assertEquals("Missing raoRequest", coreCCRequest.getContinentalHourlyRaoResult().getErrorMessage());
+        assertFalse(coreCCRequest.isSemActivated());
     }
 
     @Test
@@ -122,11 +134,15 @@ class CoreCCPreProcessServiceTest {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
+        final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", "current RunID", REQUEST_TIMESTAMP, dummyFileResource, null, dummyFileResource,
-                dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, List.of(taskParameterDto));
+                "id", "current RunID", REQUEST_TIMESTAMP,
+                dummyFileResource, null, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource,
+                dummyVirtualHubsFileResource,
+                List.of(taskParameterDto));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         //
         prepareAndMockRaoRequest(dummyFileResource);
@@ -142,6 +158,7 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
+        assertFalse(coreCCRequest.isSemActivated());
     }
 
     @Test
@@ -151,10 +168,14 @@ class CoreCCPreProcessServiceTest {
         when(dummyDCCgmFileResource.getUrl()).thenReturn("dcCgmfakeUrl");
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
+        final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", "current RunID", REQUEST_TIMESTAMP, dummyFileResource, dummyDCCgmFileResource, dummyFileResource,
-                dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, createTaskParametersList(true));
+                "id", "current RunID", REQUEST_TIMESTAMP,
+                dummyFileResource, dummyDCCgmFileResource, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource,
+                dummyVirtualHubsFileResource,
+                createTaskParametersList(true));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         prepareAndMockRaoRequest(dummyFileResource);
         // mock imports
@@ -169,6 +190,43 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
+        assertFalse(coreCCRequest.isSemActivated());
+    }
+
+    @Test
+    void testInitializeTaskFromRequestWithSemActivated() throws IOException {
+        // Setup CoreCCRequest and InternalCoreCCRequest
+        final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
+        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
+        final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
+        final MarketArea marketArea = new MarketArea("SEM", "xxx", true, false);
+        Mockito.when(virtualHubsMock.getMarketAreas()).thenReturn(List.of(marketArea));
+        final VirtualHub virtualHub = new VirtualHub("SEM_VH", "xxx", true, false, "", marketArea, null);
+        Mockito.when(virtualHubsMock.getVirtualHubs()).thenReturn(List.of(virtualHub));
+        final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
+        final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
+                "id", "current RunID", REQUEST_TIMESTAMP,
+                dummyFileResource, null, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource,
+                dummyVirtualHubsFileResource,
+                List.of(taskParameterDto));
+        final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
+        //
+        prepareAndMockRaoRequest(dummyFileResource);
+        // mock imports
+        final String raoParametersFileUrl = "raoParametersFileUrl";
+        when(raoParametersService.uploadJsonRaoParameters(any(), any(), any())).thenReturn(raoParametersFileUrl);
+        // mock cgms and xml header
+        prepareAndMockCgmsAndXmlHeader(dummyFileResource, true, networkFile, networkPath);
+
+        // mock crac
+        mockCrac();
+        // When
+        coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
+        //
+        verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
+        assertTrue(coreCCRequest.isSemActivated());
     }
 
     @Test
@@ -176,10 +234,14 @@ class CoreCCPreProcessServiceTest {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
+        final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
-                "id", "current RunID", REQUEST_TIMESTAMP, dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, dummyFileResource, dummyFileResource,
-                dummyFileResource, createTaskParametersList(true));
+                "id", "current RunID", REQUEST_TIMESTAMP,
+                dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource, dummyFileResource,
+                dummyVirtualHubsFileResource,
+                createTaskParametersList(true));
         final InternalCoreCCRequest coreCCRequest = new InternalCoreCCRequest(coreCCRequestEntity);
         prepareAndMockRaoRequest(dummyFileResource);
         // mock imports
@@ -191,8 +253,8 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyDefaultRaoRequest(coreCCRequest);
-        assertEquals("Error occurred while trying to import inputs at timestamp: 2024-06-25T06:00:00Z. Origin cause : Exception occurred while importing CRAC file: null", coreCCRequest.getHourlyRaoResult().getErrorMessage());
-        assertEquals("2024-06-25T06:00:00Z", coreCCRequest.getHourlyRaoResult().getRaoRequestInstant());
+        assertEquals("Error occurred while trying to import inputs at timestamp: 2024-06-25T06:00:00Z. Origin cause : Exception occurred while importing CRAC file: null", coreCCRequest.getContinentalHourlyRaoResult().getErrorMessage());
+        assertEquals("2024-06-25T06:00:00Z", coreCCRequest.getContinentalHourlyRaoResult().getRaoRequestInstant());
     }
 
     private static Stream<Arguments> provideResolveCgmPathArgs() {
@@ -266,18 +328,29 @@ class CoreCCPreProcessServiceTest {
 
     private static void verifyNominalHourlyData(final InternalCoreCCRequest coreCCRequest,
                                                 final String raoParametersFileUrl) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        assertNotNull(hourlyRaoRequest);
-        assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/networks/20240625_0600.xiidm", hourlyRaoRequest.getNetworkFileUrl());
-        assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/cracs/20240625_0600.json", hourlyRaoRequest.getCracFileUrl());
-        assertEquals(raoParametersFileUrl, hourlyRaoRequest.getRaoParametersFileUrl());
+        final HourlyRaoRequest continentalHourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
+        assertNotNull(continentalHourlyRaoRequest);
+        assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/networks/continental_20240625_0600.xiidm", continentalHourlyRaoRequest.getNetworkFileUrl());
+        assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/cracs/continental_20240625_0600.json", continentalHourlyRaoRequest.getCracFileUrl());
+        assertEquals(raoParametersFileUrl, continentalHourlyRaoRequest.getRaoParametersFileUrl());
+        assertEquals("RAO_WORKING_DIR/20240625_0800/hourly_rao_results/continental", continentalHourlyRaoRequest.getResultsDestination());
         //In nominal case, hourly rao result remains empty
-        assertNull(coreCCRequest.getHourlyRaoResult());
+        assertNull(coreCCRequest.getContinentalHourlyRaoResult());
+        if (coreCCRequest.isSemActivated()) {
+            final HourlyRaoRequest semHourlyRaoRequest = coreCCRequest.getSemHourlyRaoRequest();
+            assertNotNull(semHourlyRaoRequest);
+            assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/networks/sem_20240625_0600.xiidm", semHourlyRaoRequest.getNetworkFileUrl());
+            assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/cracs/sem_20240625_0600.json", semHourlyRaoRequest.getCracFileUrl());
+            assertEquals(raoParametersFileUrl, semHourlyRaoRequest.getRaoParametersFileUrl());
+            assertEquals("RAO_WORKING_DIR/20240625_0800/hourly_rao_results/sem", semHourlyRaoRequest.getResultsDestination());
+            //In nominal case, hourly rao result remains empty
+            assertNull(coreCCRequest.getContinentalHourlyRaoResult());
+        }
     }
 
     private static void verifyDefaultRaoRequest(final InternalCoreCCRequest coreCCRequest) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        final HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
+        final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
         assertNotNull(hourlyRaoRequest);
         assertNotNull(hourlyRaoResult);
         assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
@@ -328,5 +401,4 @@ class CoreCCPreProcessServiceTest {
         raoRequestMessage.setHeader(header);
         Mockito.when(fileImporter.importRaoRequest(dummyFileResource)).thenReturn(raoRequestMessage);
     }
-
 }

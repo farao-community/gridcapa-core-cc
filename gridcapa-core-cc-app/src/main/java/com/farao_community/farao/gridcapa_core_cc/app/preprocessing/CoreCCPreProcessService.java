@@ -8,6 +8,7 @@ package com.farao_community.farao.gridcapa_core_cc.app.preprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDataException;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
@@ -19,11 +20,19 @@ import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.Reply;
 import com.farao_community.farao.gridcapa_core_cc.app.inputs.rao_response.ResponseMessage;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
+import com.farao_community.farao.gridcapa_core_cc.app.util.DataUtil;
 import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
+import com.farao_community.farao.gridcapa_core_cc.app.util.NetworkUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.reducer.NetworkReducer;
 import com.powsybl.openrao.data.crac.api.CracCreationContext;
+import com.powsybl.openrao.virtualhubs.MarketArea;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
+import com.unicorn.request.request_payload.RequestItem;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,11 +40,9 @@ import org.threeten.extra.Interval;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.Marshaller;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +53,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
 
 /**
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
@@ -54,11 +61,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class CoreCCPreProcessService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCPreProcessService.class);
-    private static final String S_HOURLY_RAO_RESULTS_S = "%s/hourly_rao_results";
+    private static final String S_HOURLY_RAO_RESULTS = "%s/hourly_rao_results";
     private static final String XIIDM_EXPORT_FORMAT = "XIIDM";
     private static final String XIIDM_EXTENSION = ".xiidm";
     private static final String UCT_EXTENSION = ".uct";
     private static final String JSON_CRAC_PROVIDER = "JSON";
+    private static final String PREFIXED_FILENAME_FORMAT = "%s_%s";
 
     private final Logger businessLogger;
     private final MinioAdapter minioAdapter;
@@ -73,6 +81,9 @@ public class CoreCCPreProcessService {
         this.fileImporter = fileImporter;
     }
 
+    record RequestResult(HourlyRaoRequest raoRequest, HourlyRaoResult raoResult) {
+    }
+
     public void initializeTaskFromAutomatedLaunch(InternalCoreCCRequest coreCCRequest) {
         splitRaoRequest(coreCCRequest);
     }
@@ -84,63 +95,165 @@ public class CoreCCPreProcessService {
      * matches one of the list's timestamps.
      * - specific RAO parameters to be overloaded.
      */
-    private void splitRaoRequest(InternalCoreCCRequest coreCCRequest) {
-        String destinationKey = NamingRules.getDestinationKey(coreCCRequest.getTimestamp());
-        String destinationPath = generateResultDestinationPath(destinationKey);
-        CoreCCTaskParameters parameters = new CoreCCTaskParameters(coreCCRequest.getParameters());
+    private void splitRaoRequest(final InternalCoreCCRequest coreCCRequest) {
+        final String destinationKey = NamingRules.getDestinationKey(coreCCRequest.getTimestamp());
+        final String destinationPath = generateResultDestinationPath(destinationKey);
+        // artifacts will be area-specific (continental/SEM) but outputs do not depend on the area,
+        // therefore we need to store the common root path in a common object
+        coreCCRequest.setDestinationPath(destinationPath);
+
+        final CoreCCTaskParameters parameters = new CoreCCTaskParameters(coreCCRequest.getParameters());
         logCoreCCParameters(coreCCRequest, parameters);
-        RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
+
+        final RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
-        VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
-        String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, virtualHubsConfiguration, destinationKey);
-        CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
-        CgmsAndXmlHeader dcCgmsAndXmlHeader = coreCCRequest.getDcCgm() != null ? fileImporter.importCgmsZip(coreCCRequest.getDcCgm()) : null;
-        if (!Interval.parse(raoRequestMessage.getPayload().getRequestItems().getTimeInterval()).equals(Interval.parse(cgmsAndXmlHeader.getXmlHeader().getPayload().getResponseItems().getTimeInterval()))) {
-            throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
+
+        final VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
+        coreCCRequest.setSemActivated(isSemActivated(virtualHubsConfiguration));
+
+        final String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, virtualHubsConfiguration, destinationKey);
+        final String raoParametersFilename = new File(raoParametersFileUrl).getName();
+        // RaoParameters are the same for both continental and SEM areas and will be required for common outputs generation,
+        // so we store the file path in a common object
+        coreCCRequest.setRaoParameters(new CoreCCFileResource(raoParametersFilename, raoParametersFileUrl));
+
+        final CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
+        final CgmsAndXmlHeader dcCgmsAndXmlHeader = coreCCRequest.getDcCgm() != null ? fileImporter.importCgmsZip(coreCCRequest.getDcCgm()) : null;
+
+        checkIfRaoRequestAndCgmHeaderTimeIntervalsMatch(raoRequestMessage, cgmsAndXmlHeader);
+
+        RequestResult continentalRequestResult;
+        RequestResult semRequestResult = null;
+        // At most one raoRequest item should match coreCCRequest's timestamp
+        final Optional<RequestItem> requestItemOptional = raoRequestMessage.getPayload().getRequestItems().getRequestItem().stream()
+            .filter(item -> Interval.parse(item.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant()))
+            .collect(DataUtil.toOptional());
+
+        if (requestItemOptional.isPresent()) {
+            final Instant utcInstant = Interval.parse(requestItemOptional.get().getTimeInterval()).getStart();
+            LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
+            sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(coreCCRequest.getTimestamp()), raoRequestMessage);
+
+            continentalRequestResult = getRequestAndResult(
+                coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, false
+            );
+
+            if (coreCCRequest.isSemActivated()) {
+                semRequestResult = getRequestAndResult(
+                    coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, true
+                );
+            }
+        } else {
+            final HourlyRaoRequest raoRequest = new HourlyRaoRequest(
+                minioAdapter,
+                null,
+                null, null, null, null, null, null,
+                destinationPath
+            );
+
+            final String errorMessage = "Missing raoRequest";
+            LOGGER.error(errorMessage);
+            businessLogger.error("Timestamp not included in RAO request for this business date.");
+            final HourlyRaoResult raoResult = buildFailedHourlyRaoResult(null, errorMessage);
+
+            continentalRequestResult = new RequestResult(raoRequest, raoResult);
+
+            // TODO Do we need to do something for SEM in this case?
         }
 
-        AtomicReference<HourlyRaoRequest> raoRequest = new AtomicReference<>();
-        AtomicReference<HourlyRaoResult> raoResult = new AtomicReference<>();
-        // Looping through all raoRequest items. Only item matching coreCCRequest's timestamp will set raoRequest
-        raoRequestMessage.getPayload().getRequestItems().getRequestItem().forEach(requestItem -> {
-            Instant utcInstant = Interval.parse(requestItem.getTimeInterval()).getStart();
-            if (Interval.parse(requestItem.getTimeInterval()).contains(coreCCRequest.getTimestamp().toInstant())) {
-                LOGGER.info("CoreCCRequest timestamp : {} matched raoRequest timestamp : {}", coreCCRequest.getTimestamp(), utcInstant);
-                sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(coreCCRequest.getTimestamp()), raoRequestMessage);
-                try {
-                    final Path cgmPath = resolveCgmPath(dcCgmsAndXmlHeader, utcInstant, cgmsAndXmlHeader, parameters);
-                    Network network = convertNetworkToIidm(cgmPath);
-                    String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
-                    String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
-                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
-                            coreCCRequest.getRefProg().getUrl(),
-                            coreCCRequest.getVirtualHub().getUrl(),
-                            coreCCRequest.getGlsk().getUrl(),
-                            raoParametersFileUrl, destinationPath));
-                } catch (Exception e) {
-                    raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), null, null, null, null, null, null, destinationPath));
-                    String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
-                    LOGGER.error(errorMessage);
-                    raoResult.set(new HourlyRaoResult(utcInstant.toString()));
-                    raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
-                    raoResult.get().setErrorMessage(errorMessage);
-                    raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
-                }
-            }
-        });
-        if (Objects.isNull(raoRequest.get())) {
-            String message = "Missing raoRequest";
-            raoRequest.set(new HourlyRaoRequest(minioAdapter, null, null, null, null, null, null, null, destinationPath));
-            LOGGER.error(message);
-            businessLogger.error("Timestamp not included in RAO request for this business date.");
-            raoResult.set(new HourlyRaoResult(null));
-            raoResult.get().setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
-            raoResult.get().setErrorMessage(message);
-            raoResult.get().setStatus(HourlyRaoResult.Status.FAILURE);
+        coreCCRequest.setContinentalHourlyRaoRequest(continentalRequestResult.raoRequest());
+        coreCCRequest.setContinentalHourlyRaoResult(continentalRequestResult.raoResult());
+        if (semRequestResult != null) { // TODO or isSemActivated() in case we handle semRequestResult in the above "else" (see previous TODO comment)
+            coreCCRequest.setSemHourlyRaoRequest(semRequestResult.raoRequest());
+            coreCCRequest.setSemHourlyRaoResult(semRequestResult.raoResult());
         }
-        coreCCRequest.setHourlyRaoRequest(raoRequest.get());
-        coreCCRequest.setHourlyRaoResult(raoResult.get());
+    }
+
+    private RequestResult getRequestAndResult(final InternalCoreCCRequest coreCCRequest,
+                                              final Instant utcInstant,
+                                              final CgmsAndXmlHeader dcCgmsAndXmlHeader,
+                                              final CgmsAndXmlHeader cgmsAndXmlHeader,
+                                              final CoreCCTaskParameters parameters,
+                                              final String destinationKey,
+                                              final String raoParametersFileUrl,
+                                              final String destinationPath,
+                                              final boolean isSem) {
+        HourlyRaoRequest raoRequest;
+        HourlyRaoResult raoResult = null;
+
+        final boolean isSemArea = coreCCRequest.isSemActivated() && isSem; // TODO Should we fail if isSem == true but isSemActivated == false?
+        final String areaIdentifier = isSemArea ? "sem" : "continental";
+
+        try {
+            final Path cgmPath = resolveCgmPath(dcCgmsAndXmlHeader, utcInstant, cgmsAndXmlHeader, parameters);
+            final Network network = convertNetworkToIidm(cgmPath);
+
+            if (isSemArea) {
+                final NetworkReducer semReducer = NetworkReducer.builder()
+                    .withNetworkPredicate(NetworkUtil.SEM_SUBNETWORK)
+                    .withBoundaryLines(true)
+                    .build();
+                semReducer.reduce(network);
+            } else {
+                final NetworkReducer continentalReducer = NetworkReducer.builder()
+                    .withNetworkPredicate(NetworkUtil.CONTINENTAL_SUBNETWORK)
+                    .withBoundaryLines(true)
+                    .build();
+                continentalReducer.reduce(network);
+            }
+            final String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, areaIdentifier, utcInstant);
+            final String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, areaIdentifier, utcInstant, network);
+
+            raoRequest = new HourlyRaoRequest(
+                minioAdapter,
+                utcInstant.toString(),
+                networkFileUrl,
+                jsonCracFileUrl,
+                coreCCRequest.getRefProg().getUrl(),
+                coreCCRequest.getVirtualHub().getUrl(),
+                coreCCRequest.getGlsk().getUrl(),
+                raoParametersFileUrl,
+                destinationPath + "/" + areaIdentifier
+            );
+        } catch (Exception e) {
+            raoRequest = new HourlyRaoRequest(
+                minioAdapter,
+                utcInstant.toString(),
+                null, null, null, null, null, null,
+                destinationPath + "/" + areaIdentifier
+            );
+            String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
+            LOGGER.error(errorMessage);
+            raoResult = buildFailedHourlyRaoResult(utcInstant.toString(), errorMessage);
+        }
+
+        return new RequestResult(raoRequest, raoResult);
+    }
+
+    private static HourlyRaoResult buildFailedHourlyRaoResult(final String raoRequestInstant, final String errorMessage) {
+        final HourlyRaoResult raoResult = new HourlyRaoResult(raoRequestInstant);
+        raoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+        raoResult.setErrorMessage(errorMessage);
+        raoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+        return raoResult;
+    }
+
+    private static void checkIfRaoRequestAndCgmHeaderTimeIntervalsMatch(final RequestMessage raoRequestMessage, final CgmsAndXmlHeader cgmsAndXmlHeader) {
+        final Interval raoRequestTimeInterval = Interval.parse(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
+        final Interval cgmHeaderTimeInterval = Interval.parse(cgmsAndXmlHeader.getXmlHeader().getPayload().getResponseItems().getTimeInterval());
+        if (!raoRequestTimeInterval.equals(cgmHeaderTimeInterval)) {
+            throw new CoreCCInvalidDataException("RaoRequest and CGM header time intervals don't match");
+        }
+    }
+
+    private boolean isSemActivated(final VirtualHubsConfiguration virtualHubsConfiguration) {
+        final Optional<MarketArea> optionalSemMarketArea = virtualHubsConfiguration.getMarketAreas().stream()
+            .filter(ma -> "SEM".equals(ma.code()))
+            .findAny();
+        // TODO Check if it is sufficient to check on <MarketArea> or if we also need to check on <VirtualHub>
+        return optionalSemMarketArea.isPresent()
+            && virtualHubsConfiguration.getVirtualHubs().stream().anyMatch(vh -> optionalSemMarketArea.get().equals(vh.relatedMa()));
     }
 
     void logCoreCCParameters(final InternalCoreCCRequest coreCCRequest,
@@ -153,14 +266,14 @@ public class CoreCCPreProcessService {
         }
     }
 
-    Path resolveCgmPath(final CgmsAndXmlHeader dcCgmsPaths,
+    Path resolveCgmPath(final CgmsAndXmlHeader dcCgmsAndXmlHeader,
                         final Instant utcInstant,
                         final CgmsAndXmlHeader cgmsAndXmlHeader,
                         final CoreCCTaskParameters parameters) {
         final Path cgmPath;
         if (parameters.isUseDcCgmInput()) {
-            if (dcCgmsPaths != null && dcCgmsPaths.getNetworkPath(utcInstant) != null) {
-                cgmPath = dcCgmsPaths.getNetworkPath(utcInstant);
+            if (dcCgmsAndXmlHeader != null && dcCgmsAndXmlHeader.getNetworkPath(utcInstant) != null) {
+                cgmPath = dcCgmsAndXmlHeader.getNetworkPath(utcInstant);
             } else {
                 businessLogger.warn("DC_CGM not available, using CGM input instead.");
                 cgmPath = cgmsAndXmlHeader.getNetworkPath(utcInstant);
@@ -172,19 +285,27 @@ public class CoreCCPreProcessService {
     }
 
     private String generateResultDestinationPath(String destinationKey) {
-        return String.format(S_HOURLY_RAO_RESULTS_S, destinationKey);
+        return String.format(S_HOURLY_RAO_RESULTS, destinationKey);
     }
 
     private Network convertNetworkToIidm(Path cgmPath) {
         return CoreNetworkImporterWrapper.loadNetwork(cgmPath);
     }
 
-    private String uploadIidmNetwork(String destinationKey, Path cgmPath, Network network, String cgmFileName, Instant utcInstant) {
-        String iidmFileName = cgmFileName.replaceAll("(?i)" + UCT_EXTENSION, XIIDM_EXTENSION);
-        Path iidmTmpPath = Paths.get(cgmPath.toString().replace(cgmFileName, iidmFileName)); //NOSONAR
-        network.write(XIIDM_EXPORT_FORMAT, null, iidmTmpPath);
-        String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION));
-        try (FileInputStream iidmNetworkInputStream = new FileInputStream(iidmTmpPath.toString())) { //NOSONAR
+    private String uploadIidmNetwork(final String destinationKey,
+                                     final Path cgmPath,
+                                     final Network network,
+                                     final String prefix,
+                                     final Instant utcInstant) {
+        final String initialCgmFilename = cgmPath.getFileName().toString();
+        final String tmpFilename = initialCgmFilename.replaceAll("(?i)" + UCT_EXTENSION, XIIDM_EXTENSION);
+        final Path tmpFilePath = Paths.get(cgmPath.toString().replace(initialCgmFilename, String.format(PREFIXED_FILENAME_FORMAT, prefix, tmpFilename))); //NOSONAR
+
+        network.write(XIIDM_EXPORT_FORMAT, null, tmpFilePath);
+
+        final String iidmNetworkFilename = NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.IIDM_EXTENSION);
+        final String iidmNetworkDestinationPath = String.format(NamingRules.S_INPUTS_NETWORKS_S, destinationKey, String.format(PREFIXED_FILENAME_FORMAT, prefix, iidmNetworkFilename));
+        try (FileInputStream iidmNetworkInputStream = new FileInputStream(tmpFilePath.toString())) { //NOSONAR
             minioAdapter.uploadArtifact(iidmNetworkDestinationPath, iidmNetworkInputStream);
         } catch (Exception e) {
             throw new CoreCCInternalException("IIDM network could not be uploaded to minio", e);
@@ -192,11 +313,16 @@ public class CoreCCPreProcessService {
         return iidmNetworkDestinationPath;
     }
 
-    private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
-        CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
-        try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
+    private String uploadJsonCrac(final InternalCoreCCRequest coreCCRequest,
+                                  final String destinationKey,
+                                  final String prefix,
+                                  final Instant utcInstant,
+                                  final Network network) {
+        final CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
+        try (final ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
-            String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));
+            final String filename = NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION);
+            final String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, String.format(PREFIXED_FILENAME_FORMAT, prefix, filename));
             uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;
         } catch (Exception e) {
@@ -263,8 +389,8 @@ public class CoreCCPreProcessService {
             JAXBElement<ResponseMessage> root = new JAXBElement<>(qName, ResponseMessage.class, responseMessage);
             jaxbMarshaller.marshal(root, stringWriter);
             return stringWriter.toString()
-                    .replace("xsi:ResponseMessage", "ResponseMessage")
-                    .getBytes();
+                .replace("xsi:ResponseMessage", "ResponseMessage")
+                .getBytes();
         } catch (Exception e) {
             throw new CoreCCInternalException("Exception occurred during RAO Request ACK export.", e);
         }

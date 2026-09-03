@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -34,7 +33,6 @@ import java.util.Objects;
  */
 @Component
 public class CoreCCHandler {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCHandler.class);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm");
 
@@ -72,42 +70,77 @@ public class CoreCCHandler {
     }
 
     private void runRao(InternalCoreCCRequest coreCCRequest) {
-        HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
-        HourlyRaoResult hourlyRaoResult;
-        if (Objects.nonNull(coreCCRequest.getHourlyRaoResult())) {
-            hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
-        } else {
-            // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
-            hourlyRaoResult = new HourlyRaoResult(hourlyRaoRequest.getRaoRequestInstant());
-            coreCCRequest.setHourlyRaoResult(hourlyRaoResult);
+        RaoSuccessResponse semRaoResponse = null;
+        RaoSuccessResponse continentalRaoResponse = null;
+
+        if (coreCCRequest.isSemActivated()) {
+            // RAO on SEM area
+            final HourlyRaoRequest semHourlyRaoRequest = coreCCRequest.getSemHourlyRaoRequest();
+            HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+
+            if (semHourlyRaoResult == null) {
+                // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
+                semHourlyRaoResult = new HourlyRaoResult(semHourlyRaoRequest.getRaoRequestInstant());
+                coreCCRequest.setSemHourlyRaoResult(semHourlyRaoResult);
+            }
+
+            if (semHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
+                // TODO What should we do in case SEM is activated, but SEM pre-processing failed?
+//                saveMetadataWhenPreProcessingFailed(coreCCRequest);
+                LOGGER.info("Skipping RAO on SEM area");
+//                return;
+            } else {
+                LOGGER.info("Launching RAO on SEM area. CoreCCRequest id is {}", coreCCRequest.getId());
+                try {
+                    semRaoResponse = raoRunnerService.run(semHourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
+                    semHourlyRaoResult.setRaoResponseData(semRaoResponse);
+                    semHourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
+                } catch (CoreCCInternalException | CoreCCRaoException e) {
+                    handleRaoRunnerException(semHourlyRaoResult, e);
+                }
+            }
         }
-        if (hourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
+
+        // RAO on continental area
+        final HourlyRaoRequest continentalHourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
+        HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+
+        if (continentalHourlyRaoResult == null) {
+            // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
+            continentalHourlyRaoResult = new HourlyRaoResult(continentalHourlyRaoRequest.getRaoRequestInstant());
+            coreCCRequest.setContinentalHourlyRaoResult(continentalHourlyRaoResult);
+        }
+
+        if (continentalHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
             saveMetadataWhenPreProcessingFailed(coreCCRequest);
-            LOGGER.info("Skipping RAO");
+            LOGGER.info("Skipping RAO on continental area");
+            // TODO What should we do if continental RAO fails, but SEM is activated and SEM RAO succeeded?
             return;
         }
+
         LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
         try {
-            RaoSuccessResponse raoResponse = raoRunnerService.run(hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
-            convertAndSaveReceivedRaoResult(coreCCRequest, raoResponse);
+            continentalRaoResponse = raoRunnerService.run(continentalHourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
+            continentalHourlyRaoResult.setRaoResponseData(continentalRaoResponse);
+            continentalHourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
         } catch (CoreCCInternalException | CoreCCRaoException e) {
-            handleRaoRunnerException(hourlyRaoResult, e);
+            handleRaoRunnerException(continentalHourlyRaoResult, e);
         }
+
+        convertAndSaveReceivedRaoResult(coreCCRequest);
     }
 
-    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest, RaoSuccessResponse raoResponse) {
-        HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest) {
         try {
-            hourlyRaoResult.setRaoResponseData(raoResponse);
             fileExporterHelper.exportCneToMinio(coreCCRequest);
             fileExporterHelper.exportNetworkToMinio(coreCCRequest);
             fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-            // MetaData
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
             fileExporterHelper.exportMetadataToMinio(coreCCRequest);
         } catch (Exception e) {
+            // TODO area-related results should not be handled in a common export method. So what should we do here in case of exception during export?
             //no throwing exception, just save cause and pass to next timestamp
-            String errorMessage = String.format("error occurred while post processing rao outputs for timestamp: %s, Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
+            final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+            final String errorMessage = String.format("Error occurred while post-processing RAO outputs for timestamp: %s. Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
             LOGGER.error(errorMessage);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
             hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
@@ -129,10 +162,10 @@ public class CoreCCHandler {
         hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
         if (exception instanceof final ResourceParseException resourceParseException) {
             // Sync scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format.
-            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().getFirst().getDetail());
         } else if (exception.getCause() instanceof final ResourceParseException resourceParseException) {
             // Async scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format, which is wrapped itself into a ConcurrencyException.
-            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().get(0).getDetail());
+            setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().getFirst().getDetail());
         } else if (exception.getCause() instanceof AmqpReplyTimeoutException) {
             setErrorMessageAndLogIt(hourlyRaoResult, "Timeout reached, Rao has not finished within allocated time of : " + amqpConfiguration.getAsyncTimeOutInMinutes() + " minutes");
         } else {
@@ -146,5 +179,4 @@ public class CoreCCHandler {
         hourlyRaoResult.setErrorMessage(originCause);
         LOGGER.warn(RAO_FAILED_LOG_PATTERN, hourlyRaoResult.getRaoRequestInstant(), originCause);
     }
-
 }

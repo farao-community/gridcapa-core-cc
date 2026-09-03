@@ -33,7 +33,6 @@ import java.util.function.Consumer;
  */
 @Component
 public class CoreCCListener {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCListener.class);
     private static final String TASK_STATUS_UPDATE = "task-status-update";
     private static final String GRIDCAPA_TASK_ID = "gridcapa-task-id";
@@ -46,10 +45,10 @@ public class CoreCCListener {
     public CoreCCListener(final Logger businessLogger,
                           final CoreCCHandler coreCCHandler,
                           final StreamBridge streamBridge) {
-        this.businessLogger = businessLogger;
-        this.streamBridge = streamBridge;
         this.jsonApiConverter = new JsonApiConverter();
+        this.businessLogger = businessLogger;
         this.coreCCHandler = coreCCHandler;
+        this.streamBridge = streamBridge;
     }
 
     @Bean
@@ -77,7 +76,8 @@ public class CoreCCListener {
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
-            updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
+            // TODO What should the task status be if continental succeeds and sem fails?
+            updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
             logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);
         } catch (final RuntimeException e) {

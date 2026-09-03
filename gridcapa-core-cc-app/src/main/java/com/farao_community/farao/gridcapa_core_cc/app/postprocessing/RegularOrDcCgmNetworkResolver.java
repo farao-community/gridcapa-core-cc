@@ -42,7 +42,7 @@ public class RegularOrDcCgmNetworkResolver {
     public Network resolve(final boolean useDcCGmInput,
                            final InternalCoreCCRequest coreCCRequest) {
         final Network network;
-        final HourlyRaoResult hourlyRaoResult = coreCCRequest.getHourlyRaoResult();
+        final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
         if (useDcCGmInput) {
             //If DC CGM was used, apply PRA to regular CGM
             final CgmsAndXmlHeader cgmsAndXmlHeader = fileImporter.importCgmsZip(coreCCRequest.getCgm());
@@ -67,7 +67,7 @@ public class RegularOrDcCgmNetworkResolver {
 
     private Crac importCracFromHourlyRaoRequest(final InternalCoreCCRequest coreCCRequest,
                                         final Network network) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getHourlyRaoRequest();
+        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
         final String cracFileUrl = hourlyRaoRequest.getCracFileUrl();
         try (final InputStream cracFileInputStream = minioAdapter.getFile(cracFileUrl)) {
             return Crac.read(Path.of(cracFileUrl).getFileName().toString(), cracFileInputStream, network);

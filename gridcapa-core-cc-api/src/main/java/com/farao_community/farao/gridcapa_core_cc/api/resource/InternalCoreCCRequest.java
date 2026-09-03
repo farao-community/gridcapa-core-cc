@@ -20,13 +20,18 @@ import java.util.List;
  * @author Philippe Edwards {@literal <philippe.edwards at rte-france.com>}
  */
 public class InternalCoreCCRequest {
-    private CoreCCRequest coreCCRequest;
-    private HourlyRaoRequest hourlyRaoRequest;
-    private HourlyRaoResult hourlyRaoResult;
+    private final CoreCCRequest coreCCRequest;
+    private CoreCCFileResource raoParameters;
+    private HourlyRaoRequest continentalHourlyRaoRequest;
+    private HourlyRaoResult continentalHourlyRaoResult;
+    private HourlyRaoRequest semHourlyRaoRequest;
+    private HourlyRaoResult semHourlyRaoResult;
     private int version = 1;
     private Instant requestReceivedInstant;
     private String timeInterval;
     private String correlationId;
+    private String destinationPath;
+    private boolean semActivated;
 
     public InternalCoreCCRequest(CoreCCRequest coreCCRequest) {
         this.coreCCRequest = coreCCRequest;
@@ -76,20 +81,44 @@ public class InternalCoreCCRequest {
         return coreCCRequest.getTaskParameterList();
     }
 
-    public HourlyRaoRequest getHourlyRaoRequest() {
-        return hourlyRaoRequest;
+    public CoreCCFileResource getRaoParameters() {
+        return raoParameters;
     }
 
-    public void setHourlyRaoRequest(HourlyRaoRequest hourlyInput) {
-        this.hourlyRaoRequest = hourlyInput;
+    public void setRaoParameters(final CoreCCFileResource raoParameters) {
+        this.raoParameters = raoParameters;
     }
 
-    public HourlyRaoResult getHourlyRaoResult() {
-        return hourlyRaoResult;
+    public HourlyRaoRequest getContinentalHourlyRaoRequest() {
+        return continentalHourlyRaoRequest;
     }
 
-    public void setHourlyRaoResult(HourlyRaoResult hourlyArtifact) {
-        this.hourlyRaoResult = hourlyArtifact;
+    public void setContinentalHourlyRaoRequest(HourlyRaoRequest hourlyInput) {
+        this.continentalHourlyRaoRequest = hourlyInput;
+    }
+
+    public HourlyRaoRequest getSemHourlyRaoRequest() {
+        return semHourlyRaoRequest;
+    }
+
+    public void setSemHourlyRaoRequest(final HourlyRaoRequest hourlyInput) {
+        this.semHourlyRaoRequest = hourlyInput;
+    }
+
+    public HourlyRaoResult getContinentalHourlyRaoResult() {
+        return continentalHourlyRaoResult;
+    }
+
+    public void setContinentalHourlyRaoResult(HourlyRaoResult hourlyArtifact) {
+        this.continentalHourlyRaoResult = hourlyArtifact;
+    }
+
+    public HourlyRaoResult getSemHourlyRaoResult() {
+        return semHourlyRaoResult;
+    }
+
+    public void setSemHourlyRaoResult(final HourlyRaoResult hourlyArtifact) {
+        this.semHourlyRaoResult = hourlyArtifact;
     }
 
     public int getVersion() {
@@ -122,6 +151,22 @@ public class InternalCoreCCRequest {
 
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
+    }
+
+    public String getDestinationPath() {
+        return destinationPath;
+    }
+
+    public void setDestinationPath(final String destinationPath) {
+        this.destinationPath = destinationPath;
+    }
+
+    public boolean isSemActivated() {
+        return semActivated;
+    }
+
+    public void setSemActivated(final boolean semActivated) {
+        this.semActivated = semActivated;
     }
 
     @Override

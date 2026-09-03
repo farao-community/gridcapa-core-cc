@@ -24,16 +24,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
  */
 class InternalCoreCCRequestTest {
-    private CoreCCRequest coreCCRequest;
     private InternalCoreCCRequest internalCoreCCRequest;
     private HourlyRaoRequest hourlyRaoRequest;
     private HourlyRaoResult hourlyRaoResult;
-    private MinioAdapter minioAdapter;
-    private Instant instant = Instant.ofEpochSecond(0);
 
     @BeforeEach
     void setUp() {
-        coreCCRequest = Mockito.mock(CoreCCRequest.class);
+        final CoreCCRequest coreCCRequest = Mockito.mock(CoreCCRequest.class);
         Mockito.when(coreCCRequest.getId()).thenReturn("id");
         Mockito.when(coreCCRequest.getTimestamp()).thenReturn(OffsetDateTime.of(2023, 7, 18, 13, 49, 50, 0, ZoneId.of("Europe/Brussels").getRules().getOffset(LocalDateTime.now())));
         Mockito.when(coreCCRequest.getCgm()).thenReturn(new CoreCCFileResource("cgm", "file/cgm"));
@@ -43,7 +40,7 @@ class InternalCoreCCRequestTest {
         Mockito.when(coreCCRequest.getRaoRequest()).thenReturn(new CoreCCFileResource("raoRequest", "file/raoRequest"));
         Mockito.when(coreCCRequest.getVirtualHub()).thenReturn(new CoreCCFileResource("virtualHub", "file/virtualHub"));
         internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
-        minioAdapter = Mockito.mock(MinioAdapter.class);
+        final MinioAdapter minioAdapter = Mockito.mock(MinioAdapter.class);
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
         hourlyRaoRequest = new HourlyRaoRequest(minioAdapter, "instant", "file/path/network", "file/path/cb", "file/path/refprog", "file/path/virtualHub", "file/path/glsk", "file/path/raoParameters", "path/to/destination");
         hourlyRaoResult = new HourlyRaoResult("instant");
@@ -65,8 +62,8 @@ class InternalCoreCCRequestTest {
         assertTrue(equalsCoreCCFileResource(createFileResource("refProg"), internalCoreCCRequest.getRefProg()));
         assertTrue(equalsCoreCCFileResource(createFileResource("raoRequest"), internalCoreCCRequest.getRaoRequest()));
         assertTrue(equalsCoreCCFileResource(createFileResource("virtualHub"), internalCoreCCRequest.getVirtualHub()));
-        assertNull(internalCoreCCRequest.getHourlyRaoRequest());
-        assertNull(internalCoreCCRequest.getHourlyRaoResult());
+        assertNull(internalCoreCCRequest.getContinentalHourlyRaoRequest());
+        assertNull(internalCoreCCRequest.getContinentalHourlyRaoResult());
         assertEquals(1, internalCoreCCRequest.getVersion());
         assertNull(internalCoreCCRequest.getRequestReceivedInstant());
         assertNull(internalCoreCCRequest.getTimeInterval());
@@ -75,14 +72,14 @@ class InternalCoreCCRequestTest {
 
     @Test
     void changeHourlyRaoRequest() {
-        internalCoreCCRequest.setHourlyRaoRequest(hourlyRaoRequest);
-        assertEquals(hourlyRaoRequest, internalCoreCCRequest.getHourlyRaoRequest());
+        internalCoreCCRequest.setContinentalHourlyRaoRequest(hourlyRaoRequest);
+        assertEquals(hourlyRaoRequest, internalCoreCCRequest.getContinentalHourlyRaoRequest());
     }
 
     @Test
     void changeHourlyRaoResult() {
-        internalCoreCCRequest.setHourlyRaoResult(hourlyRaoResult);
-        assertEquals(hourlyRaoResult, internalCoreCCRequest.getHourlyRaoResult());
+        internalCoreCCRequest.setContinentalHourlyRaoResult(hourlyRaoResult);
+        assertEquals(hourlyRaoResult, internalCoreCCRequest.getContinentalHourlyRaoResult());
     }
 
     @Test
@@ -93,6 +90,8 @@ class InternalCoreCCRequestTest {
 
     @Test
     void changeRequestReceivedInstant() {
+        final Instant instant = Instant.ofEpochSecond(0);
+        assertNotEquals(instant, internalCoreCCRequest.getRequestReceivedInstant());
         internalCoreCCRequest.setRequestReceivedInstant(instant);
         assertEquals(instant, internalCoreCCRequest.getRequestReceivedInstant());
     }

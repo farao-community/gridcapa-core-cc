@@ -69,7 +69,7 @@ class RegularOrDcCgmNetworkResolverServiceTest {
         hourlyRaoResult = mock(HourlyRaoResult.class);
         hourlyRaoRequest = mock(HourlyRaoRequest.class);
         cgmsAndXmlHeader = mock(CgmsAndXmlHeader.class);
-        when(coreCCRequest.getHourlyRaoResult()).thenReturn(hourlyRaoResult);
+        when(coreCCRequest.getContinentalHourlyRaoResult()).thenReturn(hourlyRaoResult);
     }
 
     private CgmsAndXmlHeader cgmsAndXmlHeader;
@@ -83,7 +83,7 @@ class RegularOrDcCgmNetworkResolverServiceTest {
         final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), Files.newInputStream(cracJsonFilePath), network);
         final RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
         //mock cgms
-        when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
+        when(coreCCRequest.getContinentalHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
         when(fileImporter.importCgmsZip(any())).thenReturn(cgmsAndXmlHeader);
         //mock cgm path
         when(cgmsAndXmlHeader.getNetworkPath(any(Instant.class))).thenReturn(networkPath);

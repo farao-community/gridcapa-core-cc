@@ -122,8 +122,8 @@ class FileExporterHelperTest {
         when(hourlyRaoRequest.getResultsDestination()).thenReturn("/path");
         coreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
         when(coreCCRequest.getId()).thenReturn("id");
-        when(coreCCRequest.getHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
-        when(coreCCRequest.getHourlyRaoResult()).thenReturn(hourlyRaoResult);
+        when(coreCCRequest.getContinentalHourlyRaoRequest()).thenReturn(hourlyRaoRequest);
+        when(coreCCRequest.getContinentalHourlyRaoResult()).thenReturn(hourlyRaoResult);
         when(coreCCRequest.getVersion()).thenReturn(1);
         when(coreCCRequest.getTimestamp()).thenReturn(timestamp);
         when(coreCCRequest.getTimeInterval()).thenReturn("2023-07-25T15:02:00Z/2023-07-25T15:03:00Z");
