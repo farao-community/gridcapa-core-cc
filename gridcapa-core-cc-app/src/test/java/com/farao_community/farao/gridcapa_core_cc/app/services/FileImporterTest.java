@@ -8,17 +8,19 @@
 package com.farao_community.farao.gridcapa_core_cc.app.services;
 
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
+import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresult.api.ComputationStatus;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
-import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -36,25 +38,18 @@ class FileImporterTest {
     @Autowired
     private FileImporter fileImporter;
 
+    @MockitoBean
+    private MinioAdapter minioAdapter;
+
     private final String testDirectory = "/20210723";
     private final OffsetDateTime dateTime = OffsetDateTime.parse("2021-07-22T22:30Z");
 
     @Test
-    void importReferenceProgram() {
-        final CoreCCFileResource refProgFile = createFileResource("refprog", getClass().getResource(testDirectory + "/20210723-F110.xml"));
-        final ReferenceProgram referenceProgram = fileImporter.importReferenceProgram(refProgFile, dateTime);
-        assertEquals(-50, referenceProgram.getGlobalNetPosition("10YFR-RTE------C"));
-        assertEquals(-450, referenceProgram.getGlobalNetPosition("10YCB-GERMANY--8"));
-        assertEquals(225, referenceProgram.getGlobalNetPosition("10YNL----------L"));
-        assertEquals(275, referenceProgram.getGlobalNetPosition("10YBE----------2"));
-    }
-
-    @Test
-    void importCrac() {
+    void importCbcora() {
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.getUrl(), dateTime, network);
         final Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
         assertEquals("17XTSO-CS------W-20190108-F301v1", crac.getId());
@@ -67,9 +62,12 @@ class FileImporterTest {
     }
 
     @Test
-    void importNetworkFromUrlTest() {
-        final String cgmUrl = getClass().getResource(testDirectory + "/20210723_0030_2D5_CGM.uct").toExternalForm();
-        final Network network = fileImporter.importNetworkFromUrl(cgmUrl);
+    void importNetworkTest() {
+        final String networkPath = testDirectory + "/20210723_0030_2D5_CGM.uct";
+        final String cgmUrl = getClass().getResource(networkPath).toExternalForm();
+        Mockito.when(minioAdapter.getFile(cgmUrl)).thenReturn(getClass().getResourceAsStream(networkPath));
+
+        final Network network = fileImporter.importNetwork(cgmUrl);
         assertNotNull(network);
         assertEquals("20210723_0030_2D5_CGM", network.getNameOrId());
     }
@@ -82,7 +80,7 @@ class FileImporterTest {
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCrac(cbcoraFile.getUrl(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.getUrl(), dateTime, network);
         final Crac crac = fbConstraintCreationContext.getCrac();
 
         final RaoResult raoResult = fileImporter.importRaoResult(raoResultUrl, crac);

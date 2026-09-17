@@ -203,7 +203,7 @@ class CoreCCPreProcessServiceTest {
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
         final MarketArea marketArea = new MarketArea("SEM", "xxx", true, false);
         Mockito.when(virtualHubsMock.getMarketAreas()).thenReturn(List.of(marketArea));
-        final VirtualHub virtualHub = new VirtualHub("SEM_VH", "xxx", true, false, "", marketArea, null);
+        final VirtualHub virtualHub = new VirtualHub("SEM_CI", "xxx", true, false, "", marketArea, null);
         Mockito.when(virtualHubsMock.getVirtualHubs()).thenReturn(List.of(virtualHub));
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "FALSE", "FALSE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
@@ -322,7 +322,7 @@ class CoreCCPreProcessServiceTest {
         final Path cracJsonFilePath = Paths.get(getClass().getResource("/util/crac.json").getPath());
         final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), java.nio.file.Files.newInputStream(cracJsonFilePath), network);
         final FbConstraintCreationContext cracCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        when(fileImporter.importCrac(any(), any(), any())).thenReturn(cracCreationContext);
+        when(fileImporter.importCbcora(any(), any(), any())).thenReturn(cracCreationContext);
         when(cracCreationContext.getCrac()).thenReturn(crac);
     }
 
@@ -399,6 +399,6 @@ class CoreCCPreProcessServiceTest {
         final Header header = new Header();
         header.setCorrelationID("ID");
         raoRequestMessage.setHeader(header);
-        Mockito.when(fileImporter.importRaoRequest(dummyFileResource)).thenReturn(raoRequestMessage);
+        Mockito.when(fileImporter.importRaoRequest(dummyFileResource.getUrl())).thenReturn(raoRequestMessage);
     }
 }

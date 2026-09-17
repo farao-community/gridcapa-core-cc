@@ -15,7 +15,7 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoResult {
-    private String raoRequestInstant;
+    private final String raoRequestInstant;
 
     private String networkWithPraUrl;
     private String raoResultFileUrl;
@@ -54,7 +54,7 @@ public class HourlyRaoResult {
 
         private String code;
 
-        private ErrorCode(String code) {
+        ErrorCode(String code) {
             this.code = code;
         }
 
@@ -72,7 +72,6 @@ public class HourlyRaoResult {
 
     @Override
     public boolean equals(Object o) {
-
         if (o == this) {
             return true;
         }

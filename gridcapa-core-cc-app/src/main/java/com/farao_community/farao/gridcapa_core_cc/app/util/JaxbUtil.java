@@ -28,29 +28,28 @@ public final class JaxbUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JaxbUtil.class);
 
-    public static <T> T unmarshalFile(Class<T> clazz, Path path) {
-        try (InputStream fileContent = Files.newInputStream(path)) {
-            JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            JAXBElement<T> requestMessageTypeElement = jaxbUnmarshaller.unmarshal(new StreamSource(fileContent), clazz);
+    public static <T> T unmarshalFile(final Class<T> clazz, final Path path) {
+        try (final InputStream fileContent = Files.newInputStream(path)) {
+            final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+            final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            final JAXBElement<T> requestMessageTypeElement = jaxbUnmarshaller.unmarshal(new StreamSource(fileContent), clazz);
             return requestMessageTypeElement.getValue();
-        } catch (JAXBException | IOException e) {
-
-            String errorMessage = String.format("Error occurred when converting xml file %s to object of type %s", path, clazz.getName());
-            LOGGER.error(errorMessage);
+        } catch (final JAXBException | IOException e) {
+            final String errorMessage = String.format("Error occurred when converting xml file %s to object of type %s", path, clazz.getName());
+            LOGGER.error(errorMessage, e);
             throw new CoreCCInternalException(errorMessage, e);
         }
     }
 
-    public static <T> T unmarshalContent(Class<T> clazz, InputStream inputStream) {
+    public static <T> T unmarshalContent(final Class<T> clazz, final InputStream inputStream) {
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            JAXBElement<T> requestMessageTypeElement = jaxbUnmarshaller.unmarshal(new StreamSource(inputStream), clazz);
+            final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+            final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            final JAXBElement<T> requestMessageTypeElement = jaxbUnmarshaller.unmarshal(new StreamSource(inputStream), clazz);
             return requestMessageTypeElement.getValue();
-        } catch (JAXBException e) {
-            String errorMessage = String.format("Error occurred when converting InputStream to object of type %s", clazz.getName());
-            LOGGER.error(errorMessage);
+        } catch (final JAXBException e) {
+            final String errorMessage = String.format("Error occurred when converting InputStream to object of type %s", clazz.getName());
+            LOGGER.error(errorMessage, e);
             throw new CoreCCInternalException(errorMessage, e);
         }
     }

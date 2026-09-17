@@ -13,6 +13,7 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
+import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCPostProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.preprocessing.CoreCCPreProcessService;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -36,72 +38,98 @@ public class CoreCCHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCHandler.class);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm");
 
+    private static final String RAO_FAILED_LOG_PATTERN = "Exception occurred in RAO computation for timestamp '{}'. Origin cause: '{}'";
+
     private final CoreCCPreProcessService coreCCPreProcessService;
+    private final CoreCCPostProcessService coreCCPostProcessService;
     private final AmqpMessagesConfiguration amqpConfiguration;
     private final FileExporterHelper fileExporterHelper;
     private final RaoRunnerService raoRunnerService;
 
-    private static final String RAO_FAILED_LOG_PATTERN = "Exception occurred in RAO computation for TimeStamp: '{}'. Origin cause: '{}'";
-
-    public CoreCCHandler(CoreCCPreProcessService coreCCPreProcessService,
-                         AmqpMessagesConfiguration amqpConfiguration,
-                         RaoRunnerService raoRunnerService,
-                         FileExporterHelper fileExporterHelper) {
+    public CoreCCHandler(final CoreCCPreProcessService coreCCPreProcessService,
+                         final CoreCCPostProcessService coreCCPostProcessService,
+                         final AmqpMessagesConfiguration amqpConfiguration,
+                         final RaoRunnerService raoRunnerService,
+                         final FileExporterHelper fileExporterHelper) {
         this.coreCCPreProcessService = coreCCPreProcessService;
+        this.coreCCPostProcessService = coreCCPostProcessService;
         this.amqpConfiguration = amqpConfiguration;
         this.fileExporterHelper = fileExporterHelper;
         this.raoRunnerService = raoRunnerService;
     }
 
-    public void handleCoreCCRequest(InternalCoreCCRequest internalCoreCCRequest) {
+    public void handleCoreCCRequest(final InternalCoreCCRequest internalCoreCCRequest) {
         internalCoreCCRequest.setRequestReceivedInstant(Instant.now());
         setUpEventLogging(internalCoreCCRequest);
         try {
             coreCCPreProcessService.initializeTaskFromAutomatedLaunch(internalCoreCCRequest);
-            runRao(internalCoreCCRequest);
-        } catch (Exception e) {
+            runRaoForAllAreas(internalCoreCCRequest);
+        } catch (final Exception e) {
             throw new CoreCCInternalException("Exception occurred:", e);
         }
     }
 
-    private static String setUpEventLogging(InternalCoreCCRequest coreCCRequest) {
+    private static String setUpEventLogging(final InternalCoreCCRequest coreCCRequest) {
         MDC.put("gridcapa-task-id", coreCCRequest.getId());
         return TIMESTAMP_FORMATTER.format(coreCCRequest.getTimestamp());
     }
 
-    private void runRao(InternalCoreCCRequest coreCCRequest) {
-        RaoSuccessResponse semRaoResponse = null;
-        RaoSuccessResponse continentalRaoResponse = null;
-
+    private void runRaoForAllAreas(final InternalCoreCCRequest coreCCRequest) {
+        boolean semPreProcessingFailedOrDisabled = !coreCCRequest.isSemActivated();
         if (coreCCRequest.isSemActivated()) {
-            // RAO on SEM area
-            final HourlyRaoRequest semHourlyRaoRequest = coreCCRequest.getSemHourlyRaoRequest();
-            HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
-
-            if (semHourlyRaoResult == null) {
-                // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
-                semHourlyRaoResult = new HourlyRaoResult(semHourlyRaoRequest.getRaoRequestInstant());
-                coreCCRequest.setSemHourlyRaoResult(semHourlyRaoResult);
-            }
-
-            if (semHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
-                // TODO What should we do in case SEM is activated, but SEM pre-processing failed?
-//                saveMetadataWhenPreProcessingFailed(coreCCRequest);
-                LOGGER.info("Skipping RAO on SEM area");
-//                return;
-            } else {
-                LOGGER.info("Launching RAO on SEM area. CoreCCRequest id is {}", coreCCRequest.getId());
-                try {
-                    semRaoResponse = raoRunnerService.run(semHourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
-                    semHourlyRaoResult.setRaoResponseData(semRaoResponse);
-                    semHourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
-                } catch (CoreCCInternalException | CoreCCRaoException e) {
-                    handleRaoRunnerException(semHourlyRaoResult, e);
-                }
-            }
+            semPreProcessingFailedOrDisabled = runRaoOnSemArea(coreCCRequest);
         }
 
-        // RAO on continental area
+        boolean continentalPreProcessingFailed = runRaoOnContinentalArea(coreCCRequest);
+
+        // At this point, coreCCRequest necessarily contains a non-null continentalHourlyRaoResult and, is SEM is activated, a non-null semHourlyRaoResult
+
+        // If both SEM and continental pre-processing failed, then we must export metadata only
+        if (semPreProcessingFailedOrDisabled && continentalPreProcessingFailed) {
+            saveMetadataWhenPreProcessingFailed(coreCCRequest);
+        } else if (allRaoFailed(coreCCRequest)) {
+            // If the RAO failed, we can't generate output files
+            // TODO Should we generate a fallback metadata file as for the failed preprocessing?
+        } else {
+            coreCCPostProcessService.convertAndSaveReceivedRaoResult(coreCCRequest);
+        }
+    }
+
+    private static boolean allRaoFailed(final InternalCoreCCRequest coreCCRequest) {
+        final String raoFailureCode = HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode();
+        final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+        final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+
+        final boolean continentalRaoFailed = continentalHourlyRaoResult.getStatus() == HourlyRaoResult.Status.FAILURE
+            && Objects.equals(continentalHourlyRaoResult.getErrorCodeString(), raoFailureCode);
+        final boolean semRaoFailedOrDisabled = semHourlyRaoResult == null
+            || semHourlyRaoResult.getStatus() == HourlyRaoResult.Status.FAILURE
+            && Objects.equals(semHourlyRaoResult.getErrorCodeString(), raoFailureCode);
+
+        return continentalRaoFailed && semRaoFailedOrDisabled;
+    }
+
+    private boolean runRaoOnSemArea(final InternalCoreCCRequest coreCCRequest) {
+        final HourlyRaoRequest semHourlyRaoRequest = coreCCRequest.getSemHourlyRaoRequest();
+        HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+
+        if (semHourlyRaoResult == null) {
+            // HourlyRaoResult is not yet defined in nominal situation: raoRunnerService hasn't been called yet
+            semHourlyRaoResult = new HourlyRaoResult(semHourlyRaoRequest.getRaoRequestInstant());
+            coreCCRequest.setSemHourlyRaoResult(semHourlyRaoResult);
+        }
+
+        final boolean semPreProcessingFailed = semHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE);
+        if (semPreProcessingFailed) {
+            LOGGER.info("Skipping RAO on SEM area");
+        } else {
+            LOGGER.info("Launching RAO on SEM area. CoreCCRequest id is {}", coreCCRequest.getId());
+            runRaoAndSetResponse(coreCCRequest, semHourlyRaoRequest, semHourlyRaoResult);
+        }
+        return semPreProcessingFailed;
+    }
+
+    private boolean runRaoOnContinentalArea(final InternalCoreCCRequest coreCCRequest) {
         final HourlyRaoRequest continentalHourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
         HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
 
@@ -111,47 +139,34 @@ public class CoreCCHandler {
             coreCCRequest.setContinentalHourlyRaoResult(continentalHourlyRaoResult);
         }
 
-        if (continentalHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE)) {
-            saveMetadataWhenPreProcessingFailed(coreCCRequest);
+        final boolean continentalPreProcessingFailed = continentalHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE);
+        if (continentalPreProcessingFailed) {
             LOGGER.info("Skipping RAO on continental area");
-            // TODO What should we do if continental RAO fails, but SEM is activated and SEM RAO succeeded?
-            return;
+        } else {
+            LOGGER.info("Launching RAO on continental area. CoreCCRequest id is {}", coreCCRequest.getId());
+            runRaoAndSetResponse(coreCCRequest, continentalHourlyRaoRequest, continentalHourlyRaoResult);
         }
-
-        LOGGER.info("Launching RAO. CoreCCRequest id is {}", coreCCRequest.getId());
-        try {
-            continentalRaoResponse = raoRunnerService.run(continentalHourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId()));
-            continentalHourlyRaoResult.setRaoResponseData(continentalRaoResponse);
-            continentalHourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
-        } catch (CoreCCInternalException | CoreCCRaoException e) {
-            handleRaoRunnerException(continentalHourlyRaoResult, e);
-        }
-
-        convertAndSaveReceivedRaoResult(coreCCRequest);
+        return continentalPreProcessingFailed;
     }
 
-    private void convertAndSaveReceivedRaoResult(InternalCoreCCRequest coreCCRequest) {
+    private void runRaoAndSetResponse(final InternalCoreCCRequest coreCCRequest,
+                                      final HourlyRaoRequest hourlyRaoRequest,
+                                      final HourlyRaoResult hourlyRaoResult) {
         try {
-            fileExporterHelper.exportCneToMinio(coreCCRequest);
-            fileExporterHelper.exportNetworkToMinio(coreCCRequest);
-            fileExporterHelper.exportRaoResultToMinio(coreCCRequest);
-            fileExporterHelper.exportMetadataToMinio(coreCCRequest);
-        } catch (Exception e) {
-            // TODO area-related results should not be handled in a common export method. So what should we do here in case of exception during export?
-            //no throwing exception, just save cause and pass to next timestamp
-            final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
-            final String errorMessage = String.format("Error occurred while post-processing RAO outputs for timestamp: %s. Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
-            LOGGER.error(errorMessage);
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-            hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
-            hourlyRaoResult.setErrorMessage(errorMessage);
+            final RaoSuccessResponse raoResponse = raoRunnerService.run(
+                hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId())
+            );
+            hourlyRaoResult.setRaoResponseData(raoResponse);
+            hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
+        } catch (final CoreCCInternalException | CoreCCRaoException e) {
+            handleRaoRunnerException(hourlyRaoResult, e);
         }
     }
 
-    private void saveMetadataWhenPreProcessingFailed(InternalCoreCCRequest coreCCRequest) {
+    private void saveMetadataWhenPreProcessingFailed(final InternalCoreCCRequest coreCCRequest) {
         try {
             fileExporterHelper.exportMetadataToMinioWhenPreProcessingFailed(coreCCRequest);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInternalException("Exporting metadata failed when preProcessing failed", e);
         }
     }

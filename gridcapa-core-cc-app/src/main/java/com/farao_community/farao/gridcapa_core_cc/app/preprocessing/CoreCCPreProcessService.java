@@ -25,9 +25,7 @@ import com.farao_community.farao.gridcapa_core_cc.app.util.NamingRules;
 import com.farao_community.farao.gridcapa_core_cc.app.util.NetworkUtil;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.reducer.NetworkReducer;
 import com.powsybl.openrao.data.crac.api.CracCreationContext;
-import com.powsybl.openrao.virtualhubs.MarketArea;
 import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import com.unicorn.request.request_payload.RequestItem;
 import jakarta.xml.bind.JAXBContext;
@@ -105,7 +103,7 @@ public class CoreCCPreProcessService {
         final CoreCCTaskParameters parameters = new CoreCCTaskParameters(coreCCRequest.getParameters());
         logCoreCCParameters(coreCCRequest, parameters);
 
-        final RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest());
+        final RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest().getUrl());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
 
@@ -158,13 +156,14 @@ public class CoreCCPreProcessService {
             final HourlyRaoResult raoResult = buildFailedHourlyRaoResult(null, errorMessage);
 
             continentalRequestResult = new RequestResult(raoRequest, raoResult);
-
-            // TODO Do we need to do something for SEM in this case?
+            if (coreCCRequest.isSemActivated()) {
+                semRequestResult = new RequestResult(raoRequest, raoResult);
+            }
         }
 
         coreCCRequest.setContinentalHourlyRaoRequest(continentalRequestResult.raoRequest());
         coreCCRequest.setContinentalHourlyRaoResult(continentalRequestResult.raoResult());
-        if (semRequestResult != null) { // TODO or isSemActivated() in case we handle semRequestResult in the above "else" (see previous TODO comment)
+        if (semRequestResult != null) {
             coreCCRequest.setSemHourlyRaoRequest(semRequestResult.raoRequest());
             coreCCRequest.setSemHourlyRaoResult(semRequestResult.raoResult());
         }
@@ -182,25 +181,16 @@ public class CoreCCPreProcessService {
         HourlyRaoRequest raoRequest;
         HourlyRaoResult raoResult = null;
 
-        final boolean isSemArea = coreCCRequest.isSemActivated() && isSem; // TODO Should we fail if isSem == true but isSemActivated == false?
-        final String areaIdentifier = isSemArea ? "sem" : "continental";
+        final String areaIdentifier = isSem ? "sem" : "continental";
 
         try {
             final Path cgmPath = resolveCgmPath(dcCgmsAndXmlHeader, utcInstant, cgmsAndXmlHeader, parameters);
             final Network network = convertNetworkToIidm(cgmPath);
 
-            if (isSemArea) {
-                final NetworkReducer semReducer = NetworkReducer.builder()
-                    .withNetworkPredicate(NetworkUtil.SEM_SUBNETWORK)
-                    .withBoundaryLines(true)
-                    .build();
-                semReducer.reduce(network);
+            if (isSem) {
+                NetworkUtil.SEM_NETWORK_REDUCER.reduce(network);
             } else {
-                final NetworkReducer continentalReducer = NetworkReducer.builder()
-                    .withNetworkPredicate(NetworkUtil.CONTINENTAL_SUBNETWORK)
-                    .withBoundaryLines(true)
-                    .build();
-                continentalReducer.reduce(network);
+                NetworkUtil.CONTINENTAL_NETWORK_REDUCER.reduce(network);
             }
             final String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, areaIdentifier, utcInstant);
             final String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, areaIdentifier, utcInstant, network);
@@ -216,15 +206,15 @@ public class CoreCCPreProcessService {
                 raoParametersFileUrl,
                 destinationPath + "/" + areaIdentifier
             );
-        } catch (Exception e) {
+        } catch (final Exception e) {
             raoRequest = new HourlyRaoRequest(
                 minioAdapter,
                 utcInstant.toString(),
                 null, null, null, null, null, null,
                 destinationPath + "/" + areaIdentifier
             );
-            String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
-            LOGGER.error(errorMessage);
+            final String errorMessage = String.format(GENERAL_ERROR, utcInstant, e.getMessage());
+            LOGGER.error(errorMessage, e);
             raoResult = buildFailedHourlyRaoResult(utcInstant.toString(), errorMessage);
         }
 
@@ -248,12 +238,9 @@ public class CoreCCPreProcessService {
     }
 
     private boolean isSemActivated(final VirtualHubsConfiguration virtualHubsConfiguration) {
-        final Optional<MarketArea> optionalSemMarketArea = virtualHubsConfiguration.getMarketAreas().stream()
-            .filter(ma -> "SEM".equals(ma.code()))
-            .findAny();
-        // TODO Check if it is sufficient to check on <MarketArea> or if we also need to check on <VirtualHub>
-        return optionalSemMarketArea.isPresent()
-            && virtualHubsConfiguration.getVirtualHubs().stream().anyMatch(vh -> optionalSemMarketArea.get().equals(vh.relatedMa()));
+        final boolean semMarketAreaExists = virtualHubsConfiguration.getMarketAreas().stream().anyMatch(ma -> "SEM".equals(ma.code()));
+        final boolean semSiVirtualHubExists = virtualHubsConfiguration.getVirtualHubs().stream().anyMatch(vh -> "SEM_CI".equals(vh.code()));
+        return semMarketAreaExists && semSiVirtualHubExists;
     }
 
     void logCoreCCParameters(final InternalCoreCCRequest coreCCRequest,
@@ -318,7 +305,7 @@ public class CoreCCPreProcessService {
                                   final String prefix,
                                   final Instant utcInstant,
                                   final Network network) {
-        final CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
+        final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
         try (final ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             final String filename = NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION);
@@ -330,21 +317,25 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private void uploadCracJsonToMinio(ByteArrayOutputStream cracByteArrayOutputStream, String jsonCracFilePath) {
-        try (InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
+    private void uploadCracJsonToMinio(final ByteArrayOutputStream cracByteArrayOutputStream,
+                                       final String jsonCracFilePath) {
+        try (final InputStream is = new ByteArrayInputStream(cracByteArrayOutputStream.toByteArray())) {
             minioAdapter.uploadArtifact(jsonCracFilePath, is);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInternalException("Crac JSON file could not be uploaded to minio", e);
         }
     }
 
-    private void sendRaoRequestAcknowledgment(InternalCoreCCRequest coreCCRequest, String destinationKey, RequestMessage receivedRequestMessage) {
-        ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
+    private void sendRaoRequestAcknowledgment(final InternalCoreCCRequest coreCCRequest,
+                                              final String destinationKey,
+                                              final RequestMessage receivedRequestMessage) {
+        final ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
         exportRaoRequestAcknowledgment(responseMessage, coreCCRequest, destinationKey);
     }
 
-    private ResponseMessage buildRaoRequestAckResponseMessage(InternalCoreCCRequest coreCCRequest, RequestMessage receivedRequestMessage) {
-        ResponseMessage responseMessage = new ResponseMessage();
+    private ResponseMessage buildRaoRequestAckResponseMessage(final InternalCoreCCRequest coreCCRequest,
+                                                              final RequestMessage receivedRequestMessage) {
+        final ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setHeader(new Header());
         responseMessage.getHeader().setVerb("reply");
         responseMessage.getHeader().setNoun(receivedRequestMessage.getHeader().getNoun());
@@ -354,44 +345,46 @@ public class CoreCCPreProcessService {
         responseMessage.getHeader().setSource(NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID);
         responseMessage.getHeader().setMessageID(String.format("%s-%s-F302-ACK", NamingRules.XML_RESPONSE_GENERATOR_SENDER_ID, DateTimeFormatter.ofPattern("yyyyMMdd").format(coreCCRequest.getTimestamp())));
         responseMessage.getHeader().setCorrelationID(receivedRequestMessage.getHeader().getCorrelationID());
-        Reply reply = new Reply();
+        final Reply reply = new Reply();
         reply.setResult("OK");
         responseMessage.setReply(reply);
         return responseMessage;
     }
 
-    private void exportRaoRequestAcknowledgment(ResponseMessage responseMessage, InternalCoreCCRequest coreCCRequest, String destinationKey) {
-        byte[] xml = marshallMessageAndSetJaxbProperties(responseMessage);
+    private void exportRaoRequestAcknowledgment(final ResponseMessage responseMessage,
+                                                final InternalCoreCCRequest coreCCRequest,
+                                                final String destinationKey) {
+        final byte[] xml = marshallMessageAndSetJaxbProperties(responseMessage);
 
-        String raoRequestAckFileName = NamingRules.generateRaoRequestAckFileName(coreCCRequest);
-        String destinationPath = NamingRules.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
+        final String raoRequestAckFileName = NamingRules.generateRaoRequestAckFileName(coreCCRequest);
+        final String destinationPath = NamingRules.generateOutputsDestinationPath(destinationKey, raoRequestAckFileName);
         // Only upload ACK if no ACK has been uploaded
         if (minioAdapter.fileExists(destinationPath)) {
             LOGGER.info("ACK has already been uploaded !");
         } else {
-            try (InputStream xmlIs = new ByteArrayInputStream(xml)) {
+            try (final InputStream xmlIs = new ByteArrayInputStream(xml)) {
                 LOGGER.info("Uploading ACK !");
                 minioAdapter.uploadArtifact(destinationPath, xmlIs);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new CoreCCInternalException(String.format("Exception occurred while uploading rao request ACK file of task %s", coreCCRequest.getId()), e);
             }
         }
     }
 
-    private byte[] marshallMessageAndSetJaxbProperties(ResponseMessage responseMessage) {
+    private byte[] marshallMessageAndSetJaxbProperties(final ResponseMessage responseMessage) {
         try {
-            StringWriter stringWriter = new StringWriter();
-            JAXBContext jaxbContext = JAXBContext.newInstance(ResponseMessage.class);
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            final StringWriter stringWriter = new StringWriter();
+            final JAXBContext jaxbContext = JAXBContext.newInstance(ResponseMessage.class);
+            final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            String eventMessage = "ResponseMessage";
-            QName qName = new QName(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, eventMessage);
-            JAXBElement<ResponseMessage> root = new JAXBElement<>(qName, ResponseMessage.class, responseMessage);
+            final String eventMessage = "ResponseMessage";
+            final QName qName = new QName(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, eventMessage);
+            final JAXBElement<ResponseMessage> root = new JAXBElement<>(qName, ResponseMessage.class, responseMessage);
             jaxbMarshaller.marshal(root, stringWriter);
             return stringWriter.toString()
                 .replace("xsi:ResponseMessage", "ResponseMessage")
                 .getBytes();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreCCInternalException("Exception occurred during RAO Request ACK export.", e);
         }
     }

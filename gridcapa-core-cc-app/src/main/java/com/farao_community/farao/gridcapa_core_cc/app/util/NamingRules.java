@@ -76,8 +76,8 @@ public final class NamingRules {
         return String.format(OUTPUTS, destinationPrefix, fileName);
     }
 
-    public static String generateMetadataFileName(String instant, InternalCoreCCRequest coreCCRequest) {
-        String output =  formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), coreCCRequest.getVersion());
+    public static String generateMetadataFileName(final String instant, final int version) {
+        final String output =  formatVersion(INTERMEDIATE_METADATA_FILENAME_FORMATTER.format(Instant.parse(instant)), version);
         return IntervalUtil.handle25TimestampCase(output, instant);
     }
 
