@@ -108,7 +108,13 @@ public class CoreCCPreProcessService {
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
 
         final VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
-        coreCCRequest.setSemActivated(isSemActivated(virtualHubsConfiguration));
+        final boolean semEnabled = isSemEnabled(virtualHubsConfiguration);
+        coreCCRequest.setSemEnabled(semEnabled);
+        if (semEnabled) {
+            businessLogger.info("SEM enabled in VirtualHubs configuration");
+        } else {
+            businessLogger.warn("SEM disabled in VirtualHubs configuration");
+        }
 
         final String raoParametersFileUrl = raoParametersService.uploadJsonRaoParameters(raoRequestMessage, virtualHubsConfiguration, destinationKey);
         final String raoParametersFilename = new File(raoParametersFileUrl).getName();
@@ -137,7 +143,7 @@ public class CoreCCPreProcessService {
                 coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, false
             );
 
-            if (coreCCRequest.isSemActivated()) {
+            if (coreCCRequest.isSemEnabled()) {
                 semRequestResult = getRequestAndResult(
                     coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, true
                 );
@@ -156,7 +162,7 @@ public class CoreCCPreProcessService {
             final HourlyRaoResult raoResult = buildFailedHourlyRaoResult(null, errorMessage);
 
             continentalRequestResult = new RequestResult(raoRequest, raoResult);
-            if (coreCCRequest.isSemActivated()) {
+            if (coreCCRequest.isSemEnabled()) {
                 semRequestResult = new RequestResult(raoRequest, raoResult);
             }
         }
@@ -237,7 +243,7 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private boolean isSemActivated(final VirtualHubsConfiguration virtualHubsConfiguration) {
+    private boolean isSemEnabled(final VirtualHubsConfiguration virtualHubsConfiguration) {
         final boolean semMarketAreaExists = virtualHubsConfiguration.getMarketAreas().stream().anyMatch(ma -> "SEM".equals(ma.code()));
         final boolean semSiVirtualHubExists = virtualHubsConfiguration.getVirtualHubs().stream().anyMatch(vh -> "SEM_CI".equals(vh.code()));
         return semMarketAreaExists && semSiVirtualHubExists;

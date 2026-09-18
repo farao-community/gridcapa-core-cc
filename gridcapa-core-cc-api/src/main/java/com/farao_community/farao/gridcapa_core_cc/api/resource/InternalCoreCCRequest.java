@@ -31,7 +31,7 @@ public class InternalCoreCCRequest {
     private String timeInterval;
     private String correlationId;
     private String destinationPath;
-    private boolean semActivated;
+    private boolean semEnabled;
 
     public InternalCoreCCRequest(CoreCCRequest coreCCRequest) {
         this.coreCCRequest = coreCCRequest;
@@ -161,12 +161,12 @@ public class InternalCoreCCRequest {
         this.destinationPath = destinationPath;
     }
 
-    public boolean isSemActivated() {
-        return semActivated;
+    public boolean isSemEnabled() {
+        return semEnabled;
     }
 
-    public void setSemActivated(final boolean semActivated) {
-        this.semActivated = semActivated;
+    public void setSemEnabled(final boolean semEnabled) {
+        this.semEnabled = semEnabled;
     }
 
     @Override

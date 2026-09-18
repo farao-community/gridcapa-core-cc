@@ -126,7 +126,7 @@ class CoreCCPreProcessServiceTest {
 
         verifyDefaultRaoRequest(coreCCRequest);
         assertEquals("Missing raoRequest", coreCCRequest.getContinentalHourlyRaoResult().getErrorMessage());
-        assertFalse(coreCCRequest.isSemActivated());
+        assertFalse(coreCCRequest.isSemEnabled());
     }
 
     @Test
@@ -158,7 +158,7 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
-        assertFalse(coreCCRequest.isSemActivated());
+        assertFalse(coreCCRequest.isSemEnabled());
     }
 
     @Test
@@ -190,11 +190,11 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
-        assertFalse(coreCCRequest.isSemActivated());
+        assertFalse(coreCCRequest.isSemEnabled());
     }
 
     @Test
-    void testInitializeTaskFromRequestWithSemActivated() throws IOException {
+    void testInitializeTaskFromRequestWithSemEnabled() throws IOException {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
         when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
@@ -226,7 +226,7 @@ class CoreCCPreProcessServiceTest {
         coreCCPreProcessService.initializeTaskFromAutomatedLaunch(coreCCRequest);
         //
         verifyNominalHourlyData(coreCCRequest, raoParametersFileUrl);
-        assertTrue(coreCCRequest.isSemActivated());
+        assertTrue(coreCCRequest.isSemEnabled());
     }
 
     @Test
@@ -336,7 +336,7 @@ class CoreCCPreProcessServiceTest {
         assertEquals("RAO_WORKING_DIR/20240625_0800/hourly_rao_results/continental", continentalHourlyRaoRequest.getResultsDestination());
         //In nominal case, hourly rao result remains empty
         assertNull(coreCCRequest.getContinentalHourlyRaoResult());
-        if (coreCCRequest.isSemActivated()) {
+        if (coreCCRequest.isSemEnabled()) {
             final HourlyRaoRequest semHourlyRaoRequest = coreCCRequest.getSemHourlyRaoRequest();
             assertNotNull(semHourlyRaoRequest);
             assertEquals("RAO_WORKING_DIR/20240625_0800/inputs/networks/sem_20240625_0600.xiidm", semHourlyRaoRequest.getNetworkFileUrl());

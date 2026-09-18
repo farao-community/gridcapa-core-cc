@@ -50,7 +50,7 @@ public class CoreCCPostProcessService {
     }
 
     public void convertAndSaveReceivedRaoResult(final InternalCoreCCRequest coreCCRequest) {
-        // At this point, coreCCRequest necessarily contains a non-null continentalHourlyRaoResult and, is SEM is activated, a non-null semHourlyRaoResult
+        // At this point, coreCCRequest necessarily contains a non-null continentalHourlyRaoResult and, is SEM is enabled, a non-null semHourlyRaoResult
         // Also, at least one hourlyRaoResult has a SUCCESS status (situation with no SUCCESS status has been handled previously)
 
         final CoreCCPostProcessingData postProcessingData = new CoreCCPostProcessingData();
@@ -106,16 +106,16 @@ public class CoreCCPostProcessService {
 
     private void initialiseRaoResultInPostProcessingData(final InternalCoreCCRequest coreCCRequest,
                                                          final CoreCCPostProcessingData postProcessingData) {
-        final boolean semActivated = coreCCRequest.isSemActivated();
+        final boolean semEnabled = coreCCRequest.isSemEnabled();
         final boolean continentalRaoSucceeded = coreCCRequest.getContinentalHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
         final boolean semRaoSucceeded = coreCCRequest.getSemHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
 
         final RaoResult raoResult;
-        if (semActivated && continentalRaoSucceeded && semRaoSucceeded) {
-            // If SEM is activated and both SEM and continental RAO succeeded, the RAO results must be merged
+        if (semEnabled && continentalRaoSucceeded && semRaoSucceeded) {
+            // If SEM is enabled and both SEM and continental RAO succeeded, the RAO results must be merged
             raoResult = mergeRaoResults(postProcessingData);
-        } else if (semActivated && !continentalRaoSucceeded) {
-            // If SEM is activated and only SEM RAO succeeded (continental RAO failed),
+        } else if (semEnabled && !continentalRaoSucceeded) {
+            // If SEM is enabled and only SEM RAO succeeded (continental RAO failed),
             // the RAO result that will be used for outputs generation is the one from SEM computation
             final String semRaoResultFileUrl = postProcessingData.getRequest().getSemHourlyRaoResult().getRaoResultFileUrl();
             final Crac crac = postProcessingData.getCrac();

@@ -262,7 +262,7 @@ public class FileExporterHelper {
         }
 
         final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
-        if (coreCCRequest.isSemActivated() && semHourlyRaoResult != null) {
+        if (coreCCRequest.isSemEnabled() && semHourlyRaoResult != null) {
             metadataBuilder.withSemComputationStartInstant(
                     Objects.toString(semHourlyRaoResult.getComputationStartInstant(), null)
                 )

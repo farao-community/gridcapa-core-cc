@@ -75,14 +75,14 @@ public class CoreCCHandler {
     }
 
     private void runRaoForAllAreas(final InternalCoreCCRequest coreCCRequest) {
-        boolean semPreProcessingFailedOrDisabled = !coreCCRequest.isSemActivated();
-        if (coreCCRequest.isSemActivated()) {
+        boolean semPreProcessingFailedOrDisabled = !coreCCRequest.isSemEnabled();
+        if (coreCCRequest.isSemEnabled()) {
             semPreProcessingFailedOrDisabled = runRaoOnSemArea(coreCCRequest);
         }
 
         boolean continentalPreProcessingFailed = runRaoOnContinentalArea(coreCCRequest);
 
-        // At this point, coreCCRequest necessarily contains a non-null continentalHourlyRaoResult and, is SEM is activated, a non-null semHourlyRaoResult
+        // At this point, coreCCRequest necessarily contains a non-null continentalHourlyRaoResult and, is SEM is enabled, a non-null semHourlyRaoResult
 
         // If both SEM and continental pre-processing failed, then we must export metadata only
         if (semPreProcessingFailedOrDisabled && continentalPreProcessingFailed) {
