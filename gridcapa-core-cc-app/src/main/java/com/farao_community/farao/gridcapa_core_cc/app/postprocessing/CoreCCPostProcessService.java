@@ -108,7 +108,8 @@ public class CoreCCPostProcessService {
                                                          final CoreCCPostProcessingData postProcessingData) {
         final boolean semEnabled = coreCCRequest.isSemEnabled();
         final boolean continentalRaoSucceeded = coreCCRequest.getContinentalHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
-        final boolean semRaoSucceeded = coreCCRequest.getSemHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
+        // SemHourlyRaoResult exists only if SEM is enabled
+        final boolean semRaoSucceeded = semEnabled && coreCCRequest.getSemHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
 
         final RaoResult raoResult;
         if (semEnabled && continentalRaoSucceeded && semRaoSucceeded) {
