@@ -19,9 +19,11 @@ import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 public class CoreCCPostProcessingData {
     private InternalCoreCCRequest request;
     private Network acNetwork;
-    private Network dcNetwork;
     private String initialAcNetworkVariantId;
+    private Network dcNetwork;
     private FbConstraintCreationContext cracCreationContext;
+    private FbConstraintCreationContext continentalCracCreationContext;
+    private FbConstraintCreationContext semCracCreationContext;
     private RaoParameters raoParameters;
     private RaoResult raoResult;
 
@@ -86,6 +88,36 @@ public class CoreCCPostProcessingData {
             return null;
         }
         return cracCreationContext.getCrac();
+    }
+
+    public FbConstraintCreationContext getContinentalCracCreationContext() {
+        return continentalCracCreationContext;
+    }
+
+    public void setContinentalCracCreationContext(final FbConstraintCreationContext continentalCracCreationContext) {
+        this.continentalCracCreationContext = continentalCracCreationContext;
+    }
+
+    public Crac getContinentalCrac() {
+        if (continentalCracCreationContext == null) {
+            return null;
+        }
+        return continentalCracCreationContext.getCrac();
+    }
+
+    public FbConstraintCreationContext getSemCracCreationContext() {
+        return semCracCreationContext;
+    }
+
+    public void setSemCracCreationContext(final FbConstraintCreationContext semCracCreationContext) {
+        this.semCracCreationContext = semCracCreationContext;
+    }
+
+    public Crac getSemCrac() {
+        if (semCracCreationContext == null) {
+            return null;
+        }
+        return semCracCreationContext.getCrac();
     }
 
     public RaoParameters getRaoParameters() {
