@@ -112,7 +112,7 @@ public class CoreCCPreProcessService {
                     final Path cgmPath = resolveCgmPath(dcCgmsAndXmlHeader, utcInstant, cgmsAndXmlHeader, parameters);
                     Network network = convertNetworkToIidm(cgmPath);
                     String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, cgmPath.toFile().getName(), utcInstant);
-                    String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network);
+                    String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, utcInstant, network, virtualHubsConfiguration);
                     raoRequest.set(new HourlyRaoRequest(minioAdapter, utcInstant.toString(), networkFileUrl, jsonCracFileUrl,
                             coreCCRequest.getRefProg().getUrl(),
                             coreCCRequest.getVirtualHub().getUrl(),
@@ -192,8 +192,8 @@ public class CoreCCPreProcessService {
         return iidmNetworkDestinationPath;
     }
 
-    private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network) {
-        CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
+    private String uploadJsonCrac(InternalCoreCCRequest coreCCRequest, String destinationKey, Instant utcInstant, Network network, VirtualHubsConfiguration virtualHubsConfiguration) {
+        CracCreationContext cracCreationContext = fileImporter.importCrac(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network, virtualHubsConfiguration);
         try (ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             String jsonCracFilePath = String.format(NamingRules.S_INPUTS_CRACS_S, destinationKey, NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION));

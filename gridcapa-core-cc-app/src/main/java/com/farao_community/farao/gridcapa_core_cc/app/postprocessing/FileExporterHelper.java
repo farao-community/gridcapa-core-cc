@@ -30,6 +30,7 @@ import com.powsybl.openrao.data.raoresult.io.cne.core.CoreCneExporter;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.MnecParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -161,10 +162,12 @@ public class FileExporterHelper {
             throw new CoreCCInternalException("Network file could not be read", e);
         }
 
+        final VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
+
         //import input crac xml file and get FbConstraintCreationContext
         final String cracXmlFileUrl = coreCCRequest.getCbcora().getUrl();
         final FbConstraintCreationContext fbConstraintCreationContext;
-        fbConstraintCreationContext = fileImporter.importCrac(cracXmlFileUrl, OffsetDateTime.parse(hourlyRaoResult.getRaoRequestInstant()), network);
+        fbConstraintCreationContext = fileImporter.importCrac(cracXmlFileUrl, OffsetDateTime.parse(hourlyRaoResult.getRaoRequestInstant()), network, virtualHubsConfiguration);
         if (!fbConstraintCreationContext.isCreationSuccessful()) {
             throw new CoreCCInvalidDataException("Crac creation context failed for timestamp: " + hourlyRaoResult.getRaoRequestInstant());
         }

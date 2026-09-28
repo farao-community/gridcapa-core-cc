@@ -237,7 +237,7 @@ class FileExporterHelperTest {
         when(fbConstraintCreationContext.getCrac()).thenReturn(crac);
         when(fbConstraintCreationContext.isCreationSuccessful()).thenReturn(true);
         when(fbConstraintCreationContext.getTimeStamp()).thenReturn(timestamp);
-        when(fileImporter.importCrac(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(fbConstraintCreationContext);
+        when(fileImporter.importCrac(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(fbConstraintCreationContext);
 
         RaoResult raoResult = RaoResult.read(Files.newInputStream(raoResultFilePath), crac);
         when(fileImporter.importRaoResult(Mockito.any(), Mockito.any())).thenReturn(raoResult);

@@ -260,7 +260,7 @@ class CoreCCPreProcessServiceTest {
         final Path cracJsonFilePath = Paths.get(getClass().getResource("/util/crac.json").getPath());
         final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), java.nio.file.Files.newInputStream(cracJsonFilePath), network);
         final FbConstraintCreationContext cracCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        when(fileImporter.importCrac(any(), any(), any())).thenReturn(cracCreationContext);
+        when(fileImporter.importCrac(any(), any(), any(), any())).thenReturn(cracCreationContext);
         when(cracCreationContext.getCrac()).thenReturn(crac);
     }
 
