@@ -114,6 +114,6 @@ class RegularOrDcCgmNetworkResolverServiceTest {
         assertNotNull(result);
         verify(fileImporter).importNetworkFromUrl(any());
         verify(fileImporter, never()).importCgmsZip(any());
-        verify(fileImporter, never()).importCrac(any(), any(), eq(network));
+        verify(fileImporter, never()).importCrac(any(), any(), eq(network), any());
     }
 }

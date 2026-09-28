@@ -83,10 +83,12 @@ public class FileImporter {
         }
     }
 
-    public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network) {
+    public FbConstraintCreationContext importCrac(String cbcoraUrl, OffsetDateTime targetProcessDateTime, Network network, VirtualHubsConfiguration virtualHubsConfiguration) {
         CracCreationParameters cracCreationParameters = getCimCracCreationParameters();
         cracCreationParameters.addExtension(FbConstraintCracCreationParameters.class, new FbConstraintCracCreationParameters());
-        cracCreationParameters.getExtension(FbConstraintCracCreationParameters.class).setTimestamp(targetProcessDateTime);
+        final FbConstraintCracCreationParameters fbConstraintCracCreationParameters = cracCreationParameters.getExtension(FbConstraintCracCreationParameters.class);
+        fbConstraintCracCreationParameters.setTimestamp(targetProcessDateTime);
+        fbConstraintCracCreationParameters.setInternalHvdcs(virtualHubsConfiguration.getInternalHvdcs());
         try (InputStream cracInputStream = urlValidationService.openUrlStream(cbcoraUrl)) {
             return (FbConstraintCreationContext) new FbConstraintImporter().importData(cracInputStream, cracCreationParameters, network);
         } catch (Exception e) {
