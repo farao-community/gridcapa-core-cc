@@ -124,7 +124,7 @@ public class CoreCCHandler {
             LOGGER.info("Skipping RAO on SEM area");
         } else {
             LOGGER.info("Launching RAO on SEM area. CoreCCRequest id is {}", coreCCRequest.getId());
-            runRaoAndSetResponse(coreCCRequest, semHourlyRaoRequest, semHourlyRaoResult);
+            runRaoAndSetResponse(coreCCRequest, semHourlyRaoRequest, semHourlyRaoResult, "SEM");
         }
         return semPreProcessingFailed;
     }
@@ -144,17 +144,18 @@ public class CoreCCHandler {
             LOGGER.info("Skipping RAO on continental area");
         } else {
             LOGGER.info("Launching RAO on continental area. CoreCCRequest id is {}", coreCCRequest.getId());
-            runRaoAndSetResponse(coreCCRequest, continentalHourlyRaoRequest, continentalHourlyRaoResult);
+            runRaoAndSetResponse(coreCCRequest, continentalHourlyRaoRequest, continentalHourlyRaoResult, "CONTINENTAL");
         }
         return continentalPreProcessingFailed;
     }
 
     private void runRaoAndSetResponse(final InternalCoreCCRequest coreCCRequest,
                                       final HourlyRaoRequest hourlyRaoRequest,
-                                      final HourlyRaoResult hourlyRaoResult) {
+                                      final HourlyRaoResult hourlyRaoResult,
+                                      final String prefix) {
         try {
             final RaoSuccessResponse raoResponse = raoRunnerService.run(
-                hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId())
+                hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId(), prefix)
             );
             hourlyRaoResult.setRaoResponseData(raoResponse);
             hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);

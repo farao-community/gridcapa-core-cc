@@ -9,6 +9,7 @@
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
+import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -35,8 +36,9 @@ class HourlyRaoRequestTest {
     void checkHourlyRaoRequest() {
         assertEquals("2023-07-25T14:13:00Z", hourlyRaoRequest.getRaoRequestInstant());
         assertEquals("file/path/network", hourlyRaoRequest.getNetworkFileUrl());
-        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id", "runId").getCracFileUrl());
-        assertEquals("http://url", hourlyRaoRequest.toRaoRequest("id", "runId").getNetworkFileUrl());
+        final RaoRequest raoRequest = hourlyRaoRequest.toRaoRequest("id", "runId", "prefix");
+        assertEquals("http://url", raoRequest.getCracFileUrl());
+        assertEquals("http://url", raoRequest.getNetworkFileUrl());
         assertEquals(-2130351041, hourlyRaoRequest.hashCode());
     }
 

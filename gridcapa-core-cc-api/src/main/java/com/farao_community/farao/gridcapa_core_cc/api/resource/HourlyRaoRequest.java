@@ -70,21 +70,22 @@ public class HourlyRaoRequest {
         return resultsDestination;
     }
 
-    public RaoRequest toRaoRequest(String id, String runId) {
+    public RaoRequest toRaoRequest(final String id, final String runId, final String prefix) {
         String resultsDestinationUrl = "CORE/CC/";
         return new RaoRequest.RaoRequestBuilder()
-                .withId(id)
-                .withRunId(runId)
-                .withInstant(this.raoRequestInstant)
-                .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
-                .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))
-                .withRefprogFileUrl(this.refprogFileUrl)
-                .withRealGlskFileUrl(this.realGlskFileUrl)
-                .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
-                .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
-                .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
-                .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
-                .build();
+            .withId(id)
+            .withRunId(runId)
+            .withInstant(this.raoRequestInstant)
+            .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
+            .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))
+            .withRefprogFileUrl(this.refprogFileUrl)
+            .withRealGlskFileUrl(this.realGlskFileUrl)
+            .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
+            .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
+            .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
+            .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
+            .withEventPrefix(prefix)
+            .build();
     }
 
     @Override
