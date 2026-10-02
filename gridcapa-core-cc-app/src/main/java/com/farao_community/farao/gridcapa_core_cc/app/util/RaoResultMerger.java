@@ -12,6 +12,7 @@ import com.powsybl.contingency.Contingency;
 import com.powsybl.glsk.commons.ZonalData;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManager;
+import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.Instant;
 import com.powsybl.openrao.data.crac.api.State;
@@ -25,6 +26,7 @@ import com.powsybl.openrao.searchtreerao.castor.algorithm.PostPerimeterSensitivi
 import com.powsybl.openrao.searchtreerao.castor.algorithm.PrePerimeterSensitivityAnalysis;
 import com.powsybl.openrao.searchtreerao.castor.algorithm.StateTree;
 import com.powsybl.openrao.searchtreerao.commons.ToolProvider;
+import com.powsybl.openrao.searchtreerao.networkpool.AbstractNetworkPool;
 import com.powsybl.openrao.searchtreerao.result.api.OptimizationResult;
 import com.powsybl.openrao.searchtreerao.result.api.PrePerimeterResult;
 import com.powsybl.openrao.searchtreerao.result.impl.NetworkActionsResultImpl;
@@ -36,14 +38,18 @@ import com.powsybl.openrao.sensitivityanalysis.AppliedRemedialActions;
 import com.powsybl.sensitivity.SensitivityVariableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +62,10 @@ public class RaoResultMerger {
     private static final String MERGING_VARIANT_NAME = "RaoResultsMerging";
 
     private final Logger businessLogger;
+
+    @Value("${core-cc-runner.rao-results-merge.parallelization:1}")
+    private int mergeParallelization;
+    // raoParameters.getExtension(OpenRaoSearchTreeParameters.class).getMultithreadingParameters().getAvailableCPUs(); // TODO If not defined, use static value
 
     public RaoResultMerger(final Logger businessLogger) {
         this.businessLogger = businessLogger;
@@ -123,76 +133,42 @@ public class RaoResultMerger {
             new PostPerimeterSensitivityAnalysis(fullCrac, fullCrac.getFlowCnecs(), fullCrac.getRangeActions(), raoParameters, toolProvider, true)
                 .runBasedOnInitialPreviousAndOptimizationResults(fullNetwork, initialFlowResult, preventivePrePerimeterResult, Set.of(), preventiveResult, new AppliedRemedialActions(), reportNode);
 
-        final Map<State, PostPerimeterResult> postRegulationPostContingencyResults = new HashMap<>();
+        final Map<State, PostPerimeterResult> postRegulationPostContingencyResults = new ConcurrentHashMap<>();
 
         final List<Instant> postOutageInstants = fullCrac.getSortedInstants().stream()
             .filter(instant -> instant.isAuto() || instant.isCurative())
             .toList();
 
-        for (final Contingency contingency : fullCrac.getContingencies()) {
-            businessLogger.info("Applying curative remedial actions for contingency {}", contingency.getId());
-            final AppliedRemedialActions appliedRemedialActions = new AppliedRemedialActions();
+        try (AbstractNetworkPool networkPool = makeOpenRaoNetworkPool(fullNetwork, mergeParallelization)) {
+            List<ForkJoinTask<Object>> tasks = fullCrac.getContingencies().stream()
+                .map(contingency -> networkPool.submit(
+                    () -> rebuildContingencyScenario(
+                        continentalRaoResult,
+                        semRaoResult,
+                        networkPool,
+                        fullCrac,
+                        raoParameters,
+                        reportNode,
+                        contingency,
+                        preventivePostPerimeterResult,
+                        postOutageInstants,
+                        toolProvider,
+                        initialFlowResult,
+                        postRegulationPostContingencyResults
+                    )
+                ))
+                .toList();
 
-            networkVariantManager.cloneVariant(MERGING_VARIANT_NAME, contingency.getId());
-            networkVariantManager.setWorkingVariant(contingency.getId());
-
-            PrePerimeterResult contingencyPrePerimeterResult = preventivePostPerimeterResult.prePerimeterResultForAllFollowingStates();
-
-            for (final Instant instant : postOutageInstants) {
-                final State state = fullCrac.getState(contingency, instant);
-                if (state != null) {
-                    final RangeActionActivationResultImpl rangeActionActivationResult = new RangeActionActivationResultImpl(contingencyPrePerimeterResult);
-                    appliedRemedialActions.addAppliedNetworkActions(state, continentalRaoResult.getActivatedNetworkActionsDuringState(state));
-                    appliedRemedialActions.addAppliedNetworkActions(state, semRaoResult.getActivatedNetworkActionsDuringState(state));
-                    continentalRaoResult.getActivatedRangeActionsDuringState(state).forEach(
-                        rangeAction -> {
-                            final double optimizedSetPointOnState = continentalRaoResult.getOptimizedSetPointOnState(state, rangeAction);
-                            appliedRemedialActions.addAppliedRangeAction(state, rangeAction, optimizedSetPointOnState);
-                            rangeActionActivationResult.putResult(rangeAction, state, optimizedSetPointOnState);
-                        }
-                    );
-                    semRaoResult.getActivatedRangeActionsDuringState(state).forEach(
-                        rangeAction -> {
-                            final double optimizedSetPointOnState = semRaoResult.getOptimizedSetPointOnState(state, rangeAction);
-                            appliedRemedialActions.addAppliedRangeAction(state, rangeAction, optimizedSetPointOnState);
-                            rangeActionActivationResult.putResult(rangeAction, state, optimizedSetPointOnState);
-                        }
-                    );
-
-                    final PrePerimeterSensitivityAnalysis statePrePerimeterSensitivityAnalysis = new PrePerimeterSensitivityAnalysis(
-                        fullCrac, fullCrac.getFlowCnecs(state), fullCrac.getRangeActions(), raoParameters, toolProvider, true
-                    );
-
-                    final PrePerimeterResult statePrePerimeterResult = statePrePerimeterSensitivityAnalysis.runBasedOnInitialResults(
-                        fullNetwork, initialFlowResult, Collections.emptySet(), appliedRemedialActions, reportNode
-                    );
-
-                    final Set<NetworkAction> stateNetworkActions = new HashSet<>(continentalRaoResult.getActivatedNetworkActionsDuringState(state));
-                    stateNetworkActions.addAll(semRaoResult.getActivatedNetworkActionsDuringState(state));
-
-                    final OptimizationResult stateOptimizationResult = new OptimizationResultImpl(
-                        statePrePerimeterResult,
-                        statePrePerimeterResult,
-                        statePrePerimeterResult,
-                        new NetworkActionsResultImpl(Map.of(state, stateNetworkActions)),
-                        rangeActionActivationResult
-                    );
-                    final Set<FlowCnec> statePostPerimeterFlowCnecs = fullCrac.getFlowCnecs().stream()
-                        .filter(cnec -> !cnec.getState().getInstant().comesBefore(instant))
-                        .filter(cnec -> cnec.getState().getContingency().orElseThrow().equals(contingency))
-                        .collect(Collectors.toSet());
-
-                    final PostPerimeterResult statePostPerimeterResult =
-                        new PostPerimeterSensitivityAnalysis(fullCrac, statePostPerimeterFlowCnecs, fullCrac.getRangeActions(), raoParameters, toolProvider, true)
-                            .runBasedOnInitialPreviousAndOptimizationResults(fullNetwork, initialFlowResult, contingencyPrePerimeterResult, Set.of(), stateOptimizationResult, appliedRemedialActions, reportNode);
-                    postRegulationPostContingencyResults.put(state, statePostPerimeterResult);
-
-                    contingencyPrePerimeterResult = statePrePerimeterResult;
+            for (ForkJoinTask<Object> task : tasks) {
+                try {
+                    task.get();
+                } catch (ExecutionException e) {
+                    throw new OpenRaoException(e);
                 }
             }
-
-            networkVariantManager.setWorkingVariant(MERGING_VARIANT_NAME);
-            networkVariantManager.removeVariant(contingency.getId());
+            networkPool.shutdownAndAwaitTermination(24, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
 
         final StateTree stateTree = new StateTree(fullCrac, reportNode);
@@ -215,5 +191,73 @@ public class RaoResultMerger {
         businessLogger.info("Merging continental and SEM RAO results [end]");
 
         return postRegulationRaoResult;
+    }
+
+    AbstractNetworkPool makeOpenRaoNetworkPool(Network network, int leavesInParallel) {
+        return AbstractNetworkPool.create(network, network.getVariantManager().getWorkingVariantId(), leavesInParallel, true);
+    }
+
+    private Object rebuildContingencyScenario(final RaoResult continentalRaoResult, final RaoResult semRaoResult, final AbstractNetworkPool networkPool, final Crac fullCrac, final RaoParameters raoParameters, final ReportNode reportNode, final Contingency contingency, final PostPerimeterResult preventivePostPerimeterResult, final List<Instant> postOutageInstants, final ToolProvider toolProvider, final PrePerimeterResult initialFlowResult, final Map<State, PostPerimeterResult> postRegulationPostContingencyResults) throws InterruptedException {
+        businessLogger.info("Applying curative remedial actions for contingency {}", contingency.getId());
+        final Network fullNetwork = networkPool.getAvailableNetwork();
+        final AppliedRemedialActions appliedRemedialActions = new AppliedRemedialActions();
+
+        PrePerimeterResult contingencyPrePerimeterResult = preventivePostPerimeterResult.prePerimeterResultForAllFollowingStates();
+
+        for (final Instant instant : postOutageInstants) {
+            final State state = fullCrac.getState(contingency, instant);
+            if (state != null) {
+                final RangeActionActivationResultImpl rangeActionActivationResult = new RangeActionActivationResultImpl(contingencyPrePerimeterResult);
+                appliedRemedialActions.addAppliedNetworkActions(state, continentalRaoResult.getActivatedNetworkActionsDuringState(state));
+                appliedRemedialActions.addAppliedNetworkActions(state, semRaoResult.getActivatedNetworkActionsDuringState(state));
+                continentalRaoResult.getActivatedRangeActionsDuringState(state).forEach(
+                    rangeAction -> {
+                        final double optimizedSetPointOnState = continentalRaoResult.getOptimizedSetPointOnState(state, rangeAction);
+                        appliedRemedialActions.addAppliedRangeAction(state, rangeAction, optimizedSetPointOnState);
+                        rangeActionActivationResult.putResult(rangeAction, state, optimizedSetPointOnState);
+                    }
+                );
+                semRaoResult.getActivatedRangeActionsDuringState(state).forEach(
+                    rangeAction -> {
+                        final double optimizedSetPointOnState = semRaoResult.getOptimizedSetPointOnState(state, rangeAction);
+                        appliedRemedialActions.addAppliedRangeAction(state, rangeAction, optimizedSetPointOnState);
+                        rangeActionActivationResult.putResult(rangeAction, state, optimizedSetPointOnState);
+                    }
+                );
+
+                final PrePerimeterSensitivityAnalysis statePrePerimeterSensitivityAnalysis = new PrePerimeterSensitivityAnalysis(
+                    fullCrac, fullCrac.getFlowCnecs(state), fullCrac.getRangeActions(), raoParameters, toolProvider, true
+                );
+
+                final PrePerimeterResult statePrePerimeterResult = statePrePerimeterSensitivityAnalysis.runBasedOnInitialResults(
+                    fullNetwork, initialFlowResult, Collections.emptySet(), appliedRemedialActions, reportNode
+                );
+
+                final Set<NetworkAction> stateNetworkActions = new HashSet<>(continentalRaoResult.getActivatedNetworkActionsDuringState(state));
+                stateNetworkActions.addAll(semRaoResult.getActivatedNetworkActionsDuringState(state));
+
+                final OptimizationResult stateOptimizationResult = new OptimizationResultImpl(
+                    statePrePerimeterResult,
+                    statePrePerimeterResult,
+                    statePrePerimeterResult,
+                    new NetworkActionsResultImpl(Map.of(state, stateNetworkActions)),
+                    rangeActionActivationResult
+                );
+                final Set<FlowCnec> statePostPerimeterFlowCnecs = fullCrac.getFlowCnecs().stream()
+                    .filter(cnec -> !cnec.getState().getInstant().comesBefore(instant))
+                    .filter(cnec -> cnec.getState().getContingency().orElseThrow().equals(contingency))
+                    .collect(Collectors.toSet());
+
+                final PostPerimeterResult statePostPerimeterResult =
+                    new PostPerimeterSensitivityAnalysis(fullCrac, statePostPerimeterFlowCnecs, fullCrac.getRangeActions(), raoParameters, toolProvider, true)
+                        .runBasedOnInitialPreviousAndOptimizationResults(fullNetwork, initialFlowResult, contingencyPrePerimeterResult, Set.of(), stateOptimizationResult, appliedRemedialActions, reportNode);
+                postRegulationPostContingencyResults.put(state, statePostPerimeterResult);
+
+                contingencyPrePerimeterResult = statePrePerimeterResult;
+            }
+        }
+        networkPool.releaseUsedNetwork(fullNetwork, true);
+        businessLogger.info("Curative remedial actions applied for contingency {}", contingency.getId());
+        return null;
     }
 }
