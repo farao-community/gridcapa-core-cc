@@ -71,8 +71,6 @@ class HourlyRaoResultTest {
         assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
         assertEquals(HourlyRaoResult.Status.SUCCESS, hourlyRaoResult.getStatus());
-        hourlyRaoResult.setStatus(HourlyRaoResult.Status.RUNNING);
-        assertEquals(HourlyRaoResult.Status.RUNNING, hourlyRaoResult.getStatus());
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
         assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
     }

@@ -65,7 +65,6 @@ public class HourlyRaoResult {
 
     public enum Status {
         PENDING,
-        RUNNING,
         SUCCESS,
         FAILURE
     }
