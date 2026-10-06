@@ -88,8 +88,8 @@ public class CoreCCHandler {
         if (semPreProcessingFailedOrDisabled && continentalPreProcessingFailed) {
             saveMetadataWhenPreProcessingFailed(coreCCRequest);
         } else if (allRaoFailed(coreCCRequest)) {
-            // If the RAO failed, we can't generate output files
-            // TODO Should we generate a fallback metadata file as for the failed preprocessing?
+            // If the RAO failed, we can't generate output files. No fallback metadata file will be generated.
+            LOGGER.info("All RAO failed. No output file will be generated.");
         } else {
             coreCCPostProcessService.convertAndSaveReceivedRaoResult(coreCCRequest);
         }
