@@ -65,7 +65,6 @@ public class RaoResultMerger {
 
     @Value("${core-cc-runner.rao-results-merge.parallelization:1}")
     private int mergeParallelization;
-    // raoParameters.getExtension(OpenRaoSearchTreeParameters.class).getMultithreadingParameters().getAvailableCPUs(); // TODO If not defined, use static value
 
     public RaoResultMerger(final Logger businessLogger) {
         this.businessLogger = businessLogger;
@@ -104,7 +103,7 @@ public class RaoResultMerger {
         networkVariantManager.setWorkingVariant(MERGING_VARIANT_NAME);
 
         // apply PRAs
-        businessLogger.info("Applying preventive remedial actions");
+        LOGGER.info("Applying preventive remedial actions");
         final State preventiveState = fullCrac.getPreventiveState();
         NetworkUtil.applyActivatedRemedialActionsForState(fullNetwork, continentalRaoResult, preventiveState);
         NetworkUtil.applyActivatedRemedialActionsForState(fullNetwork, semRaoResult, preventiveState);
@@ -140,6 +139,7 @@ public class RaoResultMerger {
             .toList();
 
         try (AbstractNetworkPool networkPool = makeOpenRaoNetworkPool(fullNetwork, mergeParallelization)) {
+            businessLogger.info("Rebuild of {} contingency scenarios [start]", fullCrac.getContingencies().size());
             List<ForkJoinTask<Object>> tasks = fullCrac.getContingencies().stream()
                 .map(contingency -> networkPool.submit(
                     () -> rebuildContingencyScenario(
@@ -166,6 +166,7 @@ public class RaoResultMerger {
                     throw new OpenRaoException(e);
                 }
             }
+            businessLogger.info("Rebuild of contingency scenarios [end]");
             networkPool.shutdownAndAwaitTermination(24, TimeUnit.HOURS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -198,7 +199,7 @@ public class RaoResultMerger {
     }
 
     private Object rebuildContingencyScenario(final RaoResult continentalRaoResult, final RaoResult semRaoResult, final AbstractNetworkPool networkPool, final Crac fullCrac, final RaoParameters raoParameters, final ReportNode reportNode, final Contingency contingency, final PostPerimeterResult preventivePostPerimeterResult, final List<Instant> postOutageInstants, final ToolProvider toolProvider, final PrePerimeterResult initialFlowResult, final Map<State, PostPerimeterResult> postRegulationPostContingencyResults) throws InterruptedException {
-        businessLogger.info("Applying curative remedial actions for contingency {}", contingency.getId());
+        LOGGER.info("Applying curative remedial actions for contingency {}", contingency.getId());
         final Network fullNetwork = networkPool.getAvailableNetwork();
         final AppliedRemedialActions appliedRemedialActions = new AppliedRemedialActions();
 
@@ -257,7 +258,7 @@ public class RaoResultMerger {
             }
         }
         networkPool.releaseUsedNetwork(fullNetwork, true);
-        businessLogger.info("Curative remedial actions applied for contingency {}", contingency.getId());
+        LOGGER.info("Curative remedial actions applied for contingency {}", contingency.getId());
         return null;
     }
 }

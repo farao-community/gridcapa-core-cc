@@ -52,7 +52,7 @@ public class HourlyRaoResult {
         RAO_FAILURE("3"),
         UNKNOWN_FAILURE("99");
 
-        private String code;
+        private final String code;
 
         ErrorCode(String code) {
             this.code = code;
@@ -94,6 +94,10 @@ public class HourlyRaoResult {
         return raoResultFileUrl;
     }
 
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
     public String getErrorCodeString() {
         return errorCode.getCode();
     }
@@ -110,6 +114,10 @@ public class HourlyRaoResult {
         this.status = status;
     }
 
+    public boolean isFailed() {
+        return status == Status.FAILURE;
+    }
+
     public Instant getComputationStartInstant() {
         return computationStartInstant;
     }
@@ -124,5 +132,4 @@ public class HourlyRaoResult {
         this.computationStartInstant = raoResponse.getComputationStartInstant();
         this.computationEndInstant = raoResponse.getComputationEndInstant();
     }
-
 }

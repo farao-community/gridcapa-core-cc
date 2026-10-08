@@ -54,8 +54,8 @@ public class CoreCCListener {
     @Bean
     public Consumer<Flux<byte[]>> request() {
         return flux -> flux
-                .doOnNext(this::launchCoreRequest)
-                .subscribe();
+            .doOnNext(this::launchCoreRequest)
+            .subscribe();
     }
 
     protected void launchCoreRequest(final byte[] req) {
@@ -76,8 +76,9 @@ public class CoreCCListener {
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
-            // TODO What should the task status be if continental succeeds and sem fails?
-            updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
+            final HourlyRaoResult.Status continentalStatus = internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus();
+            final HourlyRaoResult.Status semStatus = internalCoreCCRequest.getContinentalHourlyRaoResult() != null ? internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus() : null;
+            updateTaskStatus(internalCoreCCRequest.getId(), continentalStatus, semStatus, coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
             logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);
         } catch (final RuntimeException e) {
@@ -102,20 +103,37 @@ public class CoreCCListener {
 
     private void logComputationTime(final OffsetDateTime startTime) {
         final Duration difference = Duration.between(startTime, OffsetDateTime.now());
-        businessLogger.info("Summary : computation time: {}h {}min {}s since the task switched to RUNNING.",
-                difference.toHours(),
-                difference.toMinutesPart(),
-                difference.toSecondsPart());
+        businessLogger.info(
+            "Summary : computation time: {}h {}min {}s since the task switched to RUNNING.",
+            difference.toHours(),
+            difference.toMinutesPart(),
+            difference.toSecondsPart()
+        );
     }
 
     private void updateTaskStatus(final String internalRequestId,
-                                  final HourlyRaoResult.Status status,
+                                  final HourlyRaoResult.Status continentalStatus,
+                                  final HourlyRaoResult.Status semStatus,
                                   final OffsetDateTime timestamp) {
-        if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
-            sendTaskStatusUpdate(internalRequestId, TaskStatus.SUCCESS);
-            LOGGER.info("Updating task status to SUCCESS for timestamp {}", timestamp);
-        } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
-            sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);
+        final TaskStatus success = TaskStatus.SUCCESS;
+        final TaskStatus partialSuccess = TaskStatus.SUCCESS; // TODO Define a PARTIAL_SUCCESS status?
+        if (HourlyRaoResult.Status.SUCCESS.equals(continentalStatus)) {
+            if (semStatus == null || HourlyRaoResult.Status.SUCCESS.equals(semStatus)) {
+                updateTaskStatusAndLog(internalRequestId, timestamp, success);
+            } else {
+                updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
+            }
+        } else if (HourlyRaoResult.Status.FAILURE.equals(continentalStatus)) {
+            if (HourlyRaoResult.Status.SUCCESS.equals(semStatus)) {
+                updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
+            } else {
+                sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);
+            }
         }
+    }
+
+    private void updateTaskStatusAndLog(final String internalRequestId, final OffsetDateTime timestamp, final TaskStatus status) {
+        sendTaskStatusUpdate(internalRequestId, status);
+        LOGGER.info("Updating task status to {} for timestamp {}", status, timestamp);
     }
 }

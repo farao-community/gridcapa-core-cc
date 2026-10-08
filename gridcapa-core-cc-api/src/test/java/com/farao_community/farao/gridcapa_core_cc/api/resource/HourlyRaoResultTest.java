@@ -16,8 +16,10 @@ import org.mockito.Mockito;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Thomas Bouquet {@literal <thomas.bouquet at rte-france.com>}
@@ -49,6 +51,7 @@ class HourlyRaoResultTest {
         assertNull(hourlyRaoResult.getRaoResultFileUrl());
         assertEquals("99", hourlyRaoResult.getErrorCodeString());
         assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
+        assertFalse(hourlyRaoResult.isFailed());
         assertEquals(initialInstant, hourlyRaoResult.getComputationStartInstant());
         assertEquals(initialInstant, hourlyRaoResult.getComputationEndInstant());
         assertEquals(2141528230, hourlyRaoResult.hashCode());
@@ -69,10 +72,15 @@ class HourlyRaoResultTest {
     @Test
     void changeStatus() {
         assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
+        assertFalse(hourlyRaoResult.isFailed());
+
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
         assertEquals(HourlyRaoResult.Status.SUCCESS, hourlyRaoResult.getStatus());
+        assertFalse(hourlyRaoResult.isFailed());
+
         hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
         assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        assertTrue(hourlyRaoResult.isFailed());
     }
 
     @Test

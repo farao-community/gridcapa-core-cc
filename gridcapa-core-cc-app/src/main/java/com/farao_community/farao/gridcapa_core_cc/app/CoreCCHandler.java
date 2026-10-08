@@ -27,7 +27,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
+
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.ErrorCode.RAO_FAILURE;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -96,15 +97,14 @@ public class CoreCCHandler {
     }
 
     private static boolean allRaoFailed(final InternalCoreCCRequest coreCCRequest) {
-        final String raoFailureCode = HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode();
         final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
         final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
 
-        final boolean continentalRaoFailed = continentalHourlyRaoResult.getStatus() == HourlyRaoResult.Status.FAILURE
-            && Objects.equals(continentalHourlyRaoResult.getErrorCodeString(), raoFailureCode);
+        final boolean continentalRaoFailed = continentalHourlyRaoResult.isFailed()
+            && RAO_FAILURE == continentalHourlyRaoResult.getErrorCode();
         final boolean semRaoFailedOrDisabled = semHourlyRaoResult == null
-            || semHourlyRaoResult.getStatus() == HourlyRaoResult.Status.FAILURE
-            && Objects.equals(semHourlyRaoResult.getErrorCodeString(), raoFailureCode);
+            || semHourlyRaoResult.isFailed()
+            && RAO_FAILURE == semHourlyRaoResult.getErrorCode();
 
         return continentalRaoFailed && semRaoFailedOrDisabled;
     }
@@ -119,7 +119,7 @@ public class CoreCCHandler {
             coreCCRequest.setSemHourlyRaoResult(semHourlyRaoResult);
         }
 
-        final boolean semPreProcessingFailed = semHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE);
+        final boolean semPreProcessingFailed = semHourlyRaoResult.isFailed();
         if (semPreProcessingFailed) {
             LOGGER.info("Skipping RAO on SEM area");
         } else {
@@ -139,7 +139,7 @@ public class CoreCCHandler {
             coreCCRequest.setContinentalHourlyRaoResult(continentalHourlyRaoResult);
         }
 
-        final boolean continentalPreProcessingFailed = continentalHourlyRaoResult.getStatus().equals(HourlyRaoResult.Status.FAILURE);
+        final boolean continentalPreProcessingFailed = continentalHourlyRaoResult.isFailed();
         if (continentalPreProcessingFailed) {
             LOGGER.info("Skipping RAO on continental area");
         } else {

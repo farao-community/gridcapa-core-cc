@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.time.Instant;
 
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE;
+
 /**
  * @author Vincent Bochet {@literal <vincent.bochet at rte-france.com>}
  */
@@ -63,15 +65,15 @@ public class CoreCCPostProcessService {
             fileExporterHelper.exportRaoResultToMinio(postProcessingData);
             fileExporterHelper.exportMetadataToMinio(postProcessingData);
         } catch (final Exception e) {
-            // TODO How should we handle exceptions from outputs export in an area-unrelated manner?
             //no throwing exception, just save cause and pass to next timestamp
-            final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
-            final String errorMessage = String.format("Error occurred while post-processing RAO outputs for timestamp: %s. Cause: %s", hourlyRaoResult.getRaoRequestInstant(), e);
+            final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+            final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+            final String errorMessage = String.format("Error occurred while post-processing RAO outputs for timestamp: %s. Cause: %s", continentalHourlyRaoResult.getRaoRequestInstant(), e);
             LOGGER.error(errorMessage, e);
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-            // TODO Apparently, the only useful information here is the status of the hourlyRaoResult. ErrorCode and message are never used after this point.
-            hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
-            hourlyRaoResult.setErrorMessage(errorMessage);
+            continentalHourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+            if (semHourlyRaoResult != null) {
+                semHourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+            }
         }
     }
 
@@ -89,19 +91,20 @@ public class CoreCCPostProcessService {
         postProcessingData.setDcNetwork(dcNetwork);
 
         // Area-related CRACs are needed for RAO results import and/or RAO results merging
-        // TODO Check what happens if both areas are enabled but computation fails for one of them
-        // TODO Same question if pre-processing fails
-        final Network continentalNetwork = fileImporter.importNetwork(postProcessingData.getRequest().getContinentalHourlyRaoRequest().getNetworkFileUrl());
-        final FbConstraintCreationContext continentalFbConstraintCreationContext = fileImporter.importCbcora(
-            coreCCRequest.getCbcora().getUrl(),
-            coreCCRequest.getTimestamp(),
-            continentalNetwork
-        );
-        postProcessingData.setContinentalCracCreationContext(continentalFbConstraintCreationContext);
+        final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+        if (continentalHourlyRaoResult != null && TS_PREPROCESSING_FAILURE != continentalHourlyRaoResult.getErrorCode()) {
+            final Network continentalNetwork = fileImporter.importNetwork(coreCCRequest.getContinentalHourlyRaoRequest().getNetworkFileUrl());
+            final FbConstraintCreationContext continentalFbConstraintCreationContext = fileImporter.importCbcora(
+                coreCCRequest.getCbcora().getUrl(),
+                coreCCRequest.getTimestamp(),
+                continentalNetwork
+            );
+            postProcessingData.setContinentalCracCreationContext(continentalFbConstraintCreationContext);
+        }
 
-        // TODO same check as above
-        if (coreCCRequest.isSemEnabled()) {
-            final Network semNetwork = fileImporter.importNetwork(postProcessingData.getRequest().getSemHourlyRaoRequest().getNetworkFileUrl());
+        final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+        if (coreCCRequest.isSemEnabled() && semHourlyRaoResult != null && TS_PREPROCESSING_FAILURE != semHourlyRaoResult.getErrorCode()) {
+            final Network semNetwork = fileImporter.importNetwork(coreCCRequest.getSemHourlyRaoRequest().getNetworkFileUrl());
             final FbConstraintCreationContext semFbConstraintCreationContext = fileImporter.importCbcora(
                 coreCCRequest.getCbcora().getUrl(),
                 coreCCRequest.getTimestamp(),
