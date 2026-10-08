@@ -239,7 +239,7 @@ public class FileExporterHelper {
     private static void fillMetadataBuilderWithCommonData(final CoreCCMetadata.Builder metadataBuilder,
                                                           final InternalCoreCCRequest coreCCRequest) {
         metadataBuilder
-            .withRaoRequestFileName(coreCCRequest.getRaoRequest().getFilename())
+            .withRaoRequestFileName(coreCCRequest.getRaoRequest().filename())
             .withRequestReceivedInstant(coreCCRequest.getRequestReceivedInstant().toString())
             .withTimeInterval(coreCCRequest.getTimeInterval())
             .withCorrelationId(coreCCRequest.getCorrelationId())

@@ -49,7 +49,7 @@ class FileImporterTest {
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.getUrl(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network);
         final Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
         assertEquals("17XTSO-CS------W-20190108-F301v1", crac.getId());
@@ -80,7 +80,7 @@ class FileImporterTest {
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.getUrl(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network);
         final Crac crac = fbConstraintCreationContext.getCrac();
 
         final RaoResult raoResult = fileImporter.importRaoResult(raoResultUrl, crac);

@@ -50,7 +50,7 @@ class HourlyRaoResultTest {
         assertNull(hourlyRaoResult.getErrorMessage());
         assertNull(hourlyRaoResult.getRaoResultFileUrl());
         assertEquals("99", hourlyRaoResult.getErrorCodeString());
-        assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultStatus.PENDING, hourlyRaoResult.getStatus());
         assertFalse(hourlyRaoResult.isFailed());
         assertEquals(initialInstant, hourlyRaoResult.getComputationStartInstant());
         assertEquals(initialInstant, hourlyRaoResult.getComputationEndInstant());
@@ -59,27 +59,27 @@ class HourlyRaoResultTest {
 
     @Test
     void changeErrorCode() {
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RUNNING);
+        hourlyRaoResult.setErrorCode(HourlyRaoResultErrorCode.RUNNING);
         assertEquals("0", hourlyRaoResult.getErrorCodeString());
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.BD_PREPROCESSING_FAILURE);
+        hourlyRaoResult.setErrorCode(HourlyRaoResultErrorCode.BD_PREPROCESSING_FAILURE);
         assertEquals("1", hourlyRaoResult.getErrorCodeString());
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+        hourlyRaoResult.setErrorCode(HourlyRaoResultErrorCode.TS_PREPROCESSING_FAILURE);
         assertEquals("2", hourlyRaoResult.getErrorCodeString());
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
+        hourlyRaoResult.setErrorCode(HourlyRaoResultErrorCode.RAO_FAILURE);
         assertEquals("3", hourlyRaoResult.getErrorCodeString());
     }
 
     @Test
     void changeStatus() {
-        assertEquals(HourlyRaoResult.Status.PENDING, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultStatus.PENDING, hourlyRaoResult.getStatus());
         assertFalse(hourlyRaoResult.isFailed());
 
-        hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
-        assertEquals(HourlyRaoResult.Status.SUCCESS, hourlyRaoResult.getStatus());
+        hourlyRaoResult.setStatus(HourlyRaoResultStatus.SUCCESS);
+        assertEquals(HourlyRaoResultStatus.SUCCESS, hourlyRaoResult.getStatus());
         assertFalse(hourlyRaoResult.isFailed());
 
-        hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
+        hourlyRaoResult.setStatus(HourlyRaoResultStatus.FAILURE);
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
         assertTrue(hourlyRaoResult.isFailed());
     }
 

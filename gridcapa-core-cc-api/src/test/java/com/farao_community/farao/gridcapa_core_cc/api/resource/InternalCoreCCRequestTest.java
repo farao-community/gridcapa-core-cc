@@ -61,7 +61,7 @@ class InternalCoreCCRequestTest {
     }
 
     private boolean equalsCoreCCFileResource(String filename, CoreCCFileResource actual) {
-        return actual.getFilename().equals(filename) && actual.getUrl().equals("file/" + filename);
+        return actual.filename().equals(filename) && actual.url().equals("file/" + filename);
     }
 
     @Test

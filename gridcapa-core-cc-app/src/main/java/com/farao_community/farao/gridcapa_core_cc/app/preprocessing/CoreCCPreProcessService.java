@@ -11,6 +11,8 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInvalidDat
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.domain.CoreCCTaskParameters;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
@@ -103,7 +105,7 @@ public class CoreCCPreProcessService {
         final CoreCCTaskParameters parameters = new CoreCCTaskParameters(coreCCRequest.getParameters());
         logCoreCCParameters(coreCCRequest, parameters);
 
-        final RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest().getUrl());
+        final RequestMessage raoRequestMessage = fileImporter.importRaoRequest(coreCCRequest.getRaoRequest().url());
         coreCCRequest.setTimeInterval(raoRequestMessage.getPayload().getRequestItems().getTimeInterval());
         coreCCRequest.setCorrelationId(raoRequestMessage.getHeader().getCorrelationID());
 
@@ -206,9 +208,9 @@ public class CoreCCPreProcessService {
                 utcInstant.toString(),
                 networkFileUrl,
                 jsonCracFileUrl,
-                coreCCRequest.getRefProg().getUrl(),
-                coreCCRequest.getVirtualHub().getUrl(),
-                coreCCRequest.getGlsk().getUrl(),
+                coreCCRequest.getRefProg().url(),
+                coreCCRequest.getVirtualHub().url(),
+                coreCCRequest.getGlsk().url(),
                 raoParametersFileUrl,
                 destinationPath + "/" + areaIdentifier
             );
@@ -229,9 +231,9 @@ public class CoreCCPreProcessService {
 
     private static HourlyRaoResult buildFailedHourlyRaoResult(final String raoRequestInstant, final String errorMessage) {
         final HourlyRaoResult raoResult = new HourlyRaoResult(raoRequestInstant);
-        raoResult.setErrorCode(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE);
+        raoResult.setErrorCode(HourlyRaoResultErrorCode.TS_PREPROCESSING_FAILURE);
         raoResult.setErrorMessage(errorMessage);
-        raoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+        raoResult.setStatus(HourlyRaoResultStatus.FAILURE);
         return raoResult;
     }
 
@@ -311,7 +313,7 @@ public class CoreCCPreProcessService {
                                   final String prefix,
                                   final Instant utcInstant,
                                   final Network network) {
-        final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().getUrl(), OffsetDateTime.parse(utcInstant.toString()), network);
+        final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().url(), OffsetDateTime.parse(utcInstant.toString()), network);
         try (final ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             final String filename = NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION);
@@ -319,7 +321,7 @@ public class CoreCCPreProcessService {
             uploadCracJsonToMinio(cracByteArrayOutputStream, jsonCracFilePath);
             return jsonCracFilePath;
         } catch (Exception e) {
-            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", coreCCRequest.getCbcora().getFilename()), e);
+            throw new CoreCCInternalException(String.format("Exception occurred while importing CRAC file: %s", coreCCRequest.getCbcora().filename()), e);
         }
     }
 

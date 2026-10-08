@@ -83,10 +83,10 @@ public class FileImporter {
     }
 
     public ReferenceProgram importReferenceProgram(final CoreCCFileResource refProgFile, final OffsetDateTime timestamp) {
-        try (final InputStream refProgStream = urlValidationService.openUrlStream(refProgFile.getUrl())) {
+        try (final InputStream refProgStream = urlValidationService.openUrlStream(refProgFile.url())) {
             return RefProgImporter.importRefProg(refProgStream, timestamp);
         } catch (final IOException e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download reference program file from URL '%s'", refProgFile.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download reference program file from URL '%s'", refProgFile.url()), e);
         }
     }
 
@@ -150,8 +150,8 @@ public class FileImporter {
     }
 
     public CgmsAndXmlHeader importCgmsZip(final CoreCCFileResource cgmsZimFileResource) {
-        try (final InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.getUrl())) {
-            LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.getFilename());
+        try (final InputStream cgmsZipInputStream = urlValidationService.openUrlStream(cgmsZimFileResource.url())) {
+            LOGGER.info("Import of cgms zip from {} file ", cgmsZimFileResource.filename());
 
             // Setting permissions
             final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
@@ -164,16 +164,16 @@ public class FileImporter {
             final List<Path> networkPaths = unzippedPaths.stream().filter(p -> p.toFile().getName().matches(NamingRules.CGM_FILE_NAME)).toList();
             return new CgmsAndXmlHeader(xmlHeader, networkPaths);
         } catch (final Exception e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download CGM file from URL '%s'", cgmsZimFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download CGM file from URL '%s'", cgmsZimFileResource.url()), e);
         }
     }
 
     public VirtualHubsConfiguration importVirtualHubs(final CoreCCFileResource virtualHubsFileResource) {
-        try (final InputStream virtualHubsInputStream = urlValidationService.openUrlStream(virtualHubsFileResource.getUrl())) {
-            LOGGER.info("Import of virtual hubs from {} file ", virtualHubsFileResource.getFilename());
+        try (final InputStream virtualHubsInputStream = urlValidationService.openUrlStream(virtualHubsFileResource.url())) {
+            LOGGER.info("Import of virtual hubs from {} file ", virtualHubsFileResource.filename());
             return XmlVirtualHubsConfiguration.importConfiguration(virtualHubsInputStream);
         } catch (final Exception e) {
-            throw new CoreCCInvalidDataException(String.format("Cannot download VirtualHubs file from URL '%s'", virtualHubsFileResource.getUrl()), e);
+            throw new CoreCCInvalidDataException(String.format("Cannot download VirtualHubs file from URL '%s'", virtualHubsFileResource.url()), e);
         }
     }
 

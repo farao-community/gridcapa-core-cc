@@ -8,6 +8,7 @@ package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.time.Instant;
 
-import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE;
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode.TS_PREPROCESSING_FAILURE;
 
 /**
  * @author Vincent Bochet {@literal <vincent.bochet at rte-france.com>}
@@ -70,9 +71,9 @@ public class CoreCCPostProcessService {
             final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
             final String errorMessage = String.format("Error occurred while post-processing RAO outputs for timestamp: %s. Cause: %s", continentalHourlyRaoResult.getRaoRequestInstant(), e);
             LOGGER.error(errorMessage, e);
-            continentalHourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+            continentalHourlyRaoResult.setStatus(HourlyRaoResultStatus.FAILURE);
             if (semHourlyRaoResult != null) {
-                semHourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
+                semHourlyRaoResult.setStatus(HourlyRaoResultStatus.FAILURE);
             }
         }
     }
@@ -95,7 +96,7 @@ public class CoreCCPostProcessService {
         if (continentalHourlyRaoResult != null && TS_PREPROCESSING_FAILURE != continentalHourlyRaoResult.getErrorCode()) {
             final Network continentalNetwork = fileImporter.importNetwork(coreCCRequest.getContinentalHourlyRaoRequest().getNetworkFileUrl());
             final FbConstraintCreationContext continentalFbConstraintCreationContext = fileImporter.importCbcora(
-                coreCCRequest.getCbcora().getUrl(),
+                coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
                 continentalNetwork
             );
@@ -106,14 +107,14 @@ public class CoreCCPostProcessService {
         if (coreCCRequest.isSemEnabled() && semHourlyRaoResult != null && TS_PREPROCESSING_FAILURE != semHourlyRaoResult.getErrorCode()) {
             final Network semNetwork = fileImporter.importNetwork(coreCCRequest.getSemHourlyRaoRequest().getNetworkFileUrl());
             final FbConstraintCreationContext semFbConstraintCreationContext = fileImporter.importCbcora(
-                coreCCRequest.getCbcora().getUrl(),
+                coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
                 semNetwork
             );
             postProcessingData.setSemCracCreationContext(semFbConstraintCreationContext);
         }
 
-        final RaoParameters raoParameters = fileImporter.importRaoParameters(coreCCRequest.getRaoParameters().getUrl());
+        final RaoParameters raoParameters = fileImporter.importRaoParameters(coreCCRequest.getRaoParameters().url());
         postProcessingData.setRaoParameters(raoParameters);
     }
 
@@ -126,9 +127,9 @@ public class CoreCCPostProcessService {
     private void initialiseRaoResultInPostProcessingData(final InternalCoreCCRequest coreCCRequest,
                                                          final CoreCCPostProcessingData postProcessingData) {
         final boolean semEnabled = coreCCRequest.isSemEnabled();
-        final boolean continentalRaoSucceeded = coreCCRequest.getContinentalHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
+        final boolean continentalRaoSucceeded = coreCCRequest.getContinentalHourlyRaoResult().getStatus() == HourlyRaoResultStatus.SUCCESS;
         // SemHourlyRaoResult exists only if SEM is enabled
-        final boolean semRaoSucceeded = semEnabled && coreCCRequest.getSemHourlyRaoResult().getStatus() == HourlyRaoResult.Status.SUCCESS;
+        final boolean semRaoSucceeded = semEnabled && coreCCRequest.getSemHourlyRaoResult().getStatus() == HourlyRaoResultStatus.SUCCESS;
 
         final RaoResult raoResult;
         if (semEnabled && continentalRaoSucceeded && semRaoSucceeded) {
@@ -137,7 +138,7 @@ public class CoreCCPostProcessService {
 
             // Full CBCORA is needed for the RAO results merging. Therefore, CBCORA must be imported using full DC Network.
             final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(
-                coreCCRequest.getCbcora().getUrl(),
+                coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
                 postProcessingData.getDcNetwork()
             );
@@ -181,7 +182,7 @@ public class CoreCCPostProcessService {
         // ReferenceProgram and GLSK are required for RaoResult merging but we don't need them for any other action
         // So we only import those files here without adding them to the postProcessingData
         final ReferenceProgram referenceProgram = fileImporter.importReferenceProgram(coreCCRequest.getRefProg(), coreCCRequest.getTimestamp());
-        final ZonalData<SensitivityVariableSet> glskProvider = fileImporter.importGlsk(coreCCRequest.getGlsk().getUrl(), coreCCRequest.getTimestamp(), postProcessingData.getDcNetwork());
+        final ZonalData<SensitivityVariableSet> glskProvider = fileImporter.importGlsk(coreCCRequest.getGlsk().url(), coreCCRequest.getTimestamp(), postProcessingData.getDcNetwork());
 
         return raoResultMerger.mergeRaoResults(continentalRaoResult,
                                                semRaoResult,

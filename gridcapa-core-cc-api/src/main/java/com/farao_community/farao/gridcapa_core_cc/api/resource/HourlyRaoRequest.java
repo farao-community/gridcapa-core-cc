@@ -30,15 +30,15 @@ public class HourlyRaoRequest {
     @Value("${core-cc-runner.async-time-out}")
     private long raoTimeOut;
 
-    public HourlyRaoRequest(MinioAdapter minioAdapter,
-                            String raoRequestInstant,
-                            String networkFileUrl,
-                            String cbFileUrl,
-                            String refprogFileUrl,
-                            String virtualHubsConfigurationFileUrl,
-                            String realGlskFileUrl,
-                            String raoParametersFileUrl,
-                            String resultsDestination) {
+    public HourlyRaoRequest(final MinioAdapter minioAdapter,
+                            final String raoRequestInstant,
+                            final String networkFileUrl,
+                            final String cbFileUrl,
+                            final String refprogFileUrl,
+                            final String virtualHubsConfigurationFileUrl,
+                            final String realGlskFileUrl,
+                            final String raoParametersFileUrl,
+                            final String resultsDestination) {
         this.minioAdapter = minioAdapter;
         this.raoRequestInstant = raoRequestInstant;
         this.networkFileUrl = networkFileUrl;
@@ -71,7 +71,7 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(final String id, final String runId, final String prefix) {
-        String resultsDestinationUrl = "CORE/CC/";
+        final String resultsDestinationUrl = "CORE/CC/";
         return new RaoRequest.RaoRequestBuilder()
             .withId(id)
             .withRunId(runId)
@@ -89,8 +89,7 @@ public class HourlyRaoRequest {
     }
 
     @Override
-    public boolean equals(Object o) {
-
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
@@ -109,5 +108,4 @@ public class HourlyRaoRequest {
     public int hashCode() {
         return Objects.hash(raoRequestInstant);
     }
-
 }

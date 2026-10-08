@@ -25,17 +25,17 @@ public final class IntervalUtil {
         throw new AssertionError("Utility class should not be constructed");
     }
 
-    public static String getBrusselsFormattedBusinessDayFromUtc(OffsetDateTime offsetDateTime) {
+    public static String getBrusselsFormattedBusinessDayFromUtc(final OffsetDateTime offsetDateTime) {
         return DateTimeFormatter.ofPattern("yyyyMMdd").format(convertUtcToBrusselOffsetDateTime(offsetDateTime));
     }
 
-    private static OffsetDateTime convertUtcToBrusselOffsetDateTime(OffsetDateTime offsetDateTime) {
+    private static OffsetDateTime convertUtcToBrusselOffsetDateTime(final OffsetDateTime offsetDateTime) {
         return offsetDateTime.withOffsetSameInstant(ZONE_ID.getRules().getOffset(offsetDateTime.toInstant()));
     }
 
-    public static String handle25TimestampCase(String filename, String instant) {
-        ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instant).minus(1, ChronoUnit.HOURS).atZone(ZONE_ID)).getOffset();
-        ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instant).atZone(ZONE_ID)).getOffset();
+    public static String handle25TimestampCase(final String filename, final String instant) {
+        final ZoneOffset previousOffset = OffsetDateTime.from(Instant.parse(instant).minus(1, ChronoUnit.HOURS).atZone(ZONE_ID)).getOffset();
+        final ZoneOffset currentOffset = OffsetDateTime.from(Instant.parse(instant).atZone(ZONE_ID)).getOffset();
         if (previousOffset == ZoneOffset.ofHours(2) && currentOffset == ZoneOffset.ofHours(1)) {
             return filename.replace("_0", "_B");
         } else {

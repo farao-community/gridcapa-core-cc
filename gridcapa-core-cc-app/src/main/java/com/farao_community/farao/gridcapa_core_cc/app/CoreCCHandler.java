@@ -11,6 +11,8 @@ import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalEx
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCRaoException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.configuration.AmqpMessagesConfiguration;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.CoreCCPostProcessService;
@@ -28,7 +30,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
-import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult.ErrorCode.RAO_FAILURE;
+import static com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode.RAO_FAILURE;
 
 /**
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
@@ -158,7 +160,7 @@ public class CoreCCHandler {
                 hourlyRaoRequest.toRaoRequest(coreCCRequest.getId(), coreCCRequest.getRunId(), prefix)
             );
             hourlyRaoResult.setRaoResponseData(raoResponse);
-            hourlyRaoResult.setStatus(HourlyRaoResult.Status.SUCCESS);
+            hourlyRaoResult.setStatus(HourlyRaoResultStatus.SUCCESS);
         } catch (final CoreCCInternalException | CoreCCRaoException e) {
             handleRaoRunnerException(hourlyRaoResult, e);
         }
@@ -174,8 +176,8 @@ public class CoreCCHandler {
 
     void handleRaoRunnerException(final HourlyRaoResult hourlyRaoResult,
                                   final Throwable exception) {
-        hourlyRaoResult.setStatus(HourlyRaoResult.Status.FAILURE);
-        hourlyRaoResult.setErrorCode(HourlyRaoResult.ErrorCode.RAO_FAILURE);
+        hourlyRaoResult.setStatus(HourlyRaoResultStatus.FAILURE);
+        hourlyRaoResult.setErrorCode(HourlyRaoResultErrorCode.RAO_FAILURE);
         if (exception instanceof final ResourceParseException resourceParseException) {
             // Sync scenario : exception details from rao-runner comes wrapped into ResourceParseException on json Api Error format.
             setErrorMessageAndLogIt(hourlyRaoResult, resourceParseException.getErrors().getErrors().getFirst().getDetail());

@@ -12,7 +12,7 @@ import com.farao_community.farao.gridcapa.task_manager.api.TaskStatusUpdate;
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +76,8 @@ public class CoreCCListener {
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
-            final HourlyRaoResult.Status continentalStatus = internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus();
-            final HourlyRaoResult.Status semStatus = internalCoreCCRequest.getContinentalHourlyRaoResult() != null ? internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus() : null;
+            final HourlyRaoResultStatus continentalStatus = internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus();
+            final HourlyRaoResultStatus semStatus = internalCoreCCRequest.getContinentalHourlyRaoResult() != null ? internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus() : null;
             updateTaskStatus(internalCoreCCRequest.getId(), continentalStatus, semStatus, coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
             logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);
@@ -112,19 +112,19 @@ public class CoreCCListener {
     }
 
     private void updateTaskStatus(final String internalRequestId,
-                                  final HourlyRaoResult.Status continentalStatus,
-                                  final HourlyRaoResult.Status semStatus,
+                                  final HourlyRaoResultStatus continentalStatus,
+                                  final HourlyRaoResultStatus semStatus,
                                   final OffsetDateTime timestamp) {
         final TaskStatus success = TaskStatus.SUCCESS;
         final TaskStatus partialSuccess = TaskStatus.SUCCESS; // TODO Define a PARTIAL_SUCCESS status?
-        if (HourlyRaoResult.Status.SUCCESS.equals(continentalStatus)) {
-            if (semStatus == null || HourlyRaoResult.Status.SUCCESS.equals(semStatus)) {
+        if (HourlyRaoResultStatus.SUCCESS.equals(continentalStatus)) {
+            if (semStatus == null || HourlyRaoResultStatus.SUCCESS.equals(semStatus)) {
                 updateTaskStatusAndLog(internalRequestId, timestamp, success);
             } else {
                 updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
             }
-        } else if (HourlyRaoResult.Status.FAILURE.equals(continentalStatus)) {
-            if (HourlyRaoResult.Status.SUCCESS.equals(semStatus)) {
+        } else if (HourlyRaoResultStatus.FAILURE.equals(continentalStatus)) {
+            if (HourlyRaoResultStatus.SUCCESS.equals(semStatus)) {
                 updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
             } else {
                 sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);

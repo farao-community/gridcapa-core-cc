@@ -12,6 +12,8 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResourc
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.domain.CoreCCTaskParameters;
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
@@ -104,7 +106,7 @@ class CoreCCPreProcessServiceTest {
     void testInitializeTaskFromRequestWithNoTimestamp() {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
-        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        when(dummyFileResource.url()).thenReturn("fakeUrl");
         final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
         final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
@@ -133,7 +135,7 @@ class CoreCCPreProcessServiceTest {
     void testInitializeTaskFromRequestWithCgmInput() throws IOException {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
-        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        when(dummyFileResource.url()).thenReturn("fakeUrl");
         final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
         final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
@@ -165,9 +167,9 @@ class CoreCCPreProcessServiceTest {
     void testInitializeTaskFromRequestWithDCCgmInput() throws IOException {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyDCCgmFileResource = mock(CoreCCFileResource.class);
-        when(dummyDCCgmFileResource.getUrl()).thenReturn("dcCgmfakeUrl");
+        when(dummyDCCgmFileResource.url()).thenReturn("dcCgmfakeUrl");
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
-        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        when(dummyFileResource.url()).thenReturn("fakeUrl");
         final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
         final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
@@ -197,7 +199,7 @@ class CoreCCPreProcessServiceTest {
     void testInitializeTaskFromRequestWithSemEnabled() throws IOException {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
-        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        when(dummyFileResource.url()).thenReturn("fakeUrl");
         final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
         final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
@@ -233,7 +235,7 @@ class CoreCCPreProcessServiceTest {
     void testInitializeTaskFromRequestWhenExceptionThrown() {
         // Setup CoreCCRequest and InternalCoreCCRequest
         final CoreCCFileResource dummyFileResource = mock(CoreCCFileResource.class);
-        when(dummyFileResource.getUrl()).thenReturn("fakeUrl");
+        when(dummyFileResource.url()).thenReturn("fakeUrl");
         final CoreCCFileResource dummyVirtualHubsFileResource = mock(CoreCCFileResource.class);
         final VirtualHubsConfiguration virtualHubsMock = mock(VirtualHubsConfiguration.class);
         Mockito.when(fileImporter.importVirtualHubs(dummyVirtualHubsFileResource)).thenReturn(virtualHubsMock);
@@ -353,8 +355,8 @@ class CoreCCPreProcessServiceTest {
         final HourlyRaoResult hourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
         assertNotNull(hourlyRaoRequest);
         assertNotNull(hourlyRaoResult);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
-        assertEquals(HourlyRaoResult.ErrorCode.TS_PREPROCESSING_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultErrorCode.TS_PREPROCESSING_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
         assertNull(hourlyRaoResult.getRaoResultFileUrl());
         assertNull(hourlyRaoResult.getNetworkWithPraUrl());
     }
@@ -399,6 +401,6 @@ class CoreCCPreProcessServiceTest {
         final Header header = new Header();
         header.setCorrelationID("ID");
         raoRequestMessage.setHeader(header);
-        Mockito.when(fileImporter.importRaoRequest(dummyFileResource.getUrl())).thenReturn(raoRequestMessage);
+        Mockito.when(fileImporter.importRaoRequest(dummyFileResource.url())).thenReturn(raoRequestMessage);
     }
 }

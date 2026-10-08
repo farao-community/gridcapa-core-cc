@@ -16,42 +16,42 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * @author Godelaine de Montmorillon {@literal <godelaine.demontmorillon at rte-france.com>}
  */
 public class CoreCCMetadata {
-    private String raoRequestFileName;
-    private String requestReceivedInstant;
-    private String raoRequestInstant;
-    private String timeInterval;
-    private String correlationId;
-    private int version;
+    private final String raoRequestFileName;
+    private final String requestReceivedInstant;
+    private final String raoRequestInstant;
+    private final String timeInterval;
+    private final String correlationId;
+    private final int version;
 
-    private String continentalComputationStart;
-    private String continentalComputationEnd;
-    private String continentalComputationStatus;
-    private String continentalComputationErrorCode;
-    private String continentalComputationErrorMessage;
+    private final String continentalComputationStart;
+    private final String continentalComputationEnd;
+    private final String continentalComputationStatus;
+    private final String continentalComputationErrorCode;
+    private final String continentalComputationErrorMessage;
 
-    private String semComputationStart;
-    private String semComputationEnd;
-    private String semComputationStatus;
-    private String semComputationErrorCode;
-    private String semComputationErrorMessage;
+    private final String semComputationStart;
+    private final String semComputationEnd;
+    private final String semComputationStatus;
+    private final String semComputationErrorCode;
+    private final String semComputationErrorMessage;
 
     @JsonCreator
-    public CoreCCMetadata(@JsonProperty("raoRequestFileName") String raoRequestFileName,
-                          @JsonProperty("requestReceivedInstant") String requestReceivedInstant,
-                          @JsonProperty("raoRequestInstant") String raoRequestInstant,
-                          @JsonProperty("timeInterval") String timeInterval,
-                          @JsonProperty("correlationId") String correlationId,
-                          @JsonProperty("version") int version,
-                          @JsonProperty("continentalComputationStart") String continentalComputationStart,
-                          @JsonProperty("continentalComputationEnd") String continentalComputationEnd,
-                          @JsonProperty("continentalComputationStatus") String continentalComputationStatus,
-                          @JsonProperty("continentalComputationErrorCode") String continentalComputationErrorCode,
-                          @JsonProperty("continentalComputationErrorMessage") String continentalComputationErrorMessage,
-                          @JsonProperty("semComputationStart") String semComputationStart,
-                          @JsonProperty("semComputationEnd") String semComputationEnd,
-                          @JsonProperty("semComputationStatus") String semComputationStatus,
-                          @JsonProperty("semComputationErrorCode") String semComputationErrorCode,
-                          @JsonProperty("semComputationErrorMessage") String semComputationErrorMessage) {
+    public CoreCCMetadata(@JsonProperty("raoRequestFileName") final String raoRequestFileName,
+                          @JsonProperty("requestReceivedInstant") final String requestReceivedInstant,
+                          @JsonProperty("raoRequestInstant") final String raoRequestInstant,
+                          @JsonProperty("timeInterval") final String timeInterval,
+                          @JsonProperty("correlationId") final String correlationId,
+                          @JsonProperty("version") final int version,
+                          @JsonProperty("continentalComputationStart") final String continentalComputationStart,
+                          @JsonProperty("continentalComputationEnd") final String continentalComputationEnd,
+                          @JsonProperty("continentalComputationStatus") final String continentalComputationStatus,
+                          @JsonProperty("continentalComputationErrorCode") final String continentalComputationErrorCode,
+                          @JsonProperty("continentalComputationErrorMessage") final String continentalComputationErrorMessage,
+                          @JsonProperty("semComputationStart") final String semComputationStart,
+                          @JsonProperty("semComputationEnd") final String semComputationEnd,
+                          @JsonProperty("semComputationStatus") final String semComputationStatus,
+                          @JsonProperty("semComputationErrorCode") final String semComputationErrorCode,
+                          @JsonProperty("semComputationErrorMessage") final String semComputationErrorMessage) {
         this.raoRequestFileName = raoRequestFileName;
         this.requestReceivedInstant = requestReceivedInstant;
         this.raoRequestInstant = raoRequestInstant;
