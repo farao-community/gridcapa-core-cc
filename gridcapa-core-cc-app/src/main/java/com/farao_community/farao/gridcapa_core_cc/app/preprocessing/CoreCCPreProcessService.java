@@ -61,31 +61,30 @@ import java.util.Optional;
 @Service
 public class CoreCCPreProcessService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCPreProcessService.class);
-    private static final String S_HOURLY_RAO_RESULTS = "%s/hourly_rao_results";
-    private static final String XIIDM_EXPORT_FORMAT = "XIIDM";
-    private static final String XIIDM_EXTENSION = ".xiidm";
-    private static final String UCT_EXTENSION = ".uct";
+    private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
     private static final String JSON_CRAC_PROVIDER = "JSON";
+    private static final String XIIDM_EXPORT_FORMAT = "XIIDM";
+    private static final String UCT_EXTENSION = ".uct";
+    private static final String XIIDM_EXTENSION = ".xiidm";
+    private static final String S_HOURLY_RAO_RESULTS = "%s/hourly_rao_results";
     private static final String PREFIXED_FILENAME_FORMAT = "%s_%s";
 
     private final Logger businessLogger;
+    private final FileImporter fileImporter;
     private final MinioAdapter minioAdapter;
     private final RaoParametersService raoParametersService;
-    private final FileImporter fileImporter;
-    private static final String GENERAL_ERROR = "Error occurred while trying to import inputs at timestamp: %s. Origin cause : %s";
 
-    public CoreCCPreProcessService(Logger businessLogger, MinioAdapter minioAdapter, RaoParametersService raoParametersService, FileImporter fileImporter) {
+    public CoreCCPreProcessService(final Logger businessLogger,
+                                   final FileImporter fileImporter,
+                                   final MinioAdapter minioAdapter,
+                                   final RaoParametersService raoParametersService) {
         this.businessLogger = businessLogger;
+        this.fileImporter = fileImporter;
         this.minioAdapter = minioAdapter;
         this.raoParametersService = raoParametersService;
-        this.fileImporter = fileImporter;
     }
 
     record RequestResult(HourlyRaoRequest raoRequest, HourlyRaoResult raoResult) {
-    }
-
-    public void initializeTaskFromAutomatedLaunch(InternalCoreCCRequest coreCCRequest) {
-        splitRaoRequest(coreCCRequest);
     }
 
     /**
@@ -95,7 +94,7 @@ public class CoreCCPreProcessService {
      * matches one of the list's timestamps.
      * - specific RAO parameters to be overloaded.
      */
-    private void splitRaoRequest(final InternalCoreCCRequest coreCCRequest) {
+    public void initializeTaskFromAutomatedLaunch(final InternalCoreCCRequest coreCCRequest) {
         final String destinationKey = NamingRules.getDestinationKey(coreCCRequest.getTimestamp());
         final String destinationPath = generateResultDestinationPath(destinationKey);
         // artifacts will be area-specific (continental/SEM) but outputs do not depend on the area,
@@ -177,15 +176,15 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private RequestResult getRequestAndResult(final InternalCoreCCRequest coreCCRequest,
-                                              final Instant utcInstant,
-                                              final CgmsAndXmlHeader dcCgmsAndXmlHeader,
-                                              final CgmsAndXmlHeader cgmsAndXmlHeader,
-                                              final CoreCCTaskParameters parameters,
-                                              final String destinationKey,
-                                              final String raoParametersFileUrl,
-                                              final String destinationPath,
-                                              final boolean isSem) {
+    RequestResult getRequestAndResult(final InternalCoreCCRequest coreCCRequest,
+                                      final Instant utcInstant,
+                                      final CgmsAndXmlHeader dcCgmsAndXmlHeader,
+                                      final CgmsAndXmlHeader cgmsAndXmlHeader,
+                                      final CoreCCTaskParameters parameters,
+                                      final String destinationKey,
+                                      final String raoParametersFileUrl,
+                                      final String destinationPath,
+                                      final boolean isSem) {
         HourlyRaoRequest raoRequest;
         HourlyRaoResult raoResult = null;
 
@@ -287,11 +286,11 @@ public class CoreCCPreProcessService {
         return CoreNetworkImporterWrapper.loadNetwork(cgmPath);
     }
 
-    private String uploadIidmNetwork(final String destinationKey,
-                                     final Path cgmPath,
-                                     final Network network,
-                                     final String prefix,
-                                     final Instant utcInstant) {
+    String uploadIidmNetwork(final String destinationKey,
+                             final Path cgmPath,
+                             final Network network,
+                             final String prefix,
+                             final Instant utcInstant) {
         final String initialCgmFilename = cgmPath.getFileName().toString();
         final String tmpFilename = initialCgmFilename.replaceAll("(?i)" + UCT_EXTENSION, XIIDM_EXTENSION);
         final Path tmpFilePath = Paths.get(cgmPath.toString().replace(initialCgmFilename, String.format(PREFIXED_FILENAME_FORMAT, prefix, tmpFilename))); //NOSONAR
@@ -308,11 +307,11 @@ public class CoreCCPreProcessService {
         return iidmNetworkDestinationPath;
     }
 
-    private String uploadJsonCrac(final InternalCoreCCRequest coreCCRequest,
-                                  final String destinationKey,
-                                  final String prefix,
-                                  final Instant utcInstant,
-                                  final Network network) {
+    String uploadJsonCrac(final InternalCoreCCRequest coreCCRequest,
+                          final String destinationKey,
+                          final String prefix,
+                          final Instant utcInstant,
+                          final Network network) {
         final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().url(), OffsetDateTime.parse(utcInstant.toString()), network);
         try (final ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
@@ -334,9 +333,9 @@ public class CoreCCPreProcessService {
         }
     }
 
-    private void sendRaoRequestAcknowledgment(final InternalCoreCCRequest coreCCRequest,
-                                              final String destinationKey,
-                                              final RequestMessage receivedRequestMessage) {
+    void sendRaoRequestAcknowledgment(final InternalCoreCCRequest coreCCRequest,
+                                      final String destinationKey,
+                                      final RequestMessage receivedRequestMessage) {
         final ResponseMessage responseMessage = buildRaoRequestAckResponseMessage(coreCCRequest, receivedRequestMessage);
         exportRaoRequestAcknowledgment(responseMessage, coreCCRequest, destinationKey);
     }
