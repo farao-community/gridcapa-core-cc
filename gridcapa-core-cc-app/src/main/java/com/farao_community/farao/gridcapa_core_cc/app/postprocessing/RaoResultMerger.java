@@ -5,8 +5,9 @@
  *  file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package com.farao_community.farao.gridcapa_core_cc.app.util;
+package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
+import com.farao_community.farao.gridcapa_core_cc.app.util.NetworkUtil;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.glsk.commons.ZonalData;
