@@ -13,7 +13,6 @@ import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCReq
 import com.farao_community.farao.gridcapa_core_cc.app.entities.CgmsAndXmlHeader;
 import com.farao_community.farao.gridcapa_core_cc.app.services.FileImporter;
 import com.farao_community.farao.gridcapa_core_cc.app.util.CoreNetworkImporterWrapper;
-import com.farao_community.farao.gridcapa_core_cc.app.util.RaoResultMerger;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.glsk.commons.ZonalData;
 import com.powsybl.iidm.network.Network;
