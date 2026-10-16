@@ -304,7 +304,7 @@ class CoreCCPreProcessServiceTest {
         final Path cracJsonFilePath = Paths.get(getClass().getResource("/util/crac.json").getPath());
         final Crac crac = Crac.read(cracJsonFilePath.getFileName().toString(), java.nio.file.Files.newInputStream(cracJsonFilePath), network);
         final FbConstraintCreationContext cracCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        when(fileImporter.importCbcora(any(), any(), any())).thenReturn(cracCreationContext);
+        when(fileImporter.importCbcora(any(), any(), any(), any())).thenReturn(cracCreationContext);
         when(cracCreationContext.getCrac()).thenReturn(crac);
     }
 
@@ -396,7 +396,7 @@ class CoreCCPreProcessServiceTest {
         final CoreCCPreProcessService.RequestResult requestAndResult = coreCCPreProcessService.getRequestAndResult(
             null,
             utcInstant,
-            null, null, null, null, null,
+            null, null, null, null, null, null,
             destinationPath,
             isSem
         );
@@ -444,12 +444,13 @@ class CoreCCPreProcessServiceTest {
             cracCreationParameters,
             dcNetwork
         );
-        Mockito.when(fileImporter.importCbcora(anyString(), any(), any())).thenReturn(cracCreationContext);
+        Mockito.when(fileImporter.importCbcora(anyString(), any(), any(), any())).thenReturn(cracCreationContext);
         final Instant utcInstant = offsetDateTime.toInstant();
         final CgmsAndXmlHeader dcCgmsAndXmlHeader = Mockito.mock(CgmsAndXmlHeader.class);
         final Path dcCgmPath = Path.of(getClass().getResource("/sem-integration/core_sem_fake_network.uct").getPath());
         Mockito.when(dcCgmsAndXmlHeader.getNetworkPath(utcInstant)).thenReturn(dcCgmPath);
         final CgmsAndXmlHeader cgmsAndXmlHeader = null;
+        final VirtualHubsConfiguration virtualHubsConfiguration = Mockito.mock(VirtualHubsConfiguration.class);
         final CoreCCTaskParameters parameters = new CoreCCTaskParameters(createTaskParametersList(true));
         final String destinationKey = "destinationKey";
         final String raoParametersFileUrl = "/sem-integration/rao-parameters.json";
@@ -474,6 +475,7 @@ class CoreCCPreProcessServiceTest {
             utcInstant,
             dcCgmsAndXmlHeader,
             cgmsAndXmlHeader,
+            virtualHubsConfiguration,
             parameters,
             destinationKey,
             raoParametersFileUrl,
@@ -597,7 +599,7 @@ class CoreCCPreProcessServiceTest {
         Mockito.when(coreCCRequest.getCbcora()).thenReturn(new CoreCCFileResource("cbcoraFilename", "cbcoraUrl"));
 
         final FbConstraintCreationContext fbConstraintCreationContext = mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(eq("cbcoraUrl"), any(), eq(network))).thenReturn(fbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(eq("cbcoraUrl"), any(), eq(network), any())).thenReturn(fbConstraintCreationContext);
         final Crac crac = mock(Crac.class);
         Mockito.when(fbConstraintCreationContext.getCrac()).thenReturn(crac);
         Mockito.doAnswer(invocationOnMock -> {
@@ -607,7 +609,7 @@ class CoreCCPreProcessServiceTest {
         }).when(crac).write(eq("JSON"), any());
 
         // When
-        coreCCPreProcessService.uploadJsonCrac(coreCCRequest, "destinationKey", "prefix", offsetDateTime.toInstant(), network);
+        coreCCPreProcessService.uploadJsonCrac(coreCCRequest, "destinationKey", "prefix", offsetDateTime.toInstant(), network, null);
 
         // Then
         final ArgumentCaptor<String> destinationCaptor = ArgumentCaptor.forClass(String.class);

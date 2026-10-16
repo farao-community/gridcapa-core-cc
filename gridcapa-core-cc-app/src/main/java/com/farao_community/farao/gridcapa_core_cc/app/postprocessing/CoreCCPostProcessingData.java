@@ -12,6 +12,7 @@ import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 
 /**
  * @author Vincent Bochet {@literal <vincent.bochet at rte-france.com>}
@@ -21,6 +22,7 @@ public class CoreCCPostProcessingData {
     private Network acNetwork;
     private String initialAcNetworkVariantId;
     private Network dcNetwork;
+    private VirtualHubsConfiguration virtualHubsConfiguration;
     private FbConstraintCreationContext cracCreationContext;
     private FbConstraintCreationContext continentalCracCreationContext;
     private FbConstraintCreationContext semCracCreationContext;
@@ -73,6 +75,14 @@ public class CoreCCPostProcessingData {
 
     public void setInitialAcNetworkVariantId(final String initialAcNetworkVariantId) {
         this.initialAcNetworkVariantId = initialAcNetworkVariantId;
+    }
+
+    public VirtualHubsConfiguration getVirtualHubsConfiguration() {
+        return virtualHubsConfiguration;
+    }
+
+    public void setVirtualHubsConfiguration(final VirtualHubsConfiguration virtualHubsConfiguration) {
+        this.virtualHubsConfiguration = virtualHubsConfiguration;
     }
 
     public FbConstraintCreationContext getCracCreationContext() {

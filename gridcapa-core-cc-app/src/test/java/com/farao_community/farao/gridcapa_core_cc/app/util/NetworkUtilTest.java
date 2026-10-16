@@ -7,7 +7,6 @@
 
 package com.farao_community.farao.gridcapa_core_cc.app.util;
 
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.LoadType;
 import com.powsybl.iidm.network.Network;
 import org.assertj.core.api.Assertions;

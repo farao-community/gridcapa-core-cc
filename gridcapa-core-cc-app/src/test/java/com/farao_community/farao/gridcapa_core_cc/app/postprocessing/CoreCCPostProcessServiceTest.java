@@ -27,6 +27,7 @@ import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -149,8 +150,10 @@ class CoreCCPostProcessServiceTest {
         Mockito.when(continentalHourlyRaoRequest.getNetworkFileUrl()).thenReturn("continentalNetworkUrl");
         final Network continentalNetwork = Mockito.mock(Network.class);
         Mockito.when(fileImporter.importNetwork("continentalNetworkUrl")).thenReturn(continentalNetwork);
+        final VirtualHubsConfiguration virtualHubsConfiguration = Mockito.mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(virtualHubFile)).thenReturn(virtualHubsConfiguration);
         final FbConstraintCreationContext continentalFbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, continentalNetwork)).thenReturn(continentalFbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, continentalNetwork, virtualHubsConfiguration)).thenReturn(continentalFbConstraintCreationContext);
         final Crac continentalCrac = Mockito.mock(Crac.class);
         Mockito.when(continentalFbConstraintCreationContext.getCrac()).thenReturn(continentalCrac);
         final RaoResult raoResult = Mockito.mock(RaoResult.class);
@@ -178,8 +181,11 @@ class CoreCCPostProcessServiceTest {
     void testWithContinentalAndSemData() {
         internalCoreCCRequest.setSemEnabled(true);
 
+        final VirtualHubsConfiguration virtualHubsConfiguration = Mockito.mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(virtualHubFile)).thenReturn(virtualHubsConfiguration);
+
         final FbConstraintCreationContext fullFbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, dcCgmNetwork)).thenReturn(fullFbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, dcCgmNetwork, virtualHubsConfiguration)).thenReturn(fullFbConstraintCreationContext);
         final Crac fullCrac = Mockito.mock(Crac.class);
         Mockito.when(fullFbConstraintCreationContext.getCrac()).thenReturn(fullCrac);
 
@@ -206,7 +212,7 @@ class CoreCCPostProcessServiceTest {
         final Network continentalNetwork = Mockito.mock(Network.class);
         Mockito.when(fileImporter.importNetwork("continentalNetworkUrl")).thenReturn(continentalNetwork);
         final FbConstraintCreationContext continentalFbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, continentalNetwork)).thenReturn(continentalFbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, continentalNetwork, virtualHubsConfiguration)).thenReturn(continentalFbConstraintCreationContext);
         final Crac continentalCrac = Mockito.mock(Crac.class);
         Mockito.when(continentalFbConstraintCreationContext.getCrac()).thenReturn(continentalCrac);
         final RaoResult continentalRaoResult = Mockito.mock(RaoResult.class);
@@ -215,7 +221,7 @@ class CoreCCPostProcessServiceTest {
         final Network semNetwork = Mockito.mock(Network.class);
         Mockito.when(fileImporter.importNetwork("semNetworkUrl")).thenReturn(semNetwork);
         final FbConstraintCreationContext semFbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, semNetwork)).thenReturn(semFbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, semNetwork, virtualHubsConfiguration)).thenReturn(semFbConstraintCreationContext);
         final Crac semCrac = Mockito.mock(Crac.class);
         Mockito.when(semFbConstraintCreationContext.getCrac()).thenReturn(semCrac);
         final RaoResult semRaoResult = Mockito.mock(RaoResult.class);
@@ -256,6 +262,9 @@ class CoreCCPostProcessServiceTest {
     void testWithSemDataAndFailedContinentalData() {
         internalCoreCCRequest.setSemEnabled(true);
 
+        final VirtualHubsConfiguration virtualHubsConfiguration = Mockito.mock(VirtualHubsConfiguration.class);
+        Mockito.when(fileImporter.importVirtualHubs(virtualHubFile)).thenReturn(virtualHubsConfiguration);
+
         final HourlyRaoResult continentalHourlyRaoResult = Mockito.mock(HourlyRaoResult.class);
         internalCoreCCRequest.setContinentalHourlyRaoResult(continentalHourlyRaoResult);
         Mockito.when(continentalHourlyRaoResult.getStatus()).thenReturn(HourlyRaoResultStatus.FAILURE);
@@ -277,7 +286,7 @@ class CoreCCPostProcessServiceTest {
         final Network semNetwork = Mockito.mock(Network.class);
         Mockito.when(fileImporter.importNetwork("semNetworkUrl")).thenReturn(semNetwork);
         final FbConstraintCreationContext semFbConstraintCreationContext = Mockito.mock(FbConstraintCreationContext.class);
-        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, semNetwork)).thenReturn(semFbConstraintCreationContext);
+        Mockito.when(fileImporter.importCbcora(cbcoraFile.url(), timestamp, semNetwork, virtualHubsConfiguration)).thenReturn(semFbConstraintCreationContext);
         final Crac semCrac = Mockito.mock(Crac.class);
         Mockito.when(semFbConstraintCreationContext.getCrac()).thenReturn(semCrac);
         final RaoResult semRaoResult = Mockito.mock(RaoResult.class);

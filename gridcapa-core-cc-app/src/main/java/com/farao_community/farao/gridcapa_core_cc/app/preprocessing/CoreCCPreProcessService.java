@@ -141,12 +141,12 @@ public class CoreCCPreProcessService {
             sendRaoRequestAcknowledgment(coreCCRequest, NamingRules.getAckDestinationKey(coreCCRequest.getTimestamp()), raoRequestMessage);
 
             continentalRequestResult = getRequestAndResult(
-                coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, false
+                coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, virtualHubsConfiguration, parameters, destinationKey, raoParametersFileUrl, destinationPath, false
             );
 
             if (coreCCRequest.isSemEnabled()) {
                 semRequestResult = getRequestAndResult(
-                    coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, parameters, destinationKey, raoParametersFileUrl, destinationPath, true
+                    coreCCRequest, utcInstant, dcCgmsAndXmlHeader, cgmsAndXmlHeader, virtualHubsConfiguration, parameters, destinationKey, raoParametersFileUrl, destinationPath, true
                 );
             }
         } else {
@@ -180,6 +180,7 @@ public class CoreCCPreProcessService {
                                       final Instant utcInstant,
                                       final CgmsAndXmlHeader dcCgmsAndXmlHeader,
                                       final CgmsAndXmlHeader cgmsAndXmlHeader,
+                                      final VirtualHubsConfiguration virtualHubsConfiguration,
                                       final CoreCCTaskParameters parameters,
                                       final String destinationKey,
                                       final String raoParametersFileUrl,
@@ -200,7 +201,7 @@ public class CoreCCPreProcessService {
                 NetworkUtil.CONTINENTAL_NETWORK_REDUCER.reduce(network);
             }
             final String networkFileUrl = uploadIidmNetwork(destinationKey, cgmPath, network, areaIdentifier, utcInstant);
-            final String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, areaIdentifier, utcInstant, network);
+            final String jsonCracFileUrl = uploadJsonCrac(coreCCRequest, destinationKey, areaIdentifier, utcInstant, network, virtualHubsConfiguration);
 
             raoRequest = new HourlyRaoRequest(
                 minioAdapter,
@@ -311,8 +312,9 @@ public class CoreCCPreProcessService {
                           final String destinationKey,
                           final String prefix,
                           final Instant utcInstant,
-                          final Network network) {
-        final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().url(), OffsetDateTime.parse(utcInstant.toString()), network);
+                          final Network network,
+                          final VirtualHubsConfiguration virtualHubsConfiguration) {
+        final CracCreationContext cracCreationContext = fileImporter.importCbcora(coreCCRequest.getCbcora().url(), OffsetDateTime.parse(utcInstant.toString()), network, virtualHubsConfiguration);
         try (final ByteArrayOutputStream cracByteArrayOutputStream = new ByteArrayOutputStream()) {
             cracCreationContext.getCrac().write(JSON_CRAC_PROVIDER, cracByteArrayOutputStream);
             final String filename = NamingRules.UTC_HOURLY_NAME_FORMATTER.format(utcInstant).concat(NamingRules.JSON_EXTENSION);

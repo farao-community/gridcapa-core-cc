@@ -24,6 +24,7 @@ import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import com.powsybl.sensitivity.SensitivityVariableSet;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.assertj.core.api.Assertions;
@@ -91,6 +92,9 @@ class RaoResultMergerTest {
         final CoreCCFileResource refProgFileResource = new CoreCCFileResource(
             "20260326-F120-v1-17XTSO-CS------W-to-22XCORESO------S.xml",
             getClass().getResource("/sem-integration/rao-results-merging/20260326-F120-v1-17XTSO-CS------W-to-22XCORESO------S.xml").getPath());
+        final CoreCCFileResource virtualHubsFileResource = new CoreCCFileResource(
+            "20260326-F327-v1-17XTSO-CS------W-to-22XCORESO------S.xml",
+            getClass().getResource("/sem-integration/rao-results-merging/20260326-F327-v1-17XTSO-CS------W-to-22XCORESO------S.xml").getPath());
         final TaskParameterDto taskParameterDto = new TaskParameterDto("USE_DC_CGM_INPUT", "BOOLEAN", "TRUE", "TRUE");
         final CoreCCRequest coreCCRequestEntity = new CoreCCRequest(
             "id", "current RunID",
@@ -131,6 +135,10 @@ class RaoResultMergerTest {
         final String raoParametersFileUrl = getClass().getResource(raoParametersPath).getPath().toString();
         Mockito.when(minioAdapter.getFile(raoParametersFileUrl)).thenAnswer(x -> getClass().getResourceAsStream(raoParametersPath));
 
+        final String virtualHubsPath = "/sem-integration/rao-results-merging/20260326-F327-v1-17XTSO-CS------W-to-22XCORESO------S.xml";
+        final String virtualHubsFileUrl = getClass().getResource(virtualHubsPath).getPath().toString();
+        Mockito.when(urlValidationService.openUrlStream(virtualHubsFileUrl)).thenAnswer(x -> getClass().getResourceAsStream(virtualHubsPath));
+
         final String cbcoraPath = "/sem-integration/rao-results-merging/20260326-F301-v1-17XTSO-CS------W-to-22XCORESO------S.xml";
         final String cbcoraFileUrl = getClass().getResource(cbcoraPath).getPath().toString();
         Mockito.when(urlValidationService.openUrlStream(cbcoraFileUrl)).thenAnswer(x -> getClass().getResourceAsStream(cbcoraPath));
@@ -159,7 +167,8 @@ class RaoResultMergerTest {
                                                     semRaoResultFileUrl);
         final Network fullAcNetwork = importNetworkFromZip(cgmFileResource, "2026-03-25T23:00:00Z");
         final Network fullDcNetwork = importNetworkFromZip(dcCgmFileResource, "2026-03-25T23:00:00Z");
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFileUrl, OffsetDateTime.parse("2026-03-25T23:00:00Z"), fullDcNetwork);
+        final VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(virtualHubsFileResource);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFileUrl, OffsetDateTime.parse("2026-03-25T23:00:00Z"), fullDcNetwork, virtualHubsConfiguration);
         final Crac fullCrac = fbConstraintCreationContext.getCrac();
         final ReferenceProgram refProg = fileImporter.importReferenceProgram(refProgFileResource, OffsetDateTime.parse("2026-03-25T23:00:00Z"));
         final ZonalData<SensitivityVariableSet> glskProvider = fileImporter.importGlsk(glskFileUrl, OffsetDateTime.parse("2026-03-25T23:00:00Z"), fullDcNetwork);

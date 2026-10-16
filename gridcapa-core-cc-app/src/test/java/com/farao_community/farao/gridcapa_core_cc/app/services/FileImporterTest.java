@@ -15,6 +15,8 @@ import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext;
 import com.powsybl.openrao.data.raoresult.api.ComputationStatus;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
+import com.powsybl.openrao.virtualhubs.xml.XmlVirtualHubsConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -46,10 +48,11 @@ class FileImporterTest {
 
     @Test
     void importCbcora() {
+        final VirtualHubsConfiguration virtualHubsConfiguration = XmlVirtualHubsConfiguration.importConfiguration(getClass().getResourceAsStream(testDirectory + "/20210723-F327-fake.xml"));
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network, virtualHubsConfiguration);
         final Crac crac = fbConstraintCreationContext.getCrac();
         Assertions.assertNotNull(crac);
         assertEquals("17XTSO-CS------W-20190108-F301v1", crac.getId());
@@ -77,10 +80,11 @@ class FileImporterTest {
         final String raoResultFileName = "raoResult.json";
         final String raoResultUrl = getClass().getResource(testDirectory + "/" + raoResultFileName).toExternalForm();
 
+        final VirtualHubsConfiguration virtualHubsConfiguration = XmlVirtualHubsConfiguration.importConfiguration(getClass().getResourceAsStream(testDirectory + "/20210723-F327-fake.xml"));
         final InputStream networkStream = getClass().getResourceAsStream(testDirectory + "/20210723_0030_2D5_CGM.uct");
         final Network network = Network.read("20210723_0030_2D5_CGM.uct", networkStream);
         final CoreCCFileResource cbcoraFile = createFileResource("cbcora", getClass().getResource(testDirectory + "/20210723-F301_CBCORA_hvdcvh-outage.xml"));
-        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network);
+        final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(cbcoraFile.url(), dateTime, network, virtualHubsConfiguration);
         final Crac crac = fbConstraintCreationContext.getCrac();
 
         final RaoResult raoResult = fileImporter.importRaoResult(raoResultUrl, crac);

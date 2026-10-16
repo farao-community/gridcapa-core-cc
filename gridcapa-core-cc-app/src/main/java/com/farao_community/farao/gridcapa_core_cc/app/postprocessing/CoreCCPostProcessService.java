@@ -21,6 +21,7 @@ import com.powsybl.openrao.data.crac.io.fbconstraint.FbConstraintCreationContext
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.data.refprog.referenceprogram.ReferenceProgram;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.virtualhubs.VirtualHubsConfiguration;
 import com.powsybl.sensitivity.SensitivityVariableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,9 @@ public class CoreCCPostProcessService {
         final Network dcNetwork = importNetworkFromZip(coreCCRequest.getDcCgm(), postProcessingData.getRaoRequestInstant());
         postProcessingData.setDcNetwork(dcNetwork);
 
+        final VirtualHubsConfiguration virtualHubsConfiguration = fileImporter.importVirtualHubs(coreCCRequest.getVirtualHub());
+        postProcessingData.setVirtualHubsConfiguration(virtualHubsConfiguration);
+
         // Area-related CRACs are needed for RAO results import and/or RAO results merging
         final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
         if (continentalHourlyRaoResult != null && TS_PREPROCESSING_FAILURE != continentalHourlyRaoResult.getErrorCode()) {
@@ -97,7 +101,8 @@ public class CoreCCPostProcessService {
             final FbConstraintCreationContext continentalFbConstraintCreationContext = fileImporter.importCbcora(
                 coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
-                continentalNetwork
+                continentalNetwork,
+                virtualHubsConfiguration
             );
             postProcessingData.setContinentalCracCreationContext(continentalFbConstraintCreationContext);
         }
@@ -108,7 +113,8 @@ public class CoreCCPostProcessService {
             final FbConstraintCreationContext semFbConstraintCreationContext = fileImporter.importCbcora(
                 coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
-                semNetwork
+                semNetwork,
+                virtualHubsConfiguration
             );
             postProcessingData.setSemCracCreationContext(semFbConstraintCreationContext);
         }
@@ -139,7 +145,8 @@ public class CoreCCPostProcessService {
             final FbConstraintCreationContext fbConstraintCreationContext = fileImporter.importCbcora(
                 coreCCRequest.getCbcora().url(),
                 coreCCRequest.getTimestamp(),
-                postProcessingData.getDcNetwork()
+                postProcessingData.getDcNetwork(),
+                postProcessingData.getVirtualHubsConfiguration()
             );
             postProcessingData.setCracCreationContext(fbConstraintCreationContext);
 
