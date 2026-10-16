@@ -48,17 +48,17 @@ public class CoreCCRequest {
     private final List<TaskParameterDto> taskParameterList;
 
     @JsonCreator
-    public CoreCCRequest(@JsonProperty("id") String id,
-                         @JsonProperty("currentRunId") String currentRunId,
-                         @JsonProperty("timestamp") OffsetDateTime timestamp,
-                         @JsonProperty("cgm") CoreCCFileResource cgm,
-                         @JsonProperty("dcgm") CoreCCFileResource dcCgm,
-                         @JsonProperty("cbcora") CoreCCFileResource cbcora,
-                         @JsonProperty("glsk") CoreCCFileResource glsk,
-                         @JsonProperty("refProg") CoreCCFileResource refProg,
-                         @JsonProperty("raoRequest") CoreCCFileResource raoRequest,
-                         @JsonProperty("virtualHub") CoreCCFileResource virtualHub,
-                         @JsonProperty("launchedAutomatically") boolean launchedAutomatically,
+    public CoreCCRequest(@JsonProperty("id") final String id,
+                         @JsonProperty("currentRunId") final String currentRunId,
+                         @JsonProperty("timestamp") final OffsetDateTime timestamp,
+                         @JsonProperty("cgm") final CoreCCFileResource cgm,
+                         @JsonProperty("dcgm") final CoreCCFileResource dcCgm,
+                         @JsonProperty("cbcora") final CoreCCFileResource cbcora,
+                         @JsonProperty("glsk") final CoreCCFileResource glsk,
+                         @JsonProperty("refProg") final CoreCCFileResource refProg,
+                         @JsonProperty("raoRequest") final CoreCCFileResource raoRequest,
+                         @JsonProperty("virtualHub") final CoreCCFileResource virtualHub,
+                         @JsonProperty("launchedAutomatically") final boolean launchedAutomatically,
                          @JsonProperty("taskParameterList") final List<TaskParameterDto> taskParameterList) {
         this.id = id;
         this.currentRunId = currentRunId;
@@ -74,17 +74,17 @@ public class CoreCCRequest {
         this.taskParameterList = taskParameterList;
     }
 
-    public CoreCCRequest(String id,
-                         String currentRunId,
-                         OffsetDateTime timestamp,
-                         CoreCCFileResource cgm,
-                         CoreCCFileResource dcCgm,
-                         CoreCCFileResource cbcora,
-                         CoreCCFileResource glsk,
-                         CoreCCFileResource refProg,
-                         CoreCCFileResource raoRequest,
-                         CoreCCFileResource virtualHub,
-                         List<TaskParameterDto> taskParameterList) {
+    public CoreCCRequest(final String id,
+                         final String currentRunId,
+                         final OffsetDateTime timestamp,
+                         final CoreCCFileResource cgm,
+                         final CoreCCFileResource dcCgm,
+                         final CoreCCFileResource cbcora,
+                         final CoreCCFileResource glsk,
+                         final CoreCCFileResource refProg,
+                         final CoreCCFileResource raoRequest,
+                         final CoreCCFileResource virtualHub,
+                         final List<TaskParameterDto> taskParameterList) {
         this(id, currentRunId, timestamp, cgm, dcCgm, cbcora, glsk, refProg, raoRequest, virtualHub, false, taskParameterList);
     }
 
@@ -140,5 +140,4 @@ public class CoreCCRequest {
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-
 }

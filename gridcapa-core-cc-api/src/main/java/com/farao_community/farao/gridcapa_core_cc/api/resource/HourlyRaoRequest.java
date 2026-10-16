@@ -30,15 +30,15 @@ public class HourlyRaoRequest {
     @Value("${core-cc-runner.async-time-out}")
     private long raoTimeOut;
 
-    public HourlyRaoRequest(MinioAdapter minioAdapter,
-                            String raoRequestInstant,
-                            String networkFileUrl,
-                            String cbFileUrl,
-                            String refprogFileUrl,
-                            String virtualHubsConfigurationFileUrl,
-                            String realGlskFileUrl,
-                            String raoParametersFileUrl,
-                            String resultsDestination) {
+    public HourlyRaoRequest(final MinioAdapter minioAdapter,
+                            final String raoRequestInstant,
+                            final String networkFileUrl,
+                            final String cbFileUrl,
+                            final String refprogFileUrl,
+                            final String virtualHubsConfigurationFileUrl,
+                            final String realGlskFileUrl,
+                            final String raoParametersFileUrl,
+                            final String resultsDestination) {
         this.minioAdapter = minioAdapter;
         this.raoRequestInstant = raoRequestInstant;
         this.networkFileUrl = networkFileUrl;
@@ -70,26 +70,26 @@ public class HourlyRaoRequest {
         return resultsDestination;
     }
 
-    public RaoRequest toRaoRequest(String id, String runId) {
-        String resultsDestinationUrl = "CORE/CC/";
+    public RaoRequest toRaoRequest(final String id, final String runId, final String prefix) {
+        final String resultsDestinationUrl = "CORE/CC/";
         return new RaoRequest.RaoRequestBuilder()
-                .withId(id)
-                .withRunId(runId)
-                .withInstant(this.raoRequestInstant)
-                .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
-                .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))
-                .withRefprogFileUrl(this.refprogFileUrl)
-                .withRealGlskFileUrl(this.realGlskFileUrl)
-                .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
-                .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
-                .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
-                .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
-                .build();
+            .withId(id)
+            .withRunId(runId)
+            .withInstant(this.raoRequestInstant)
+            .withNetworkFileUrl(minioAdapter.generatePreSignedUrl(this.networkFileUrl))
+            .withCracFileUrl(minioAdapter.generatePreSignedUrl(this.cracFileUrl))
+            .withRefprogFileUrl(this.refprogFileUrl)
+            .withRealGlskFileUrl(this.realGlskFileUrl)
+            .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
+            .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
+            .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
+            .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
+            .withEventPrefix(prefix)
+            .build();
     }
 
     @Override
-    public boolean equals(Object o) {
-
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
@@ -108,5 +108,4 @@ public class HourlyRaoRequest {
     public int hashCode() {
         return Objects.hash(raoRequestInstant);
     }
-
 }
