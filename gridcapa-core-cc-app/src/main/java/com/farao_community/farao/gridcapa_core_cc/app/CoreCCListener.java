@@ -77,7 +77,7 @@ public class CoreCCListener {
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
             final HourlyRaoResultStatus continentalStatus = internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus();
-            final HourlyRaoResultStatus semStatus = internalCoreCCRequest.getContinentalHourlyRaoResult() != null ? internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus() : null;
+            final HourlyRaoResultStatus semStatus = internalCoreCCRequest.getSemHourlyRaoResult() != null ? internalCoreCCRequest.getSemHourlyRaoResult().getStatus() : null;
             updateTaskStatus(internalCoreCCRequest.getId(), continentalStatus, semStatus, coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
             logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);

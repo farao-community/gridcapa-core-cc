@@ -326,7 +326,7 @@ class CoreCCPreProcessServiceTest {
             Assertions.assertThat(semHourlyRaoRequest.getRaoParametersFileUrl()).isEqualTo(raoParametersFileUrl);
             Assertions.assertThat(semHourlyRaoRequest.getResultsDestination()).isEqualTo("RAO_WORKING_DIR/20240625_0800/hourly_rao_results/sem");
             //In nominal case, hourly rao result remains empty
-            Assertions.assertThat(coreCCRequest.getContinentalHourlyRaoResult()).isNull();
+            Assertions.assertThat(coreCCRequest.getSemHourlyRaoResult()).isNull();
         }
     }
 

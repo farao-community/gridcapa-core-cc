@@ -8,7 +8,6 @@ package com.farao_community.farao.gridcapa_core_cc.app.postprocessing;
 
 import com.farao_community.farao.gridcapa_core_cc.api.exception.CoreCCInternalException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCMetadata;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.util.IntervalUtil;
@@ -76,9 +75,9 @@ public class FileExporterHelper {
         final Network network = postProcessingData.getAcNetwork();
         final VariantManager networkVariantManager = network.getVariantManager();
         final String workingVariant = networkVariantManager.getWorkingVariantId();
-        networkVariantManager.setWorkingVariant(postProcessingData.getInitialAcNetworkVariantId());
         final String networkWithPraVariant = "networkWithPra";
         networkVariantManager.cloneVariant(postProcessingData.getInitialAcNetworkVariantId(), networkWithPraVariant);
+        networkVariantManager.setWorkingVariant(networkWithPraVariant);
         final State preventiveState = postProcessingData.getCrac().getPreventiveState();
 
         NetworkUtil.applyActivatedRemedialActionsForState(network, postProcessingData.getRaoResult(), preventiveState);
@@ -196,12 +195,11 @@ public class FileExporterHelper {
     }
 
     public void exportMetadataToMinioWhenPreProcessingFailed(final InternalCoreCCRequest coreCCRequest) {
-        final HourlyRaoRequest hourlyRaoRequest = coreCCRequest.getContinentalHourlyRaoRequest();
         final String raoRequestInstant = getRaoRequestInstantWhenPreProcessingFailed(coreCCRequest);
         final String coreCCRequestInstant = coreCCRequest.getTimestamp().toInstant().toString();
         LOGGER.info("Core CC task: '{}', creating Metadata result when preProcessing failed (for coreCCRequest with timestamp: '{}')", coreCCRequest.getId(), coreCCRequest.getTimestamp());
 
-        buildAndExportMetadata(hourlyRaoRequest.getResultsDestination(), coreCCRequestInstant, raoRequestInstant, coreCCRequest);
+        buildAndExportMetadata(coreCCRequest.getDestinationPath(), coreCCRequestInstant, raoRequestInstant, coreCCRequest);
     }
 
     private void buildAndExportMetadata(final String postProcessingData,

@@ -45,9 +45,10 @@ class CoreCCPostProcessingDataTest {
         internalCoreCCRequest.setSemHourlyRaoRequest(semHourlyRaoRequest);
         Assertions.assertThat(data.getRaoRequestInstant()).isEqualTo("semInstant");
 
+        // With Continental and SEM, Continental instant is used preferably
         final HourlyRaoRequest continentalHourlyRaoRequest = Mockito.mock(HourlyRaoRequest.class);
         Mockito.when(continentalHourlyRaoRequest.getRaoRequestInstant()).thenReturn("continentalInstant");
-        internalCoreCCRequest.setSemHourlyRaoRequest(continentalHourlyRaoRequest);
+        internalCoreCCRequest.setContinentalHourlyRaoRequest(continentalHourlyRaoRequest);
         Assertions.assertThat(data.getRaoRequestInstant()).isEqualTo("continentalInstant");
     }
 

@@ -257,7 +257,7 @@ class FileExporterHelperTest {
         // Then
         final ArgumentCaptor<InputStream> inputStreamArgumentCaptor = ArgumentCaptor.forClass(InputStream.class);
         Mockito.verify(minioAdapter, times(1)).uploadOutputForTimestamp(
-            Mockito.eq("/path/to/continental/destination/20261015_1230_METADATA-04.json"),
+            Mockito.eq("/path/to/destination/20261015_1230_METADATA-04.json"),
             inputStreamArgumentCaptor.capture(),
             Mockito.eq("CORE_CC"),
             Mockito.eq("METADATA"),
@@ -284,7 +284,7 @@ class FileExporterHelperTest {
         // Then
         final ArgumentCaptor<InputStream> inputStreamArgumentCaptor = ArgumentCaptor.forClass(InputStream.class);
         Mockito.verify(minioAdapter, times(1)).uploadOutputForTimestamp(
-            Mockito.eq("/path/to/continental/destination/20261015_1230_METADATA-04.json"),
+            Mockito.eq("/path/to/destination/20261015_1230_METADATA-04.json"),
             inputStreamArgumentCaptor.capture(),
             Mockito.eq("CORE_CC"),
             Mockito.eq("METADATA"),
@@ -312,7 +312,7 @@ class FileExporterHelperTest {
     }
 
     private void initializeContinentalHourlyRequestAndResultMocksForMetadata() {
-        Mockito.when(continentalHourlyRaoRequest.getResultsDestination()).thenReturn("/path/to/continental/destination");
+        Mockito.when(continentalHourlyRaoRequest.getResultsDestination()).thenReturn("/path/to/destination/continental");
         Mockito.when(continentalHourlyRaoRequest.getRaoRequestInstant()).thenReturn(timestamp.minusMinutes(10).toInstant().toString());
         Mockito.when(continentalHourlyRaoResult.getRaoRequestInstant()).thenReturn(timestamp.minusMinutes(10).toInstant().toString());
         Mockito.when(continentalHourlyRaoResult.getStatus()).thenReturn(HourlyRaoResultStatus.FAILURE);
@@ -323,7 +323,7 @@ class FileExporterHelperTest {
     }
 
     private void initializeSemHourlyRequestAndResultMocksForMetadata() {
-        Mockito.when(semHourlyRaoRequest.getResultsDestination()).thenReturn("/path/to/sem/destination");
+        Mockito.when(semHourlyRaoRequest.getResultsDestination()).thenReturn("/path/to/destination/sem");
         Mockito.when(semHourlyRaoRequest.getRaoRequestInstant()).thenReturn(timestamp.minusMinutes(30).toInstant().toString());
         Mockito.when(semHourlyRaoResult.getRaoRequestInstant()).thenReturn(timestamp.minusMinutes(30).toInstant().toString());
         Mockito.when(semHourlyRaoResult.getStatus()).thenReturn(HourlyRaoResultStatus.FAILURE);
