@@ -30,12 +30,12 @@ class JsonApiConverterTest {
         String inputMessage = Files.readString(Paths.get(getClass().getResource("/validRequest.json").toURI()));
         CoreCCRequest coreCCRequest = jsonApiConverter.fromJsonMessage(inputMessage.getBytes(), CoreCCRequest.class);
         assertEquals("id", coreCCRequest.getId());
-        assertEquals("cgm.txt", coreCCRequest.getCgm().getFilename());
-        assertEquals("https://cgm/file/url", coreCCRequest.getCgm().getUrl());
-        assertEquals("cbcora.txt", coreCCRequest.getCbcora().getFilename());
-        assertEquals("https://cbcora/file/url", coreCCRequest.getCbcora().getUrl());
-        assertEquals("glsk.txt", coreCCRequest.getGlsk().getFilename());
-        assertEquals("https://glsk/file/url", coreCCRequest.getGlsk().getUrl());
+        assertEquals("cgm.txt", coreCCRequest.getCgm().filename());
+        assertEquals("https://cgm/file/url", coreCCRequest.getCgm().url());
+        assertEquals("cbcora.txt", coreCCRequest.getCbcora().filename());
+        assertEquals("https://cbcora/file/url", coreCCRequest.getCbcora().url());
+        assertEquals("glsk.txt", coreCCRequest.getGlsk().filename());
+        assertEquals("https://glsk/file/url", coreCCRequest.getGlsk().url());
     }
 
     @Test

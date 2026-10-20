@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<GSKDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="gsk-document-05.xsd">
+  <DocumentIdentification v="17XTSO-CS------W-20260326F319v1" />
+  <DocumentVersion v="1"/>
+  <DocumentType v="B22" />
+  <ProcessType v="Z02"/>
+  <SenderIdentification codingScheme="A01" v="17XTSO-CS------W" />
+  <SenderRole v="A36" />
+  <ReceiverIdentification codingScheme="A01" v="22XCORESO------S" />
+  <ReceiverRole v="A04" />
+  <CreationDateTime v="2026-03-24T20:14:39Z" />
+  <GSKTimeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z" />
+  <Domain codingScheme="A01" v="10Y1001C--00059P"/>
+  <GSKSeries>
+    <TimeSeriesIdentification v="GSK_5" />
+    <BusinessType v="Z02" share="46" />
+    <Area codingScheme="A01" v="10YCB-GERMANY--8" />
+  </GSKSeries>
+</GSKDocument>

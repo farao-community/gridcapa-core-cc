@@ -15,12 +15,12 @@ import java.util.Objects;
  * @author Mohamed BenRejeb {@literal <mohamed.ben-rejeb at rte-france.com>}
  */
 public class HourlyRaoResult {
-    private String raoRequestInstant;
+    private final String raoRequestInstant;
 
     private String networkWithPraUrl;
     private String raoResultFileUrl;
-    private Status status = Status.PENDING;
-    private ErrorCode errorCode = ErrorCode.UNKNOWN_FAILURE;
+    private HourlyRaoResultStatus status = HourlyRaoResultStatus.PENDING;
+    private HourlyRaoResultErrorCode errorCode = HourlyRaoResultErrorCode.UNKNOWN_FAILURE;
     private String errorMessage;
     private Instant computationStartInstant =  Instant.ofEpochSecond(0);
     private Instant computationEndInstant =  Instant.ofEpochSecond(0);
@@ -45,34 +45,51 @@ public class HourlyRaoResult {
         this.errorMessage = errorMessage;
     }
 
-    public enum ErrorCode {
-        RUNNING("0"),
-        BD_PREPROCESSING_FAILURE("1"),
-        TS_PREPROCESSING_FAILURE("2"),
-        RAO_FAILURE("3"),
-        UNKNOWN_FAILURE("99");
-
-        private String code;
-
-        private ErrorCode(String code) {
-            this.code = code;
-        }
-
-        public String getCode() {
-            return code;
-        }
+    public String getRaoResultFileUrl() {
+        return raoResultFileUrl;
     }
 
-    public enum Status {
-        PENDING,
-        RUNNING,
-        SUCCESS,
-        FAILURE
+    public HourlyRaoResultErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    public String getErrorCodeString() {
+        return errorCode.getCode();
+    }
+
+    public void setErrorCode(HourlyRaoResultErrorCode errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public HourlyRaoResultStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(HourlyRaoResultStatus status) {
+        this.status = status;
+    }
+
+    public boolean isFailed() {
+        return status == HourlyRaoResultStatus.FAILURE;
+    }
+
+    public Instant getComputationStartInstant() {
+        return computationStartInstant;
+    }
+
+    public Instant getComputationEndInstant() {
+        return computationEndInstant;
+    }
+
+    public void setRaoResponseData(RaoSuccessResponse raoResponse) {
+        this.networkWithPraUrl = raoResponse.getNetworkWithPraFileUrl();
+        this.raoResultFileUrl = raoResponse.getRaoResultFileUrl();
+        this.computationStartInstant = raoResponse.getComputationStartInstant();
+        this.computationEndInstant = raoResponse.getComputationEndInstant();
     }
 
     @Override
-    public boolean equals(Object o) {
-
+    public boolean equals(final Object o) {
         if (o == this) {
             return true;
         }
@@ -91,40 +108,4 @@ public class HourlyRaoResult {
     public int hashCode() {
         return Objects.hash(raoRequestInstant);
     }
-
-    public String getRaoResultFileUrl() {
-        return raoResultFileUrl;
-    }
-
-    public String getErrorCodeString() {
-        return errorCode.getCode();
-    }
-
-    public void setErrorCode(ErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Instant getComputationStartInstant() {
-        return computationStartInstant;
-    }
-
-    public Instant getComputationEndInstant() {
-        return computationEndInstant;
-    }
-
-    public void setRaoResponseData(RaoSuccessResponse raoResponse) {
-        this.networkWithPraUrl = raoResponse.getNetworkWithPraFileUrl();
-        this.raoResultFileUrl = raoResponse.getRaoResultFileUrl();
-        this.computationStartInstant = raoResponse.getComputationStartInstant();
-        this.computationEndInstant = raoResponse.getComputationEndInstant();
-    }
-
 }

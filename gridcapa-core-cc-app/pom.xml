@@ -209,6 +209,10 @@
             <artifactId>powsybl-iidm-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-reducer</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.farao-community.farao</groupId>
             <artifactId>gridcapa-rao-runner-spring-boot-starter</artifactId>
         </dependency>

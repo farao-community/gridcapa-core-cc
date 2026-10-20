@@ -17,23 +17,12 @@ import java.util.Objects;
 /**
  * @author Ameni Walha {@literal <ameni.walha at rte-france.com>}
  */
-public class CoreCCFileResource {
-    private final String filename;
-    private final String url;
-
+public record CoreCCFileResource(String filename, String url) {
     @JsonCreator
-    public CoreCCFileResource(@JsonProperty("filename") String filename,
-                                 @JsonProperty("url") String url) {
+    public CoreCCFileResource(@JsonProperty("filename") final String filename,
+                              @JsonProperty("url") final String url) {
         this.filename = Objects.requireNonNull(filename);
         this.url = Objects.requireNonNull(url);
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public String getUrl() {
-        return url;
     }
 
     @Override

@@ -26,7 +26,8 @@ public class CgmsAndXmlHeader {
         ResponseItem instantResponseItem = xmlHeader.getPayload().getResponseItems().getResponseItem().stream()
             .filter(responseItem -> Interval.parse(responseItem.getTimeInterval()).contains(instant))
             .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("cannot find instant " + instant + " in cgm xml header time intervals"));
-        return networkPaths.stream().filter(p -> p.toString().contains(instantResponseItem.getFiles().getFile().get(0).getUrl().substring(11)))
+        return networkPaths.stream()
+            .filter(p -> p.toString().contains(instantResponseItem.getFiles().getFile().getFirst().getUrl().substring(11)))
             .findFirst().orElseThrow(() -> new CoreCCInvalidDataException("cannot find cgm for instant " + instant + " in zip folder"));
     }
 }
