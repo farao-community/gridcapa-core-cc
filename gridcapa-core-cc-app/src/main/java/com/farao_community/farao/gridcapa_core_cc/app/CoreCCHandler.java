@@ -77,7 +77,7 @@ public class CoreCCHandler {
         return TIMESTAMP_FORMATTER.format(coreCCRequest.getTimestamp());
     }
 
-    private void runRaoForAllAreas(final InternalCoreCCRequest coreCCRequest) {
+    void runRaoForAllAreas(final InternalCoreCCRequest coreCCRequest) {
         boolean semPreProcessingFailedOrDisabled = !coreCCRequest.isSemEnabled();
         if (coreCCRequest.isSemEnabled()) {
             semPreProcessingFailedOrDisabled = runRaoOnSemArea(coreCCRequest);
@@ -93,6 +93,16 @@ public class CoreCCHandler {
         } else if (allRaoFailed(coreCCRequest)) {
             // If the RAO failed, we can't generate output files. No fallback metadata file will be generated.
             LOGGER.info("All RAO failed. No output file will be generated.");
+        } else if (allAreasFailed(coreCCRequest)) {
+            // If preprocessing failed for one area and RAO failed for the other area, we don't generate output files.
+            // No fallback metadata file will be generated.
+            final String continentalFailureType = coreCCRequest.getContinentalHourlyRaoResult().getErrorCode().name();
+            final String semFailureType = coreCCRequest.getSemHourlyRaoResult().getErrorCode().name();
+            LOGGER.info(
+                "All areas failed (continental: {} ; SEM: {}). No output file will be generated.",
+                continentalFailureType,
+                semFailureType
+            );
         } else {
             coreCCPostProcessService.convertAndSaveReceivedRaoResult(coreCCRequest);
         }
@@ -109,6 +119,16 @@ public class CoreCCHandler {
             && RAO_FAILURE == semHourlyRaoResult.getErrorCode();
 
         return continentalRaoFailed && semRaoFailedOrDisabled;
+    }
+
+    private static boolean allAreasFailed(final InternalCoreCCRequest coreCCRequest) {
+        final HourlyRaoResult continentalHourlyRaoResult = coreCCRequest.getContinentalHourlyRaoResult();
+        final HourlyRaoResult semHourlyRaoResult = coreCCRequest.getSemHourlyRaoResult();
+
+        final boolean continentalFailed = continentalHourlyRaoResult.isFailed();
+        final boolean semRaoFailedOrDisabled = semHourlyRaoResult == null || semHourlyRaoResult.isFailed();
+
+        return continentalFailed && semRaoFailedOrDisabled;
     }
 
     private boolean runRaoOnSemArea(final InternalCoreCCRequest coreCCRequest) {

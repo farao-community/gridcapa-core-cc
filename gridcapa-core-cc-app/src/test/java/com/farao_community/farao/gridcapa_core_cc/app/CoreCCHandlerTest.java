@@ -56,7 +56,7 @@ class CoreCCHandlerTest {
     private RaoRunnerService raoRunnerService;
 
     @Test
-    void handleCoreCCRequestTest() throws IOException {
+    void handleCoreCCRequestTest() {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
         RaoSuccessResponse raoResponse = new RaoSuccessResponse.Builder()
                 .withId("id")
