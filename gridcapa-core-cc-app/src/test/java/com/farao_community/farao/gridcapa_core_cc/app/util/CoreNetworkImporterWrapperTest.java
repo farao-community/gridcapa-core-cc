@@ -40,7 +40,7 @@ class CoreNetworkImporterWrapperTest {
         assertTrue(generator.isPresent());
         assertEquals("BBE1AA1 _generator", generator.get().getId());
         assertEquals(0, generator.get().getTargetP(), 1e-3);
-        assertEquals(0, generator.get().getTargetQ(), 1e-3);
+        assertEquals(0, generator.get().getLocalTargetQ(), 1e-3);
 
         // no load on node BBE2AA1 in the initial UCTE file
         Optional<Load> load = network.getBusBreakerView().getBus("BBE2AA1 ").getLoadStream().findAny();
