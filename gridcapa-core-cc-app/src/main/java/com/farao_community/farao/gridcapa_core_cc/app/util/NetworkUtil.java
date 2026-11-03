@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 public final class NetworkUtil {
     private static final String ALEGRO_GEN_BE = "XLI_OB1B_generator";
     private static final String ALEGRO_GEN_DE = "XLI_OB1A_generator";
-    private static final Country IRELAND_COUNTRY_CODE = Country.RU; // FIXME This is a hack until PowSyBl's Country enum properly reflects UCTE country conventions (should be available in next release at beginning of October)
 
     private NetworkUtil() {
     }
@@ -35,26 +34,26 @@ public final class NetworkUtil {
     private static final NetworkPredicate CONTINENTAL_SUBNETWORK_PREDICATE = new NetworkPredicate() {
         @Override
         public boolean test(final Substation substation) {
-            return substation.getCountry().orElse(null) != IRELAND_COUNTRY_CODE;
+            return substation.getCountry().orElse(null) != Country.IE;
         }
 
         @Override
         public boolean test(final VoltageLevel voltageLevel) {
             final Substation substation = voltageLevel.getSubstation().orElse(null);
-            return substation == null || substation.getCountry().orElse(null) != IRELAND_COUNTRY_CODE;
+            return substation == null || substation.getCountry().orElse(null) != Country.IE;
         }
     };
 
     private static final NetworkPredicate SEM_SUBNETWORK_PREDICATE = new NetworkPredicate() {
         @Override
         public boolean test(final Substation substation) {
-            return substation.getCountry().orElse(null) == IRELAND_COUNTRY_CODE;
+            return substation.getCountry().orElse(null) == Country.IE;
         }
 
         @Override
         public boolean test(final VoltageLevel voltageLevel) {
             final Substation substation = voltageLevel.getSubstation().orElse(null);
-            return substation != null && substation.getCountry().orElse(null) == IRELAND_COUNTRY_CODE;
+            return substation != null && substation.getCountry().orElse(null) == Country.IE;
         }
     };
 
