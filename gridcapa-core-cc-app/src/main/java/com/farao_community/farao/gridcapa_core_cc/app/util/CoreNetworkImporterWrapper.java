@@ -89,9 +89,11 @@ public final class CoreNetworkImporterWrapper {
                         .setMaxP(9999)
                         .setMinP(0)
                         .setTargetP(0)
-                        .setTargetQ(0)
-                        .setTargetV(voltageLevel.getNominalV())
-                        .setVoltageRegulatorOn(false)
+                        .setLocalTargetQ(0)
+                        .setLocalTargetV(voltageLevel.getNominalV())
+                        .newVoltageRegulation()
+                            .withRegulating(false)
+                            .add()
                         .add()
                         .newMinMaxReactiveLimits().setMaxQ(99999).setMinQ(99999).add();
             } catch (Exception e) {
