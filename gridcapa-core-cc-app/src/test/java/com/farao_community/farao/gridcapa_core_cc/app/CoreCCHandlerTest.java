@@ -11,10 +11,13 @@ import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCFileResource;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultErrorCode;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import com.farao_community.farao.gridcapa_core_cc.app.postprocessing.FileExporterHelper;
 import com.farao_community.farao.gridcapa_core_cc.app.services.RaoRunnerService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
+import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
 import com.farao_community.farao.rao_runner.api.resource.RaoSuccessResponse;
 import com.github.jasminb.jsonapi.exceptions.ResourceParseException;
 import com.github.jasminb.jsonapi.models.errors.Error;
@@ -27,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -54,8 +56,11 @@ class CoreCCHandlerTest {
     private RaoRunnerService raoRunnerService;
 
     @Test
-    void handleCoreCCRequestTest() throws IOException {
+    void handleCoreCCRequestTest() {
         Mockito.when(minioAdapter.generatePreSignedUrl(Mockito.any())).thenReturn("http://url");
+        final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
+        Mockito.when(minioAdapter.getProperties()).thenReturn(properties);
+        Mockito.when(properties.getBasePath()).thenReturn("/CORE/CC");
         RaoSuccessResponse raoResponse = new RaoSuccessResponse.Builder()
                 .withId("id")
                 .withInstant("instant")
@@ -115,8 +120,8 @@ class CoreCCHandlerTest {
         final ResourceParseException resourceParseException = new ResourceParseException(errors);
 
         coreCCHandler.handleRaoRunnerException(hourlyRaoResult, resourceParseException);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
-        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
         assertEquals("Error message", hourlyRaoResult.getErrorMessage());
     }
 
@@ -131,8 +136,8 @@ class CoreCCHandlerTest {
         Mockito.doReturn(resourceParseException).when(exception).getCause();
 
         coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
-        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
         assertEquals("Exception caused by ResourceParseException", hourlyRaoResult.getErrorMessage());
     }
 
@@ -144,8 +149,8 @@ class CoreCCHandlerTest {
         Mockito.doReturn(amqpReplyTimeoutException).when(exception).getCause();
 
         coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
-        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
         // Locale formatting problem: 10,00 v. 10.00
         final String regex = "Timeout reached, Rao has not finished within allocated time of : 10([.,])00 minutes";
         assertTrue(hourlyRaoResult.getErrorMessage().matches(regex));
@@ -154,8 +159,8 @@ class CoreCCHandlerTest {
     private void otherExceptionTypeCauseCase(final HourlyRaoResult hourlyRaoResult) {
         final RuntimeException exception = new RuntimeException("Other exception");
         coreCCHandler.handleRaoRunnerException(hourlyRaoResult, exception);
-        assertEquals(HourlyRaoResult.Status.FAILURE, hourlyRaoResult.getStatus());
-        assertEquals(HourlyRaoResult.ErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
+        assertEquals(HourlyRaoResultStatus.FAILURE, hourlyRaoResult.getStatus());
+        assertEquals(HourlyRaoResultErrorCode.RAO_FAILURE.getCode(), hourlyRaoResult.getErrorCodeString());
         assertEquals("Other exception", hourlyRaoResult.getErrorMessage());
     }
 }

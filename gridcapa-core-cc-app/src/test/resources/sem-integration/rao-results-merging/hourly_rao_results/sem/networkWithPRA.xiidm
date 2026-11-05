@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iidm:network xmlns:iidm="http://www.powsybl.org/schema/iidm/1_17" xmlns:slt="http://www.powsybl.org/schema/iidm/ext/slack_terminal/1_5" id="20260326_0030_2D5_UX2_FINIT_EXPORTGRIDMODEL_DC_CGM_17XTSO-CS------W" caseDate="2026-03-26T00:30:00.000+01:00" forecastDistance="0" sourceFormat="UCTE" minimumValidationLevel="STEADY_STATE_HYPOTHESIS">
+    <iidm:substation id="41AAAA" country="IE">
+        <iidm:voltageLevel id="41AAAA2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="41AAAA2A">
+                    <iidm:property name="geographicalName" value="1AAA2A"/>
+                </iidm:bus>
+                <iidm:bus id="41AAAA2B">
+                    <iidm:property name="geographicalName" value="1AAA2B"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="41AAAA2A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="225.0" targetQ="0.0" bus="41AAAA2A" connectableBus="41AAAA2A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:generator id="41AAAA2B_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="225.0" targetQ="0.0" bus="41AAAA2B" connectableBus="41AAAA2B">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="41AAAA2A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41AAAA2A" connectableBus="41AAAA2A"/>
+            <iidm:load id="41AAAA2B_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41AAAA2B" connectableBus="41AAAA2B"/>
+        </iidm:voltageLevel>
+        <iidm:twoWindingsTransformer id="41AAAA2B 41AAAA2A 1" r="0.1162" x="8.3388" ratedU1="220.0" ratedU2="220.0" voltageLevelId1="41AAAA2" bus1="41AAAA2A" connectableBus1="41AAAA2A" voltageLevelId2="41AAAA2" bus2="41AAAA2B" connectableBus2="41AAAA2B" selectedOperationalLimitsGroupIds2="DEFAULT">
+            <iidm:property name="nomimalPower" value="100.0"/>
+            <iidm:property name="elementName" value="T010"/>
+            <iidm:phaseTapChanger regulating="false" lowTapPosition="-1" tapPosition="0" loadTapChangingCapabilities="true" regulationMode="CURRENT_LIMITER">
+                <iidm:step rho="1.0" alpha="15.303737914694285"/>
+                <iidm:step rho="1.0" alpha="-0.0"/>
+                <iidm:step rho="1.0" alpha="-15.303737914694285"/>
+            </iidm:phaseTapChanger>
+            <iidm:operationalLimitsGroup2 id="DEFAULT">
+                <iidm:currentLimits permanentLimit="919.0"/>
+            </iidm:operationalLimitsGroup2>
+        </iidm:twoWindingsTransformer>
+    </iidm:substation>
+    <iidm:substation id="41BBBB" country="IE">
+        <iidm:voltageLevel id="41BBBB2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="41BBBB2A">
+                    <iidm:property name="geographicalName" value="1BBBB2A"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="41BBBB2A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="225.0" targetQ="0.0" bus="41BBBB2A" connectableBus="41BBBB2A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="41BBBB2A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41BBBB2A" connectableBus="41BBBB2A"/>
+        </iidm:voltageLevel>
+        <iidm:voltageLevel id="41BBBB5" nominalV="110.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="41BBBB5A">
+                    <iidm:property name="geographicalName" value="1BBBB5A"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="41BBBB5A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="110.0" targetQ="0.0" bus="41BBBB5A" connectableBus="41BBBB5A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="41BBBB5A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41BBBB5A" connectableBus="41BBBB5A"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:substation id="41DDDD" country="IE">
+        <iidm:voltageLevel id="41DDDD2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="41DDDD2A">
+                    <iidm:property name="geographicalName" value="1DDDD2A"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="41DDDD2A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="225.0" targetQ="0.0" bus="41DDDD2A" connectableBus="41DDDD2A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="41DDDD2A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41DDDD2A" connectableBus="41DDDD2A"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:substation id="41CCCC" country="IE">
+        <iidm:voltageLevel id="41CCCC5" nominalV="110.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="41CCCC5A">
+                    <iidm:property name="geographicalName" value="1CCCC5A"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="41CCCC5A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="110.0" targetQ="0.0" bus="41CCCC5A" connectableBus="41CCCC5A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="41CCCC5A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="41CCCC5A" connectableBus="41CCCC5A"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:line id="41BBBB5A 41CCCC5A 1" r="0.9956" x="3.6414" b1="2.3991734999999998E-4" b2="2.3991734999999998E-4" voltageLevelId1="41BBBB5" bus1="41BBBB5A" connectableBus1="41BBBB5A" voltageLevelId2="41CCCC5" bus2="41CCCC5A" connectableBus2="41CCCC5A" selectedOperationalLimitsGroupIds1="DEFAULT" selectedOperationalLimitsGroupIds2="DEFAULT">
+        <iidm:property name="elementName" value="L4BC"/>
+        <iidm:operationalLimitsGroup1 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="934.0"/>
+        </iidm:operationalLimitsGroup1>
+        <iidm:operationalLimitsGroup2 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="934.0"/>
+        </iidm:operationalLimitsGroup2>
+    </iidm:line>
+    <iidm:line id="41BBBB2A 41DDDD2A 1" r="1.392" x="9.7115" b1="4.5423555E-5" b2="4.5423555E-5" voltageLevelId1="41BBBB2" bus1="41BBBB2A" connectableBus1="41BBBB2A" voltageLevelId2="41DDDD2" bus2="41DDDD2A" connectableBus2="41DDDD2A" selectedOperationalLimitsGroupIds1="DEFAULT" selectedOperationalLimitsGroupIds2="DEFAULT">
+        <iidm:property name="elementName" value="L4BD"/>
+        <iidm:operationalLimitsGroup1 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="1958.0"/>
+        </iidm:operationalLimitsGroup1>
+        <iidm:operationalLimitsGroup2 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="1958.0"/>
+        </iidm:operationalLimitsGroup2>
+    </iidm:line>
+    <iidm:area id="IE" areaType="ControlArea">
+        <iidm:voltageLevelRef id="41AAAA2"/>
+        <iidm:voltageLevelRef id="41BBBB2"/>
+        <iidm:voltageLevelRef id="41BBBB5"/>
+        <iidm:voltageLevelRef id="41CCCC5"/>
+        <iidm:voltageLevelRef id="41DDDD2"/>
+    </iidm:area>
+    <iidm:area id="AT" areaType="ControlArea"/>
+    <iidm:area id="DE" areaType="ControlArea"/>
+    <iidm:area id="NL" areaType="ControlArea"/>
+</iidm:network>

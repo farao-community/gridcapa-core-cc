@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by EirGrid plc. (EirGrid plc.) -->
+<PublicationDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DtdRelease="1" DtdVersion="0" xsi:noNamespaceSchemaLocation="publication-document-v2r0_FlowBased_v03.xsd">
+	<DocumentIdentification v="17XTSO-CS------W-20260326F120v1"/>
+	<DocumentVersion v="1"/>
+	<DocumentType v="A45"/>
+	<ProcessType v="A01"/>
+	<SenderIdentification codingScheme="A01" v="17XTSO-CS------W"/>
+	<SenderRole v="A36"/>
+	<ReceiverIdentification codingScheme="A01" v="22XCORESO------S"/>
+	<ReceiverRole v="A04"/>
+	<CreationDateTime v="2026-04-09T15:18:53Z"/>
+	<PublicationTimeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+	<Domain codingScheme="A01" v="10Y1001C--00059P"/>
+</PublicationDocument>

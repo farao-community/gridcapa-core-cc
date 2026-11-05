@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iidm:network xmlns:iidm="http://www.powsybl.org/schema/iidm/1_17" xmlns:ea="http://www.itesla_project.eu/schema/iidm/ext/entsoe_area/1_0" xmlns:slt="http://www.powsybl.org/schema/iidm/ext/slack_terminal/1_5" id="20260326_0030_2D5_UX2_FINIT_EXPORTGRIDMODEL_DC_CGM_17XTSO-CS------W" caseDate="2026-03-26T00:30:00.000+01:00" forecastDistance="0" sourceFormat="UCTE" minimumValidationLevel="STEADY_STATE_HYPOTHESIS">
+    <iidm:substation id="O1AAAA" country="AT">
+        <iidm:voltageLevel id="O1AAAA2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="O1AAAA21">
+                    <iidm:property name="geographicalName" value="1AAAA"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="O1AAAA21_generator" energySource="OTHER" minP="-0.0" maxP="3.87" voltageRegulatorOn="false" targetP="1.2813" targetQ="0.0" bus="O1AAAA21" connectableBus="O1AAAA21">
+                <iidm:property name="powerPlantType" value="F"/>
+                <iidm:minMaxReactiveLimits minQ="-5.8" maxQ="-0.0"/>
+            </iidm:generator>
+            <iidm:load id="O1AAAA21_load" loadType="UNDEFINED" p0="4.90361" q0="5.8" bus="O1AAAA21" connectableBus="O1AAAA21"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:substation id="O1BBBB" country="AT">
+        <iidm:voltageLevel id="O1BBBB2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="O1BBBB21">
+                    <iidm:property name="geographicalName" value="1BBBB"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="O1BBBB21_generator" energySource="OTHER" minP="-0.0" maxP="-0.0" voltageRegulatorOn="false" targetP="0.0" targetQ="0.0" bus="O1BBBB21" connectableBus="O1BBBB21">
+                <iidm:property name="powerPlantType" value="F"/>
+                <iidm:minMaxReactiveLimits minQ="-63.481" maxQ="-0.0"/>
+            </iidm:generator>
+            <iidm:load id="O1BBBB21_load" loadType="UNDEFINED" p0="0.0" q0="63.481" bus="O1BBBB21" connectableBus="O1BBBB21"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:substation id="D2AAAA" country="DE">
+        <iidm:voltageLevel id="D2AAAA1" nominalV="400.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="D2AAAA12">
+                    <iidm:property name="geographicalName" value="2AAAA"/>
+                </iidm:bus>
+                <iidm:bus id="D2AAAA15">
+                    <iidm:property name="geographicalName" value=""/>
+                </iidm:bus>
+                <iidm:switch id="D2AAAA12 D2AAAA15 4" kind="BREAKER" retained="true" open="true" bus1="D2AAAA12" bus2="D2AAAA15">
+                    <iidm:property name="orderCode" value="4"/>
+                    <iidm:property name="currentLimit" value="2216"/>
+                    <iidm:property name="elementName" value="T001 BYPASS"/>
+                </iidm:switch>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="D2AAAA12_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="D2AAAA12" connectableBus="D2AAAA12">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:generator id="D2AAAA15_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="D2AAAA15" connectableBus="D2AAAA15">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="D2AAAA12_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="D2AAAA12" connectableBus="D2AAAA12"/>
+            <iidm:load id="D2AAAA15_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="D2AAAA15" connectableBus="D2AAAA15"/>
+        </iidm:voltageLevel>
+        <iidm:twoWindingsTransformer id="D2AAAA12 D2AAAA15 2" r="0.1112" x="12.319" g="9.35E-7" b="-2.45283E-6" ratedU1="400.0" ratedU2="400.0" voltageLevelId1="D2AAAA1" bus1="D2AAAA15" connectableBus1="D2AAAA15" voltageLevelId2="D2AAAA1" bus2="D2AAAA12" connectableBus2="D2AAAA12" selectedOperationalLimitsGroupIds2="DEFAULT">
+            <iidm:property name="nomimalPower" value="1200.0"/>
+            <iidm:property name="elementName" value="T001"/>
+            <iidm:phaseTapChanger regulating="false" lowTapPosition="-32" tapPosition="0" targetDeadband="0.0" loadTapChangingCapabilities="true" regulationMode="ACTIVE_POWER_CONTROL" regulationValue="-0.0">
+                <iidm:terminalRef id="D2AAAA12 D2AAAA15 2" side="ONE"/>
+                <iidm:step rho="1.0" alpha="22.98984348156782"/>
+                <iidm:step rho="1.0" alpha="22.289674030928687"/>
+                <iidm:step rho="1.0" alpha="21.587814908685512"/>
+                <iidm:step rho="1.0" alpha="20.88431283751548"/>
+                <iidm:step rho="1.0" alpha="20.179215254406763"/>
+                <iidm:step rho="1.0" alpha="19.47257029495706"/>
+                <iidm:step rho="1.0" alpha="18.764426776944642"/>
+                <iidm:step rho="1.0" alpha="18.0548341831815"/>
+                <iidm:step rho="1.0" alpha="17.3438426436595"/>
+                <iidm:step rho="1.0" alpha="16.63150291700185"/>
+                <iidm:step rho="1.0" alpha="15.917866371233496"/>
+                <iidm:step rho="1.0" alpha="15.202984963885386"/>
+                <iidm:step rho="1.0" alpha="14.48691122144878"/>
+                <iidm:step rho="1.0" alpha="13.76969821819723"/>
+                <iidm:step rho="1.0" alpha="13.051399554394987"/>
+                <iidm:step rho="1.0" alpha="12.332069333911901"/>
+                <iidm:step rho="1.0" alpha="11.611762141266105"/>
+                <iidm:step rho="1.0" alpha="10.890533018116923"/>
+                <iidm:step rho="1.0" alpha="10.168437439231646"/>
+                <iidm:step rho="1.0" alpha="9.445531287950901"/>
+                <iidm:step rho="1.0" alpha="8.721870831178375"/>
+                <iidm:step rho="1.0" alpha="7.997512693921759"/>
+                <iidm:step rho="1.0" alpha="7.272513833412661"/>
+                <iidm:step rho="1.0" alpha="6.546931512834196"/>
+                <iidm:step rho="1.0" alpha="5.820823274685821"/>
+                <iidm:step rho="1.0" alpha="5.094246913815752"/>
+                <iidm:step rho="1.0" alpha="4.367260450152072"/>
+                <iidm:step rho="1.0" alpha="3.639922101164257"/>
+                <iidm:step rho="1.0" alpha="2.912290254087523"/>
+                <iidm:step rho="1.0" alpha="2.184423437942829"/>
+                <iidm:step rho="1.0" alpha="1.4563802953859235"/>
+                <iidm:step rho="1.0" alpha="0.7282195544191415"/>
+                <iidm:step rho="1.0" alpha="-0.0"/>
+                <iidm:step rho="1.0" alpha="-0.7282195544191415"/>
+                <iidm:step rho="1.0" alpha="-1.4563802953859235"/>
+                <iidm:step rho="1.0" alpha="-2.184423437942829"/>
+                <iidm:step rho="1.0" alpha="-2.912290254087523"/>
+                <iidm:step rho="1.0" alpha="-3.639922101164257"/>
+                <iidm:step rho="1.0" alpha="-4.367260450152072"/>
+                <iidm:step rho="1.0" alpha="-5.094246913815752"/>
+                <iidm:step rho="1.0" alpha="-5.820823274685821"/>
+                <iidm:step rho="1.0" alpha="-6.546931512834196"/>
+                <iidm:step rho="1.0" alpha="-7.272513833412661"/>
+                <iidm:step rho="1.0" alpha="-7.997512693921759"/>
+                <iidm:step rho="1.0" alpha="-8.721870831178375"/>
+                <iidm:step rho="1.0" alpha="-9.445531287950901"/>
+                <iidm:step rho="1.0" alpha="-10.168437439231646"/>
+                <iidm:step rho="1.0" alpha="-10.890533018116923"/>
+                <iidm:step rho="1.0" alpha="-11.611762141266105"/>
+                <iidm:step rho="1.0" alpha="-12.332069333911901"/>
+                <iidm:step rho="1.0" alpha="-13.051399554394987"/>
+                <iidm:step rho="1.0" alpha="-13.76969821819723"/>
+                <iidm:step rho="1.0" alpha="-14.48691122144878"/>
+                <iidm:step rho="1.0" alpha="-15.202984963885386"/>
+                <iidm:step rho="1.0" alpha="-15.917866371233496"/>
+                <iidm:step rho="1.0" alpha="-16.63150291700185"/>
+                <iidm:step rho="1.0" alpha="-17.3438426436595"/>
+                <iidm:step rho="1.0" alpha="-18.0548341831815"/>
+                <iidm:step rho="1.0" alpha="-18.764426776944642"/>
+                <iidm:step rho="1.0" alpha="-19.47257029495706"/>
+                <iidm:step rho="1.0" alpha="-20.179215254406763"/>
+                <iidm:step rho="1.0" alpha="-20.88431283751548"/>
+                <iidm:step rho="1.0" alpha="-21.587814908685512"/>
+                <iidm:step rho="1.0" alpha="-22.289674030928687"/>
+                <iidm:step rho="1.0" alpha="-22.98984348156782"/>
+            </iidm:phaseTapChanger>
+            <iidm:operationalLimitsGroup2 id="DEFAULT">
+                <iidm:currentLimits permanentLimit="1870.0"/>
+            </iidm:operationalLimitsGroup2>
+        </iidm:twoWindingsTransformer>
+    </iidm:substation>
+    <iidm:substation id="D4AAAA" country="DE">
+        <iidm:voltageLevel id="D4AAAA1" nominalV="400.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="D4AAAA11">
+                    <iidm:property name="geographicalName" value=""/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="D4AAAA11_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="D4AAAA11" connectableBus="D4AAAA11">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="D4AAAA11_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="D4AAAA11" connectableBus="D4AAAA11"/>
+        </iidm:voltageLevel>
+        <iidm:voltageLevel id="D4AAAA2" nominalV="225.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="D4AAAA26">
+                    <iidm:property name="geographicalName" value="4AAAA"/>
+                </iidm:bus>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="D4AAAA26_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="225.0" targetQ="0.0" bus="D4AAAA26" connectableBus="D4AAAA26">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="D4AAAA26_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="D4AAAA26" connectableBus="D4AAAA26"/>
+        </iidm:voltageLevel>
+        <iidm:twoWindingsTransformer id="D4AAAA26 D4AAAA11 4" r="0.2149" x="19.315" g="3.4512999999999995E-6" b="-1.12148E-5" ratedU1="410.0" ratedU2="235.0" voltageLevelId1="D4AAAA1" bus1="D4AAAA11" connectableBus1="D4AAAA11" voltageLevelId2="D4AAAA2" bus2="D4AAAA26" connectableBus2="D4AAAA26" selectedOperationalLimitsGroupIds2="DEFAULT">
+            <iidm:property name="nomimalPower" value="450.0"/>
+            <iidm:property name="elementName" value="T002"/>
+            <iidm:ratioTapChanger lowTapPosition="-8" tapPosition="0" loadTapChangingCapabilities="false">
+                <iidm:step rho="1.1003521126760563"/>
+                <iidm:step rho="1.0867202782003913"/>
+                <iidm:step rho="1.07342206955775"/>
+                <iidm:step rho="1.0604453870625663"/>
+                <iidm:step rho="1.0477787091366304"/>
+                <iidm:step rho="1.0354110581901015"/>
+                <iidm:step rho="1.023331968890708"/>
+                <iidm:step rho="1.0115314586283632"/>
+                <iidm:step rho="1.0"/>
+                <iidm:step rho="0.9887284951552303"/>
+                <iidm:step rho="0.9777082518576458"/>
+                <iidm:step rho="0.9669309611293754"/>
+                <iidm:step rho="0.9563886763580718"/>
+                <iidm:step rho="0.946073793755913"/>
+                <iidm:step rho="0.9359790340696368"/>
+                <iidm:step rho="0.9260974254491572"/>
+                <iidm:step rho="0.9164222873900294"/>
+            </iidm:ratioTapChanger>
+            <iidm:phaseTapChanger regulating="false" lowTapPosition="-17" tapPosition="3" loadTapChangingCapabilities="true" regulationMode="CURRENT_LIMITER">
+                <iidm:step rho="0.9570483877385794" alpha="16.853659820585133"/>
+                <iidm:step rho="0.9616747672576234" alpha="15.91391071435246"/>
+                <iidm:step rho="0.9660824423953437" alpha="14.96529004311904"/>
+                <iidm:step rho="0.970261098229848" alpha="14.008198810257827"/>
+                <iidm:step rho="0.9742007140289936" alpha="13.043064103897626"/>
+                <iidm:step rho="0.9778916234773348" alpha="12.070338461833119"/>
+                <iidm:step rho="0.9813245750293723" alpha="11.090499054269754"/>
+                <iidm:step rho="0.9844907917283496" alpha="10.104046682873571"/>
+                <iidm:step rho="0.9873820297981141" alpha="9.111504596891033"/>
+                <iidm:step rho="0.9899906352955137" alpha="8.113417129528065"/>
+                <iidm:step rho="0.992309598103766" alpha="7.110348160284855"/>
+                <iidm:step rho="0.9943326025542488" alpha="6.102879411482497"/>
+                <iidm:step rho="0.9960540739858916" alpha="5.0916085897333"/>
+                <iidm:step rho="0.9974692205880124" alpha="4.077147385540312"/>
+                <iidm:step rho="0.9985740699238469" alpha="3.060119346504248"/>
+                <iidm:step rho="0.9993654995974349" alpha="2.0411576417095443"/>
+                <iidm:step rho="0.9998412616048185" alpha="1.0209027367010786"/>
+                <iidm:step rho="1.0" alpha="-0.0"/>
+                <iidm:step rho="0.9998412616048185" alpha="-1.0209027367010786"/>
+                <iidm:step rho="0.9993654995974349" alpha="-2.0411576417095443"/>
+                <iidm:step rho="0.9985740699238469" alpha="-3.060119346504248"/>
+                <iidm:step rho="0.9974692205880124" alpha="-4.077147385540312"/>
+                <iidm:step rho="0.9960540739858916" alpha="-5.0916085897333"/>
+                <iidm:step rho="0.9943326025542488" alpha="-6.102879411482497"/>
+                <iidm:step rho="0.992309598103766" alpha="-7.110348160284855"/>
+                <iidm:step rho="0.9899906352955137" alpha="-8.113417129528065"/>
+                <iidm:step rho="0.9873820297981141" alpha="-9.111504596891033"/>
+                <iidm:step rho="0.9844907917283496" alpha="-10.104046682873571"/>
+                <iidm:step rho="0.9813245750293723" alpha="-11.090499054269754"/>
+                <iidm:step rho="0.9778916234773348" alpha="-12.070338461833119"/>
+                <iidm:step rho="0.9742007140289936" alpha="-13.043064103897626"/>
+                <iidm:step rho="0.970261098229848" alpha="-14.008198810257827"/>
+                <iidm:step rho="0.9660824423953437" alpha="-14.96529004311904"/>
+                <iidm:step rho="0.9616747672576234" alpha="-15.91391071435246"/>
+                <iidm:step rho="0.9570483877385794" alpha="-16.853659820585133"/>
+            </iidm:phaseTapChanger>
+            <iidm:operationalLimitsGroup2 id="DEFAULT">
+                <iidm:currentLimits permanentLimit="1106.0"/>
+            </iidm:operationalLimitsGroup2>
+        </iidm:twoWindingsTransformer>
+    </iidm:substation>
+    <iidm:substation id="N1AAAA" country="NL">
+        <iidm:voltageLevel id="N1AAAA1" nominalV="400.0" topologyKind="BUS_BREAKER">
+            <iidm:busBreakerTopology>
+                <iidm:bus id="N1AAAA11">
+                    <iidm:property name="geographicalName" value="1AAAA1"/>
+                </iidm:bus>
+                <iidm:bus id="N1AAAA1A">
+                    <iidm:property name="geographicalName" value="1AAAA1"/>
+                </iidm:bus>
+                <iidm:bus id="N1AAAA1B">
+                    <iidm:property name="geographicalName" value="1AAAA1"/>
+                </iidm:bus>
+                <iidm:switch id="N1AAAA1A N1AAAA11 1" kind="BREAKER" retained="true" open="false" bus1="N1AAAA1A" bus2="N1AAAA11">
+                    <iidm:property name="orderCode" value="1"/>
+                    <iidm:property name="currentLimit" value="999999"/>
+                    <iidm:property name="elementName" value="TR001_VSA"/>
+                </iidm:switch>
+                <iidm:switch id="N1AAAA1B N1AAAA11 1" kind="BREAKER" retained="true" open="true" bus1="N1AAAA1B" bus2="N1AAAA11">
+                    <iidm:property name="orderCode" value="1"/>
+                    <iidm:property name="currentLimit" value="999999"/>
+                    <iidm:property name="elementName" value="TR001_VSB"/>
+                </iidm:switch>
+                <iidm:switch id="N1AAAA1B N1AAAA1A 1" kind="BREAKER" retained="true" open="true" bus1="N1AAAA1B" bus2="N1AAAA1A">
+                    <iidm:property name="orderCode" value="1"/>
+                    <iidm:property name="currentLimit" value="999999"/>
+                    <iidm:property name="elementName" value="TR1AB"/>
+                </iidm:switch>
+            </iidm:busBreakerTopology>
+            <iidm:generator id="N1AAAA11_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="N1AAAA11" connectableBus="N1AAAA11">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:generator id="N1AAAA1A_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="N1AAAA1A" connectableBus="N1AAAA1A">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:generator id="N1AAAA1B_generator" energySource="OTHER" minP="0.0" maxP="9999.0" voltageRegulatorOn="false" targetP="0.0" targetV="400.0" targetQ="0.0" bus="N1AAAA1B" connectableBus="N1AAAA1B">
+                <iidm:minMaxReactiveLimits minQ="99999.0" maxQ="99999.0"/>
+            </iidm:generator>
+            <iidm:load id="N1AAAA11_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="N1AAAA11" connectableBus="N1AAAA11"/>
+            <iidm:load id="N1AAAA1A_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="N1AAAA1A" connectableBus="N1AAAA1A"/>
+            <iidm:load id="N1AAAA1B_load" loadType="FICTITIOUS" p0="0.0" q0="0.0" bus="N1AAAA1B" connectableBus="N1AAAA1B"/>
+        </iidm:voltageLevel>
+    </iidm:substation>
+    <iidm:line id="O1AAAA21 O1BBBB21 1" r="1.395" x="7.143" b1="2.4364999999999998E-5" b2="2.4364999999999998E-5" voltageLevelId1="O1AAAA2" bus1="O1AAAA21" connectableBus1="O1AAAA21" voltageLevelId2="O1BBBB2" bus2="O1BBBB21" connectableBus2="O1BBBB21" selectedOperationalLimitsGroupIds1="DEFAULT" selectedOperationalLimitsGroupIds2="DEFAULT">
+        <iidm:property name="elementName" value="LOAB"/>
+        <iidm:operationalLimitsGroup1 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="925.0"/>
+        </iidm:operationalLimitsGroup1>
+        <iidm:operationalLimitsGroup2 id="DEFAULT">
+            <iidm:currentLimits permanentLimit="925.0"/>
+        </iidm:operationalLimitsGroup2>
+    </iidm:line>
+    <iidm:area id="IE" areaType="ControlArea"/>
+    <iidm:area id="AT" areaType="ControlArea">
+        <iidm:voltageLevelRef id="O1AAAA2"/>
+        <iidm:voltageLevelRef id="O1BBBB2"/>
+    </iidm:area>
+    <iidm:area id="DE" areaType="ControlArea">
+        <iidm:voltageLevelRef id="D2AAAA1"/>
+        <iidm:voltageLevelRef id="D4AAAA1"/>
+        <iidm:voltageLevelRef id="D4AAAA2"/>
+    </iidm:area>
+    <iidm:area id="NL" areaType="ControlArea">
+        <iidm:voltageLevelRef id="N1AAAA1"/>
+    </iidm:area>
+</iidm:network>

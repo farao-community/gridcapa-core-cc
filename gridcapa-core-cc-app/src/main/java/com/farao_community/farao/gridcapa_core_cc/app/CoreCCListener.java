@@ -12,7 +12,7 @@ import com.farao_community.farao.gridcapa.task_manager.api.TaskStatusUpdate;
 import com.farao_community.farao.gridcapa_core_cc.api.JsonApiConverter;
 import com.farao_community.farao.gridcapa_core_cc.api.exception.AbstractCoreCCException;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.CoreCCRequest;
-import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResult;
+import com.farao_community.farao.gridcapa_core_cc.api.resource.HourlyRaoResultStatus;
 import com.farao_community.farao.gridcapa_core_cc.api.resource.InternalCoreCCRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,6 @@ import java.util.function.Consumer;
  */
 @Component
 public class CoreCCListener {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreCCListener.class);
     private static final String TASK_STATUS_UPDATE = "task-status-update";
     private static final String GRIDCAPA_TASK_ID = "gridcapa-task-id";
@@ -46,17 +45,17 @@ public class CoreCCListener {
     public CoreCCListener(final Logger businessLogger,
                           final CoreCCHandler coreCCHandler,
                           final StreamBridge streamBridge) {
-        this.businessLogger = businessLogger;
-        this.streamBridge = streamBridge;
         this.jsonApiConverter = new JsonApiConverter();
+        this.businessLogger = businessLogger;
         this.coreCCHandler = coreCCHandler;
+        this.streamBridge = streamBridge;
     }
 
     @Bean
     public Consumer<Flux<byte[]>> request() {
         return flux -> flux
-                .doOnNext(this::launchCoreRequest)
-                .subscribe();
+            .doOnNext(this::launchCoreRequest)
+            .subscribe();
     }
 
     protected void launchCoreRequest(final byte[] req) {
@@ -77,7 +76,9 @@ public class CoreCCListener {
             final InternalCoreCCRequest internalCoreCCRequest = new InternalCoreCCRequest(coreCCRequest);
             coreCCHandler.handleCoreCCRequest(internalCoreCCRequest);
             LOGGER.info("Core CC response written for timestamp {}", coreCCRequest.getTimestamp());
-            updateTaskStatus(internalCoreCCRequest.getId(), internalCoreCCRequest.getHourlyRaoResult().getStatus(), coreCCRequest.getTimestamp());
+            final HourlyRaoResultStatus continentalStatus = internalCoreCCRequest.getContinentalHourlyRaoResult().getStatus();
+            final HourlyRaoResultStatus semStatus = internalCoreCCRequest.getSemHourlyRaoResult() != null ? internalCoreCCRequest.getSemHourlyRaoResult().getStatus() : null;
+            updateTaskStatus(internalCoreCCRequest.getId(), continentalStatus, semStatus, coreCCRequest.getTimestamp());
         } catch (final AbstractCoreCCException e) {
             logExceptionAndUpdateTaskStatus(ccRequestId, "Core CC exception occurred", e);
         } catch (final RuntimeException e) {
@@ -102,20 +103,37 @@ public class CoreCCListener {
 
     private void logComputationTime(final OffsetDateTime startTime) {
         final Duration difference = Duration.between(startTime, OffsetDateTime.now());
-        businessLogger.info("Summary : computation time: {}h {}min {}s since the task switched to RUNNING.",
-                difference.toHours(),
-                difference.toMinutesPart(),
-                difference.toSecondsPart());
+        businessLogger.info(
+            "Summary : computation time: {}h {}min {}s since the task switched to RUNNING.",
+            difference.toHours(),
+            difference.toMinutesPart(),
+            difference.toSecondsPart()
+        );
     }
 
     private void updateTaskStatus(final String internalRequestId,
-                                  final HourlyRaoResult.Status status,
+                                  final HourlyRaoResultStatus continentalStatus,
+                                  final HourlyRaoResultStatus semStatus,
                                   final OffsetDateTime timestamp) {
-        if (status.equals(HourlyRaoResult.Status.SUCCESS)) {
-            sendTaskStatusUpdate(internalRequestId, TaskStatus.SUCCESS);
-            LOGGER.info("Updating task status to SUCCESS for timestamp {}", timestamp);
-        } else if (status.equals(HourlyRaoResult.Status.FAILURE)) {
-            sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);
+        final TaskStatus success = TaskStatus.SUCCESS;
+        final TaskStatus partialSuccess = TaskStatus.SUCCESS; // TODO Define a PARTIAL_SUCCESS status?
+        if (HourlyRaoResultStatus.SUCCESS.equals(continentalStatus)) {
+            if (semStatus == null || HourlyRaoResultStatus.SUCCESS.equals(semStatus)) {
+                updateTaskStatusAndLog(internalRequestId, timestamp, success);
+            } else {
+                updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
+            }
+        } else if (HourlyRaoResultStatus.FAILURE.equals(continentalStatus)) {
+            if (HourlyRaoResultStatus.SUCCESS.equals(semStatus)) {
+                updateTaskStatusAndLog(internalRequestId, timestamp, partialSuccess);
+            } else {
+                sendTaskStatusUpdate(internalRequestId, TaskStatus.ERROR);
+            }
         }
+    }
+
+    private void updateTaskStatusAndLog(final String internalRequestId, final OffsetDateTime timestamp, final TaskStatus status) {
+        sendTaskStatusUpdate(internalRequestId, status);
+        LOGGER.info("Updating task status to {} for timestamp {}", status, timestamp);
     }
 }
