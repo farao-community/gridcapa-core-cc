@@ -71,7 +71,6 @@ public class HourlyRaoRequest {
     }
 
     public RaoRequest toRaoRequest(final String id, final String runId, final String prefix) {
-        final String resultsDestinationUrl = "CORE/CC/";
         return new RaoRequest.RaoRequestBuilder()
             .withId(id)
             .withRunId(runId)
@@ -82,7 +81,7 @@ public class HourlyRaoRequest {
             .withRealGlskFileUrl(this.realGlskFileUrl)
             .withRaoParametersFileUrl(minioAdapter.generatePreSignedUrl(this.raoParametersFileUrl))
             .withVirtualhubsFileUrl(this.virtualHubsConfigurationFileUrl)
-            .withResultsDestination(resultsDestinationUrl + this.resultsDestination)
+            .withResultsDestination(minioAdapter.getProperties().getBasePath() + "/" + this.resultsDestination)
             .withTargetEndInstant(Instant.now().plusMillis(raoTimeOut))
             .withEventPrefix(prefix)
             .build();

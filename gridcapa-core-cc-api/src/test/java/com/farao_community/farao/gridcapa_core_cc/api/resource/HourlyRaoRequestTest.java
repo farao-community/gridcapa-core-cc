@@ -9,6 +9,7 @@
 package com.farao_community.farao.gridcapa_core_cc.api.resource;
 
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
+import com.farao_community.farao.minio_adapter.starter.MinioAdapterProperties;
 import com.farao_community.farao.rao_runner.api.resource.RaoRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,9 @@ class HourlyRaoRequestTest {
         Mockito.when(minioAdapter.generatePreSignedUrl("file/path/network")).thenReturn("http://network/");
         Mockito.when(minioAdapter.generatePreSignedUrl("file/path/cb")).thenReturn("http://crac/");
         Mockito.when(minioAdapter.generatePreSignedUrl("file/path/raoParameters")).thenReturn("http://raoParameters/");
+        final MinioAdapterProperties properties = Mockito.mock(MinioAdapterProperties.class);
+        Mockito.when(minioAdapter.getProperties()).thenReturn(properties);
+        Mockito.when(properties.getBasePath()).thenReturn("CORE/CC");
         hourlyRaoRequest = new HourlyRaoRequest(
             minioAdapter,
             "2023-07-25T14:13:00Z",
