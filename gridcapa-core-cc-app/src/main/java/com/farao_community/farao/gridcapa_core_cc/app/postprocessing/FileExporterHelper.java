@@ -27,6 +27,7 @@ import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 import com.powsybl.openrao.searchtreerao.commons.RaoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -52,9 +53,10 @@ import static java.lang.String.valueOf;
 @Service
 public class FileExporterHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileExporterHelper.class);
-
     private static final String DOMAIN_ID = "10Y1001C--00059P";
-    private static final String CORE_CC = "CORE_CC";
+
+    @Value("${core-cc-runner.target-process:CORE_CC}")
+    private String targetProcess;
 
     private final MinioAdapter minioAdapter;
 
@@ -89,7 +91,7 @@ public class FileExporterHelper {
         try (final InputStream is = memDataSource.newInputStream("", "uct")) {
             final String networkNewFileName = NamingRules.generateUctFileName(postProcessingData.getRaoRequestInstant(), coreCCRequest.getVersion());
             final String networkWithPraFilePath = buildFilePath(postProcessingData.getResultsDestination(), networkNewFileName);
-            minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, CORE_CC, "CGM_OUT", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(networkWithPraFilePath, is, targetProcess, "CGM_OUT", coreCCRequest.getTimestamp());
         } catch (final Exception e) {
             throw new CoreCCInternalException("Network with PRA could not be uploaded to minio", e);
         } finally {
@@ -114,7 +116,7 @@ public class FileExporterHelper {
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStreamCne.toByteArray())) {
                 final String cneFilename = NamingRules.generateCneFileName(postProcessingData.getRaoRequestInstant(), coreCCRequest);
                 final String cneFilePath = buildFilePath(postProcessingData.getResultsDestination(), cneFilename);
-                minioAdapter.uploadOutputForTimestamp(cneFilePath, inputStream, CORE_CC, "CNE", coreCCRequest.getTimestamp());
+                minioAdapter.uploadOutputForTimestamp(cneFilePath, inputStream, targetProcess, "CNE", coreCCRequest.getTimestamp());
             }
         } catch (final Exception e) {
             throw new CoreCCInternalException("CNE could not be uploaded to minio", e);
@@ -168,7 +170,7 @@ public class FileExporterHelper {
                 final String raoResultFilename = NamingRules.generateRaoResultFileName(postProcessingData.getRaoRequestInstant());
                 final String raoResultFilePath = buildFilePath(resultsDestination, raoResultFilename);
                 final OffsetDateTime coreCCRequestTimestamp = coreCCRequest.getTimestamp();
-                minioAdapter.uploadOutputForTimestamp(raoResultFilePath, inputStream, CORE_CC, "RAO_RESULT", coreCCRequestTimestamp);
+                minioAdapter.uploadOutputForTimestamp(raoResultFilePath, inputStream, targetProcess, "RAO_RESULT", coreCCRequestTimestamp);
             }
         } catch (final Exception e) {
             throw new CoreCCInternalException("RAO result could not be uploaded to minio", e);
@@ -217,7 +219,7 @@ public class FileExporterHelper {
             fillMetadataBuilderWithHourlyRaoResults(coreCCRequest, metadataBuilder);
 
             new ObjectMapper().writeValue(outputStreamMetadata, metadataBuilder.build());
-            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetadata.toByteArray()), CORE_CC, "METADATA", coreCCRequest.getTimestamp());
+            minioAdapter.uploadOutputForTimestamp(metaDataFilePath, new ByteArrayInputStream(outputStreamMetadata.toByteArray()), targetProcess, "METADATA", coreCCRequest.getTimestamp());
         } catch (final Exception e) {
             throw new CoreCCInternalException("Metadata could not be uploaded to minio", e);
         }

@@ -28,6 +28,7 @@ import com.powsybl.openrao.data.crac.io.fbconstraint.parameters.FbConstraintCrac
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,9 +70,11 @@ class FileExporterHelperTest {
     private final InternalCoreCCRequest internalCoreCCRequest = Mockito.mock(InternalCoreCCRequest.class);
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IllegalAccessException {
         openMocks = MockitoAnnotations.openMocks(this);
         networkUtilMockedStatic = Mockito.mockStatic(NetworkUtil.class);
+
+        FieldUtils.writeDeclaredField(fileExporterHelper, "targetProcess", "CORE_CC", true);
     }
 
     @AfterEach
