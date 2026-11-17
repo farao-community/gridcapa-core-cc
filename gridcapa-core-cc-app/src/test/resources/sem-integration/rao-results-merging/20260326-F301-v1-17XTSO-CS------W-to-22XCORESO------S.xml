@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by EirGrid plc. (EirGrid plc.) -->
+<FlowBasedConstraintDocument DtdRelease="0" DtdVersion="4" xmlns="flowbased" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="flowbasedconstraintdocument-25.xsd">
+	<DocumentIdentification v="17XTSO-CS------W-20260326F301v1"/>
+	<DocumentVersion v="1"/>
+	<DocumentType v="B06"/>
+	<ProcessType v="A01"/>
+	<SenderIdentification codingScheme="A01" v="17XTSO-CS------W"/>
+	<SenderRole v="A36"/>
+	<ReceiverIdentification codingScheme="A01" v="22XCORESO------S"/>
+	<ReceiverRole v="A44"/>
+	<CreationDateTime v="2026-03-24T20:14:34Z"/>
+	<ConstraintTimeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+	<Domain codingScheme="A01" v="10Y1001C--00059P"/>
+	<criticalBranches>
+        <criticalBranch id="SEM_CBCO_0001">
+            <timeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+            <branch eic="SEM-DUMMY-0001" from="41BBBB2A" to="41DDDD2A" elementName="1" name="[SEM-SEM] 1BBBB5 - 1CCCC5 1 [OPP]"/>
+            <imaxFactor>1</imaxFactor>
+            <imaxType>SEASONAL</imaxType>
+            <permanentImaxFactor>1</permanentImaxFactor>
+            <temporaryImaxFactor>1</temporaryImaxFactor>
+            <frmMw>75</frmMw>
+            <minRAMfactor>70</minRAMfactor>
+            <CNEC>true</CNEC>
+            <MNEC>false</MNEC>
+            <direction>OPPOSITE</direction>
+            <tsoOrigin>SEM</tsoOrigin>
+            <outage id="SEM_CO_0001" name="[SEM] Dummy continency 1" location="SEM-SEM">
+                <branch from="41BBBB5A" to="41CCCC5A" order="1" eic="tmp_eic"/>
+            </outage>
+        </criticalBranch>
+        <criticalBranch id="AT_CBCO_00001">
+            <timeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+            <branch eic="14T-220-0-0LOABN" from="O1AAAA21" to="O1BBBB21" elementName="LOAB" name="[AT-AT] 1AAAA - 1BBBB LOAB [DIR]"/>
+            <imaxFactor>1</imaxFactor>
+            <imaxType>SEASONAL</imaxType>
+            <permanentImaxFactor>1</permanentImaxFactor>
+            <temporaryImaxFactor>1</temporaryImaxFactor>
+            <frmMw>27.5</frmMw>
+            <minRAMfactor>53.6</minRAMfactor>
+            <CNEC>true</CNEC>
+            <MNEC>true</MNEC>
+            <direction>DIRECT</direction>
+            <tsoOrigin>AT</tsoOrigin>
+        </criticalBranch>
+	</criticalBranches>
+	<complexVariants>
+        <complexVariant id="RA_SEM_00001" name="SEM_PSTGRP_01">
+            <timeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+            <tsoOrigin>SEM</tsoOrigin>
+            <actionsSet>
+                <preventive>true</preventive>
+                <curative>false</curative>
+                <enforced>false</enforced>
+                <action type="PSTTAP">
+                    <branch from="41AAAA2B" order="1" to="41AAAA2A"/>
+                    <range>
+                        <min>-3</min>
+                        <max>3</max>
+                    </range>
+                </action>
+            </actionsSet>
+        </complexVariant>
+        <complexVariant id="D2_RA_00001" name="PST_2AAAA_T001">
+            <timeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+            <tsoOrigin>D2</tsoOrigin>
+            <actionsSet>
+                <preventive>true</preventive>
+                <curative>false</curative>
+                <enforced>false</enforced>
+                <action type="PSTTAP">
+                    <branch from="D2AAAA12" to="D2AAAA15" elementName="T001"/>
+                    <range>
+                        <min>-10</min>
+                        <max>10</max>
+                    </range>
+                    <PSTGroupId>D2_PSTGRP_01</PSTGroupId>
+                </action>
+            </actionsSet>
+        </complexVariant>
+        <complexVariant id="NL_RA_00001" name="[NL] Dummy network action 1">
+            <timeInterval v="2026-03-25T23:00Z/2026-03-26T23:00Z"/>
+            <tsoOrigin>NL</tsoOrigin>
+            <actionsSet name="[NL] Dummy network action 1">
+                <preventive>true</preventive>
+                <curative>false</curative>
+                <enforced>false</enforced>
+                <action type="STATUS">
+                    <branch from="N1AAAA1B" to="N1AAAA1A" elementName="TR1AB"/>
+                    <value>OPEN</value>
+                </action>
+                <action type="STATUS">
+                    <branch from="N1AAAA1B" to="N1AAAA11" elementName="TR001_VSB"/>
+                    <value>OPEN</value>
+                </action>
+            </actionsSet>
+        </complexVariant>
+	</complexVariants>
+</FlowBasedConstraintDocument>

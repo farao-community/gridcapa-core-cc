@@ -90,8 +90,8 @@ class NamingRulesTest {
 
     @Test
     void generateMetadataFileName() {
-        assertEquals("20230721_1630_METADATA-02.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
-        assertNotEquals("20230721_1630_METADATA-0V.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest));
+        assertEquals("20230721_1630_METADATA-02.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest.getVersion()));
+        assertNotEquals("20230721_1630_METADATA-0V.json", NamingRules.generateMetadataFileName("2023-07-21T14:03:23Z", internalCoreCCRequest.getVersion()));
     }
 
     @Test

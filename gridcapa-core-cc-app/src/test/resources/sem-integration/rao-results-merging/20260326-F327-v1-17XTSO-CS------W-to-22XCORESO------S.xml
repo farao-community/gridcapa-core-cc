@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Created="2026-06-16T19:17:00Z" xsi:noNamespaceSchemaLocation="configuration-23.xsd">
+  <DocumentIdentification v="17XTSO-CS------W-20260326F327v1"/>
+  <Sender Code="CORE" Eic="17XTSO-CS------W" Type="CCO"/>
+  <Receiver Code="CORESO" Eic="22XCORESO------S" Type="RSC"/>
+  <MarketAreas>
+    <MarketArea Code="AT" Eic="10YAT-APG------L" MCParticipant="true" AHC="false" techCounterparty="false" SDAC="false"/>
+    <MarketArea Code="DE" Eic="10YCB-GERMANY--8" MCParticipant="true" AHC="false" techCounterparty="false" SDAC="false"/>
+    <MarketArea Code="FR" Eic="10YFR-RTE------C" MCParticipant="true" AHC="false" techCounterparty="false" SDAC="false"/>
+    <MarketArea Code="SEM" Eic="10YIE-1001A00010" MCParticipant="true" AHC="false" techCounterparty="false" SDAC="false"/>
+    <MarketArea Code="NL" Eic="10YNL----------L" MCParticipant="true" AHC="false" techCounterparty="false" SDAC="false"/>
+  </MarketAreas>
+  <ControlAreas>
+    <ControlArea Code="AT" Eic="10YAT-APG------L" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+    <ControlArea Code="D4" Eic="10YDE-ENBW-----N" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+    <ControlArea Code="D2" Eic="10YDE-EON------1" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+    <ControlArea Code="SEM" Eic="10YIE-1001A00010" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+    <ControlArea Code="FR" Eic="10YFR-RTE------C" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+    <ControlArea Code="NL" Eic="10YNL----------L" MCParticipant="true" techCounterparty="false" SDAC="false"/>
+  </ControlAreas>
+  <VirtualHubs>
+    <VirtualHub Eic="10Y1111111111111" Code="SEM_CI" RelatedMA="SEM" MCParticipant="true" OppositeHub="FR_CI" NodeName="XKN_MA12" AHC="false" SDAC="false"/>
+    <VirtualHub Eic="17Y1111111111111" Code="FR_CI" RelatedMA="FR" MCParticipant="true" OppositeHub="SEM_CI" NodeName="XKN_MA11" AHC="false" SDAC="false"/>
+  </VirtualHubs>
+  <BorderDirections>
+    <BorderDirection From="AT" To="DE" AHC="false" SDAC="false"/>
+    <BorderDirection From="DE" To="AT" AHC="false" SDAC="false"/>
+    <BorderDirection From="DE" To="FR" AHC="false" SDAC="false"/>
+    <BorderDirection From="DE" To="NL" AHC="false" SDAC="false"/>
+    <BorderDirection From="FR" To="DE" AHC="false" SDAC="false"/>
+    <BorderDirection From="NL" To="DE" AHC="false" SDAC="false"/>
+    <BorderDirection From="SEM" To="SEM_CI" AHC="false" SDAC="false"/>
+    <BorderDirection From="SEM_CI" To="SEM" AHC="false" SDAC="false"/>
+    <BorderDirection From="FR" To="FR_CI" AHC="false" SDAC="false"/>
+    <BorderDirection From="FR_CI" To="FR" AHC="false" SDAC="false"/>
+  </BorderDirections>
+</Configuration>

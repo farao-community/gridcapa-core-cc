@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CriticalNetworkElement_MarketDocument xsi:schemaLocation="iec62325-451-n-cne_v2_4_FlowBased_v04.xsd" xmlns="urn:iec62325.351:tc57wg16:451-n:cnedocument:2:4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <mRID>22XCORESO------S-20260326-F299v4</mRID>
+    <revisionNumber>4</revisionNumber>
+    <type>B06</type>
+    <process.processType>A48</process.processType>
+    <sender_MarketParticipant.mRID codingScheme="A01">22XCORESO------S</sender_MarketParticipant.mRID>
+    <sender_MarketParticipant.marketRole.type>A44</sender_MarketParticipant.marketRole.type>
+    <receiver_MarketParticipant.mRID codingScheme="A01">17XTSO-CS------W</receiver_MarketParticipant.mRID>
+    <receiver_MarketParticipant.marketRole.type>A36</receiver_MarketParticipant.marketRole.type>
+    <createdDateTime>2026-10-15T15:00:00Z</createdDateTime>
+    <time_Period.timeInterval>
+        <start>2026-03-25T23:00Z</start>
+        <end>2026-03-26T23:00Z</end>
+    </time_Period.timeInterval>
+    <domain.mRID codingScheme="A01">10Y1001C--00059P</domain.mRID>
+    <TimeSeries>
+        <mRID>CNE_RAO_CASTOR-TimeSeries-1</mRID>
+        <businessType>B54</businessType>
+        <curveType>A01</curveType>
+        <Period>
+            <timeInterval>
+                <start>2026-03-26T00:00Z</start>
+                <end>2026-03-26T01:00Z</end>
+            </timeInterval>
+            <resolution>PT60M</resolution>
+            <Point>
+                <position>1</position>
+                <Constraint_Series>
+                    <mRID>AT_CBCO_00001</mRID>
+                    <businessType>B88</businessType>
+                    <Party_MarketParticipant>
+                        <mRID codingScheme="A01">10XAT-APG------Z</mRID>
+                    </Party_MarketParticipant>
+                    <optimization_MarketObjectStatus.status>A52</optimization_MarketObjectStatus.status>
+                    <Monitored_Series>
+                        <mRID>AT_CBCO_00001</mRID>
+                        <name>[AT-AT] 1AAAA - 1BBBB LOAB [DIR]|BASECASE</name>
+                        <RegisteredResource>
+                            <mRID codingScheme="A02">AT_CBCO_00001</mRID>
+                            <name>[AT-AT] 1AAAA - 1BBBB LOAB [DIR]</name>
+                            <Measurements>
+                                <measurementType>A01</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>31</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A02</measurementType>
+                                <unitSymbol>AMP</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>925</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A02</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>360</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A03</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>28</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A07</measurementType>
+                                <unitSymbol>AMP</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>925</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A07</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>360</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z11</measurementType>
+                                <unitSymbol>C62</unitSymbol>
+                                <analogValues.value>0.08004</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z12</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>302</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z13</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>3778</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z14</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>302</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z15</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>3778</analogValues.value>
+                            </Measurements>
+                        </RegisteredResource>
+                    </Monitored_Series>
+                </Constraint_Series>
+                <Constraint_Series>
+                    <mRID>AT_CBCO_00001</mRID>
+                    <businessType>B57</businessType>
+                    <Party_MarketParticipant>
+                        <mRID codingScheme="A01">10XAT-APG------Z</mRID>
+                    </Party_MarketParticipant>
+                    <optimization_MarketObjectStatus.status>A52</optimization_MarketObjectStatus.status>
+                    <Monitored_Series>
+                        <mRID>AT_CBCO_00001</mRID>
+                        <name>[AT-AT] 1AAAA - 1BBBB LOAB [DIR]|BASECASE</name>
+                        <RegisteredResource>
+                            <mRID codingScheme="A02">AT_CBCO_00001</mRID>
+                            <name>[AT-AT] 1AAAA - 1BBBB LOAB [DIR]</name>
+                            <Measurements>
+                                <measurementType>A01</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>31</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A03</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>28</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A07</measurementType>
+                                <unitSymbol>AMP</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>925</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>A07</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>360</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z11</measurementType>
+                                <unitSymbol>C62</unitSymbol>
+                                <analogValues.value>0.08004</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z14</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>302</analogValues.value>
+                            </Measurements>
+                            <Measurements>
+                                <measurementType>Z15</measurementType>
+                                <unitSymbol>MAW</unitSymbol>
+                                <positiveFlowIn>A01</positiveFlowIn>
+                                <analogValues.value>3778</analogValues.value>
+                            </Measurements>
+                        </RegisteredResource>
+                    </Monitored_Series>
+                    <RemedialAction_Series>
+                        <mRID>D2_RA_00001</mRID>
+                        <name>PST_2AAAA_T001</name>
+                        <applicationMode_MarketObjectStatus.status>A18</applicationMode_MarketObjectStatus.status>
+                    </RemedialAction_Series>
+                    <RemedialAction_Series>
+                        <mRID>NL_RA_00001</mRID>
+                        <name>[NL] Dummy network action 1</name>
+                        <applicationMode_MarketObjectStatus.status>A18</applicationMode_MarketObjectStatus.status>
+                    </RemedialAction_Series>
+                </Constraint_Series>
+                <Constraint_Series>
+                    <mRID>RAseries_12345</mRID>
+                    <businessType>B56</businessType>
+                    <RemedialAction_Series>
+                        <mRID>D2_RA_00001</mRID>
+                        <name>PST_2AAAA_T001</name>
+                        <Party_MarketParticipant>
+                            <mRID codingScheme="A01">10XDE-EON-NETZ-C</mRID>
+                        </Party_MarketParticipant>
+                        <RegisteredResource>
+                            <mRID codingScheme="A01">D2_RA_00001</mRID>
+                            <name>D2AAAA12 D2AAAA15 T001</name>
+                            <pSRType.psrType>A06</pSRType.psrType>
+                            <marketObjectStatus.status>A26</marketObjectStatus.status>
+                            <resourceCapacity.defaultCapacity>0</resourceCapacity.defaultCapacity>
+                            <resourceCapacity.unitSymbol>C62</resourceCapacity.unitSymbol>
+                        </RegisteredResource>
+                    </RemedialAction_Series>
+                </Constraint_Series>
+                <Constraint_Series>
+                    <mRID>RAseries_12345</mRID>
+                    <businessType>B56</businessType>
+                    <RemedialAction_Series>
+                        <mRID>D2_RA_00001</mRID>
+                        <name>PST_2AAAA_T001</name>
+                        <applicationMode_MarketObjectStatus.status>A18</applicationMode_MarketObjectStatus.status>
+                        <Party_MarketParticipant>
+                            <mRID codingScheme="A01">10XDE-EON-NETZ-C</mRID>
+                        </Party_MarketParticipant>
+                        <RegisteredResource>
+                            <mRID codingScheme="A01">D2_RA_00001</mRID>
+                            <name>D2AAAA12 D2AAAA15 T001</name>
+                            <pSRType.psrType>A06</pSRType.psrType>
+                            <marketObjectStatus.status>A26</marketObjectStatus.status>
+                            <resourceCapacity.defaultCapacity>-6</resourceCapacity.defaultCapacity>
+                            <resourceCapacity.unitSymbol>C62</resourceCapacity.unitSymbol>
+                        </RegisteredResource>
+                    </RemedialAction_Series>
+                    <RemedialAction_Series>
+                        <mRID>NL_RA_00001</mRID>
+                        <name>[NL] Dummy network action 1</name>
+                        <applicationMode_MarketObjectStatus.status>A18</applicationMode_MarketObjectStatus.status>
+                        <Party_MarketParticipant>
+                            <mRID codingScheme="A01">10X1001A1001A361</mRID>
+                        </Party_MarketParticipant>
+                    </RemedialAction_Series>
+                </Constraint_Series>
+            </Point>
+        </Period>
+    </TimeSeries>
+</CriticalNetworkElement_MarketDocument>
