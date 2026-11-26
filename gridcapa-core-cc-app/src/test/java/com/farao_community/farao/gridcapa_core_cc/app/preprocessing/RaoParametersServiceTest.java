@@ -221,6 +221,24 @@ class RaoParametersServiceTest {
     }
 
     @Test
+    void loopFlowCountriesSemTest() {
+        RequestMessage requestMessage = new RequestMessage();
+        Header header = new Header();
+        requestMessage.setHeader(header);
+        Property property = new Property();
+        property.setName("LF_Constraint_SEM");
+        property.setValue("true");
+        header.getProperty().add(property);
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
+
+        RaoParametersService.setLoopFlowCountries(requestMessage, raoParameters);
+
+        final LoopFlowParameters retrievedLoopFlowParameters = raoParameters.getLoopFlowParameters().get();
+        assertEquals(1, retrievedLoopFlowParameters.getCountries().size());
+        assertTrue(retrievedLoopFlowParameters.getCountries().contains(Country.IE));
+    }
+
+    @Test
     void loopFlowCountriesWithBadCountryTest() {
         RequestMessage requestMessage = new RequestMessage();
         Header header = new Header();

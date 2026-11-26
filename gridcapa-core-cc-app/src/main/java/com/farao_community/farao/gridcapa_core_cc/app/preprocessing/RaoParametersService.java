@@ -99,6 +99,7 @@ public class RaoParametersService {
                                 && property.getValue().equalsIgnoreCase(Boolean.TRUE.toString()))
             .map(property -> property.getName().substring(property.getName().lastIndexOf('_') + 1))
             .map(RaoParametersService::convertGermanyZones)
+            .map(RaoParametersService::convertSemZone)
             .map(Country::valueOf)
             .collect(Collectors.toSet());
 
@@ -201,6 +202,14 @@ public class RaoParametersService {
     private static String convertGermanyZones(String zone) {
         if (GERMAN_ZONES.contains(zone)) {
             return Country.DE.toString();
+        } else {
+            return zone;
+        }
+    }
+
+    private static String convertSemZone(String zone) {
+        if ("SEM".equals(zone)) {
+            return Country.IE.toString();
         } else {
             return zone;
         }
